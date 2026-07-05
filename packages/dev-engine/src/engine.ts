@@ -217,7 +217,7 @@ export async function run(
         file: '[handoff]',
         violations: [{
           file: '[handoff]', line: 0, module: 'build-git', rule: 'handoff-stale',
-          message: `HANDOFF.md is ${handoff.commitsBehind} commits behind — run wf-session-update`,
+          message: `HANDOFF.md is ${handoff.commitsBehind} commits behind — run wf-update`,
           severity: 'warning',
           autoFixable: false,
         }],
