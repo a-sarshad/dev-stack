@@ -19,9 +19,9 @@ dev-knowledge/
 │   ├── dev-init-wizard.skill
 │   ├── vitrina-project-context.skill   ← thin loader
 │   ├── airport-project-context.skill   ← thin loader
-│   ├── wf-commit-project.skill
-│   ├── wf-session-start.skill
-│   └── wf-session-update.skill
+│   ├── wf-commit.skill
+│   ├── wf-start.skill
+│   └── wf-update.skill
 ├── universal/          ← دانش cross-project (همه جا صدق می‌کنه)
 └── design-systems/     ← دانش خاص هر design system
     ├── bootstrap5/
@@ -51,7 +51,7 @@ dev-knowledge/
 
 1. **خوندن context** — قبل از هر کار مرتبط با پروژه، skill آن پروژه رو load کن
 2. **ویرایش فایل‌ها** — با ابزارهای Read/Write/Edit
-3. **Commit خودکار** — بعد از هر تغییر، skill `wf-commit-project` اجرا می‌شه
+3. **Commit خودکار** — بعد از هر تغییر، skill `wf-commit` اجرا می‌شه
 
 ### اصل طلایی — قانون اجباری در always-on، نه skill
 
@@ -80,9 +80,9 @@ Claude: [loads vitrina-project-context skill] → [reads Vitrina/.claude/context
 ### wf — Workflow (مدیریت session و repo)
 | Skill | کاربرد |
 |-------|---------|
-| `wf-commit-project` | آماده‌سازی commit message برای هر git repo (جنرال) |
-| `wf-session-start` | briefing وضعیت پروژه در شروع session |
-| `wf-session-update` | ذخیره وضعیت و آپدیت HANDOFF.md در هر مرحله (جنرال) |
+| `wf-commit` | آماده‌سازی commit message برای هر git repo (جنرال) |
+| `wf-start` | briefing وضعیت پروژه در شروع session |
+| `wf-update` | ذخیره وضعیت و آپدیت HANDOFF.md در هر مرحله (جنرال) |
 
 ### dev — Development (کدنویسی و پروژه)
 | Skill | کاربرد |
@@ -122,6 +122,6 @@ Claude: [loads vitrina-project-context skill] → [reads Vitrina/.claude/context
   ```bash
   DN_PATH=$(ls -d /sessions/*/mnt/dev-knowledge 2>/dev/null | head -1)
   ```
-- بعد از هر تغییر فایل در این repo، بدون اینکه کاربر بخواد، `wf-commit-project` اجرا کن
+- بعد از هر تغییر فایل در این repo، بدون اینکه کاربر بخواد، `wf-commit` اجرا کن
 - برای خطاهای git: `universal/git-troubleshoot.md` رو ببین
 - برای استفاده از dev-engine CLI: `universal/dev-engine.md` رو ببین

@@ -440,7 +440,7 @@ pnpm add i18next react-i18next
 > | Auth             | TBD           | — |
 > ```
 >
-> هر تصمیم معماری که بعداً در session گرفته می‌شه هم اینجا اضافه می‌شه (توسط wf-session-update skill).
+> هر تصمیم معماری که بعداً در session گرفته می‌شه هم اینجا اضافه می‌شه (توسط wf-update skill).
 
 **اگه Q7 = Chakra UI v3:**
 ```

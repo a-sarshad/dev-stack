@@ -45,9 +45,9 @@ dev-knowledge/
 
 ```
 پروژه جدید  → skill dev-init-wizard
-شروع session → skill wf-session-start
-ذخیره وضعیت → skill wf-session-update
-commit       → skill wf-commit-project
+شروع session → skill wf-start
+ذخیره وضعیت → skill wf-update
+commit       → skill wf-commit
 بررسی کد    → den / denc / denf از terminal (راهنما: universal/dev-engine.md)
 Figma→کد    → skill figma-implement-design + gate در CLAUDE.md پروژه
 ```

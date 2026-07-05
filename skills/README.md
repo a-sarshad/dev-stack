@@ -19,9 +19,9 @@
 
 | Skill | دسته | کاربرد خلاصه |
 |-------|------|--------------|
-| [wf-session-start](#wf-session-start) | workflow | شروع session — briefing وضعیت پروژه |
-| [wf-session-update](#wf-session-update) | workflow | ذخیره وضعیت + آپدیت HANDOFF/CLAUDE/README — هر پروژه |
-| [wf-commit-project](#wf-commit-project) | workflow | commit message آماده — هر git repo |
+| [wf-start](#wf-start) | workflow | شروع session — briefing وضعیت پروژه |
+| [wf-update](#wf-update) | workflow | ذخیره وضعیت + آپدیت HANDOFF/CLAUDE/README — هر پروژه |
+| [wf-commit](#wf-commit) | workflow | commit message آماده — هر git repo |
 | dev-implement ⭐ | dev | **orchestrator واحد Figma→code** — pipeline کامل، نقطه ورود |
 | [dev-init-wizard](#dev-init-wizard) | dev | scaffold پروژه جدید قدم‌به‌قدم |
 | [dev-engine](#dev-engine) | dev | اجرای dev-engine — بررسی و auto-fix کد (شامل token/hardcode) |
@@ -34,9 +34,9 @@
 
 ## Workflow Skills — مدیریت session و repo
 
-### wf-session-start
+### wf-start
 
-**فایل:** `wf-session-start.skill`
+**فایل:** `wf-start.skill`
 
 **کاربرد:** در شروع هر session کاری، یه briefing سریع از وضعیت پروژه می‌ده — کجا بودیم، آخرین تغییرات چی بود، قدم بعدی چیه.
 
@@ -52,9 +52,9 @@
 
 ---
 
-### wf-session-update
+### wf-update
 
-**فایل:** `wf-session-update.skill`
+**فایل:** `wf-update.skill`
 
 **کاربرد:** روی **هر پروژه‌ای** کار می‌کنه. وضعیت فعلی رو snapshot می‌کنه — HANDOFF.md رو آپدیت می‌کنه، و اگه تغییر معماری/باگ/ساختار داشتیم CLAUDE.md و README.md پروژه رو هم آپدیت می‌کنه. اگه این فایل‌ها وجود نداشتن کار می‌کنه، اگه وجود داشتن آپدیت می‌کنه.
 
@@ -69,9 +69,9 @@
 
 ---
 
-### wf-commit-project
+### wf-commit
 
-**فایل:** `wf-commit-project.skill`
+**فایل:** `wf-commit.skill`
 
 **کاربرد:** برای **هر git repo** — Vitrina، Airport، dev-knowledge، یا هر پروژه جدیدی — یه commit message آماده می‌کنه. مسیر رو خودش از context/CLAUDE.md/package.json تشخیص می‌ده. هیچ‌وقت git commit نمی‌زنه — فقط دستور آماده برای copy-paste در Terminal می‌ده.
 
@@ -84,7 +84,7 @@
 
 **نکته مهم:** هیچ‌وقت از sandbox git write نمی‌زنه — فقط `git status` می‌خونه
 
-**جایگزین:** این skill جایگزین `wf-commit-dn` شده — برای DN هم همین skill رو استفاده کن
+**جایگزین:** این skill جایگزین `wf-commit-dn` و `wf-commit-project` شده — برای DN هم همین skill رو استفاده کن
 
 ---
 
