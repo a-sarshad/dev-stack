@@ -1,5 +1,5 @@
 # Chakra UI v3 — Known Bugs & Gotchas
-> updated: 2026-06-15
+> updated: 2026-07-12
 > این فایل در حین کار با پروژه‌های واقعی update می‌شه
 
 ---
@@ -47,6 +47,37 @@ import { useColorMode } from '@chakra-ui/react'
 // ✅ از custom context استفاده کن
 import { useColorMode } from '@/contexts/ColorModeContext'
 ```
+
+### PinInput — native `autoFocus` on `Input` races with Next.js hydration
+```tsx
+// ❌ native HTML autofocus fires before React attaches listeners (SSR/hydration race)
+// → zag-js machine never receives INPUT.FOCUS → stays in "idle" state
+// → typing fires INPUT.CHANGE which "idle" state doesn't handle → only box 0 ever fills,
+//   rest never advance. Manual blur+refocus "fixes" it because that focus event fires
+//   post-hydration and is properly captured.
+<PinInput.Input index={0} autoFocus />
+
+// ✅ pass autoFocus at Root level — it's a machine prop (see pin-input.props.js),
+// applied via queueMicrotask after mount, so React's onFocus is already attached
+<PinInput.Root autoFocus otp dir="ltr">
+  <PinInput.Input index={0} />
+```
+> سابقه: Vitrina OtpForm.tsx (۱۴۰۴) — فقط روی page load اول رخ می‌ده، نه بعد از هر refocus دستی.
+
+### PinInput — `type="numeric"` ارقام فارسی رو رد می‌کنه
+```tsx
+// ❌ zag-js REGEX.numeric = /^[0-9]+$/ — فقط ASCII؛ کاراکتر فارسی (۰-۹) رو
+// event.preventDefault() می‌کنه، هیچ رقمی وارد نمی‌شه (نه فقط "نمایش اشتباه" — کامل reject)
+<PinInput.Root otp type="numeric">
+
+// ✅ pattern رو دستی باز کن تا هر دو رنج رو قبول کنه، بعد در onValueChange نرمالایز کن
+<PinInput.Root
+  otp
+  pattern="^[0-9۰-۹]+$"
+  onValueChange={(e) => setValue(e.value.map(toLatinDigits))}
+>
+```
+> سابقه: Vitrina OtpForm.tsx (۱۴۰۴) — کاربردی برای هر پروژهٔ فارسی/RTL که کیبورد فارسی می‌فرسته.
 
 ### Avatar.Root / Complex Components — asChild ref issue
 ```tsx
