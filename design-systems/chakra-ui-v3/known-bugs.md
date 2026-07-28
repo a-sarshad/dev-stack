@@ -1,5 +1,5 @@
 # Chakra UI v3 — Known Bugs & Gotchas
-> updated: 2026-07-12
+> updated: 2026-07-28
 > این فایل در حین کار با پروژه‌های واقعی update می‌شه
 
 ---
@@ -101,6 +101,42 @@ import { useColorMode } from '@/contexts/ColorModeContext'
 ```
 > نسخه: `@chakra-ui/react@3.35.0`. `animated` variant هم همین ریسک رو داره چون از همون `--stripe-size` استفاده می‌کنه — تست نشده، ولی احتیاط کن.
 > سابقه: Vitrina SignupPreparingView.tsx (۱۴۰۴).
+
+### Steps `orientation` as responsive object — variant CSS از هم leak می‌کنه، خط اتصال محو می‌شه
+```tsx
+// ❌ orientation یه recipe variant prop هست، نه یه style prop معمولی — دو واریانتش
+// symmetric نیستن (horizontal روی position/top/insetStart که vertical ست کرده چیزی
+// override نمی‌کنه). با responsive object، توی breakpoint بالا فقط چیزهایی که
+// horizontal صریح تعریف کرده override می‌شن؛ position:absolute/top/insetStart از
+// vertical (که روی base بدون media query نشسته) لو می‌ره و باقی می‌مونه.
+<Steps.Root orientation={{ base: 'vertical', lg: 'horizontal' }}>
+// نتیجه: data-orientation روی DOM می‌شه رشتهٔ لفظی "[object Object]" (چون machine
+// داخلی Ark UI انتظار string داره نه object) + جداکنندهٔ بین step‌ها با
+// position:absolute (leaked) عملاً نامرئی/بدجا می‌شه، حتی در breakpoint هورایزنتال.
+
+// ✅ orientation رو با useBreakpointValue به یه string قطعی resolve کن، بعد بده به Root
+const bpOrientation = useBreakpointValue({ base: 'vertical', lg: 'horizontal' } as const) ?? 'horizontal'
+<Steps.Root orientation={bpOrientation}>
+```
+> تأیید شده با computed style: قبل از فیکس در breakpoint هورایزنتال، `position: absolute` +
+> `height: 0px` (leaked از vertical) با وجود `data-orientation="[object Object]"`. بعد از
+> فیکس: `data-orientation="horizontal"`, `position: static`, `height: 2px` (درست).
+> `useBreakpointValue` خودش reactive هست (`useMediaQuery` با `addEventListener('change', ...)`
+> — سورس تأیید شده) پس روی resize واقعی مرورگر کار می‌کنه؛ فقط CDP viewport override بعضی
+> ابزارهای automation ممکنه listener موجود رو trigger نکنه (خود `matchMedia()` تازه درست
+> جواب می‌ده، پس این محدودیت تست‌ابزاره نه باگ hook).
+> سابقه: Vitrina `DomainCard.tsx` (۱۴۰۴) — خط اتصال بین دو step (ثبت نیم‌سرور / اتصال دامنه) نمایش داده نمی‌شد.
+
+**نکتهٔ تکمیلی (همون باگ، فاز دوم):** فیکس بالا `orientation` رو درست می‌کنه، ولی حتی با
+`data-orientation="vertical"` صحیح، خط عمودی می‌تونه هنوز نامرئی بمونه اگه `Steps.Item` ارتفاع
+کافی نداشته باشه. Separator عمودی رسیپی `position:absolute` با
+`maxHeight: calc(100% - steps-size - gutter*2)` هست — این درصد از ارتفاع خودِ Item محاسبه
+می‌شه. اگه Item فقط با محتواش (title/description کوتاه) ارتفاع بگیره (مثلاً ۳۶px)، این calc
+منفی/صفر می‌شه و خط زیر indicator آیتم بعدی گم می‌شه (چون indicatorها عملاً به هم چسبیده‌ان).
+فیکس: `Steps.Item minH="<steps-size + gutter*2 + حداقل طول خط دلخواه>"` بده (برای `size="sm"`:
+32 + 24 + 24 = 80px = token `"20"`). الگوی قدیمی‌تر همین فرمول: `SignupStepper.tsx`
+(`minH="112px"` برای محتوای بزرگ‌تر). این رو با `Steps.Separator minH` قاطی نکن — اون یکی طول
+خودِ خط رو مشخص می‌کنه، این یکی فضایی که خط توش جا بشه.
 
 ### Avatar.Root / Complex Components — asChild ref issue
 ```tsx
