@@ -1,5 +1,5 @@
 # Chakra UI v3 — Known Bugs & Gotchas
-> updated: 2026-07-28
+> updated: 2026-08-01
 > این فایل در حین کار با پروژه‌های واقعی update می‌شه
 
 ---
@@ -137,6 +137,37 @@ const bpOrientation = useBreakpointValue({ base: 'vertical', lg: 'horizontal' } 
 32 + 24 + 24 = 80px = token `"20"`). الگوی قدیمی‌تر همین فرمول: `SignupStepper.tsx`
 (`minH="112px"` برای محتوای بزرگ‌تر). این رو با `Steps.Separator minH` قاطی نکن — اون یکی طول
 خودِ خط رو مشخص می‌کنه، این یکی فضایی که خط توش جا بشه.
+
+### RadioGroup/RadioCard.Root — `value={x ?? undefined}` نمی‌تونه انتخاب رو پاک کنه
+```tsx
+// ❌ zag-js RadioGroupProps.value نوعش `string | null | undefined`ه، ولی undefined یعنی
+// «uncontrolled» — یه بار که machine مقدار گرفت، پاس دادن undefined بعدی نادیده گرفته
+// می‌شه و انتخاب قبلی (internal state) دست‌نخورده می‌مونه، حتی وقتی state بیرونی null شده.
+<RadioCard.Root value={selectedId ?? undefined} onValueChange={...}>
+
+// ✅ null رو صریح پاس بده — این controlled می‌مونه و واقعاً پاک می‌کنه
+<RadioCard.Root value={selectedId} onValueChange={...}>  // selectedId: string | null
+```
+> علامتِ باگ: یه دکمهٔ «حذف انتخاب» بیرونی `state=null` می‌کنه ولی کارت هنوز visually
+> checked می‌مونه؛ یا سوییچ‌کردن بین دو گروه radio مرتبط (mutually exclusive) که یکی باید
+> دیگری رو پاک کنه، پاک نمی‌شه. هم‌خانوادهٔ باگِ `Combobox controlled inputValue` بالاتر در
+> همین فایل — الگوی کلی: مقدار «خالی» رو با `null`/مقدارِ معنادار پاس بده، نه `undefined`.
+> سابقه: Vitrina `DiscountSelectPanel.tsx` (۱۴۰۴) — «حذف تخفیف» لیست رو دیزلکت نمی‌کرد.
+
+### `direction` prop — فقط روی `Flex`/`Stack` کار می‌کنه، نه کامپوننت‌های recipe-slot دیگه
+```tsx
+// ❌ `direction` رو Flex/Stack به‌صورت ویژه به flexDirection ترجمه می‌کنن؛ کامپوننت‌های
+// دیگه (RadioCard.ItemControl, Grid, هر chakra() factory عمومی) این ترجمهٔ ویژه رو ندارن —
+// prop بی‌صدا drop می‌شه (نه warning، نه error) و رسیپیِ پیش‌فرض (معمولاً flex-direction:row) می‌مونه.
+<RadioCard.ItemControl direction={{ base: 'column', sm: 'row' }}>  // بی‌اثر!
+
+// ✅ همیشه از shorthand عمومیِ style-system استفاده کن
+<RadioCard.ItemControl flexDirection={{ base: 'column', sm: 'row' }}>
+```
+> تشخیص داده شد با inspect مستقیمِ computed CSS در preview: خروجی media query برای
+> `direction` کاملاً خالی بود، در حالی که سایر پراپ‌ها (`gap`, `p`, `justifyContent`) درست
+> اعمال می‌شدن. قانون: روی هر کامپوننتی جز `Flex`/`Stack`، `flexDirection` بنویس نه `direction`.
+> سابقه: Vitrina `DiscountSelectPanel.tsx` (۱۴۰۴) — چیدمان موبایل کارت تخفیف ستونی نمی‌شد.
 
 ### Avatar.Root / Complex Components — asChild ref issue
 ```tsx
