@@ -9,7 +9,8 @@ import { printResult, printJSON } from './reporter.js'
 import { runInit } from './init.js'
 import { runDoctor } from './doctor.js'
 import { runFigmaSync } from './figma-sync.js'
-import { runLayoutSync } from './layout-sync.js'
+import { runLayoutSync, runLayoutSet } from './layout-sync.js'
+import { runVerifyRender, printRenderSnippet } from './verify-render.js'
 import { loadMergedResolve, resolveName } from './cache.js'
 import type { RunOptions } from './types.js'
 
@@ -151,12 +152,40 @@ program
 // ── Layout-sync — validate/scaffold figma-layout.json (per-component design facts) ──
 program
   .command('layout-sync [path]')
-  .description('وضعیت/scaffold cache figma-layout.json برای ماژول layout-diff (population: MCP توسط Claude)')
+  .description('وضعیت/scaffold/نوشتن cache figma-layout.json برای ماژول layout-diff')
   .option('--config <path>', 'explicit path to .dev-engine.json')
   .option('--init', 'یه template خالی figma-layout.json در .claude/context/ بساز', false)
-  .action((path: string | undefined, opts: { config?: string; init: boolean }) => {
+  .option('--set <component>', 'نوشتن snapshot یک کامپوننت (با --data)')
+  .option('--data <json>', 'بدنه‌ی JSON اسنپ‌شات — با --set استفاده می‌شه')
+  .action((path: string | undefined, opts: { config?: string; init: boolean; set?: string; data?: string }) => {
     const projectRoot = resolve(process.cwd(), path ?? '.')
+    if (opts.set) {
+      if (!opts.data) {
+        console.error('--set نیاز به --data \'{"textAlign":"start"}\' داره')
+        process.exit(1)
+      }
+      process.exit(runLayoutSet(projectRoot, opts.set, opts.data) ? 0 : 1)
+    }
     runLayoutSync(projectRoot, { init: opts.init })
+  })
+
+// ── Verify-render — diff بین DOM رندرشده و طرح فیگما (BLUEPRINT §7) ────────────
+program
+  .command('verify-render [path]')
+  .description('geometry واقعیِ DOM (دامپ‌شده از preview) رو عددی با figma-layout.json مقایسه می‌کنه')
+  .option('--config <path>', 'explicit path to .dev-engine.json')
+  .option('--input <file>', 'فایل دامپ رندر (پیش‌فرض: .claude/context/render-snapshot.json)')
+  .option('--snippet', 'اسنیپت JS رو چاپ کن تا در preview اجرا کنی', false)
+  .option('--json', 'output as JSON', false)
+  .action((path: string | undefined, opts: { config?: string; input?: string; snippet: boolean; json: boolean }) => {
+    if (opts.snippet) {
+      printRenderSnippet()
+      return
+    }
+    const projectRoot = resolve(process.cwd(), path ?? '.')
+    const config = loadConfig(projectRoot, opts.config)
+    const ok = runVerifyRender(projectRoot, config, { input: opts.input, json: opts.json })
+    process.exit(ok ? 0 : 1)
   })
 
 program.parse()

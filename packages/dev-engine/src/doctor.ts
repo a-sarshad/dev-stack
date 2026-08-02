@@ -3,6 +3,7 @@ import { resolve } from 'path'
 import chalk from 'chalk'
 import type { ProjectConfig } from './types.js'
 import { loadMergedResolve, cacheAgeDays } from './cache.js'
+import { loadLayoutSnapshots } from './layout-cache.js'
 import { findDevKnowledge, dsPackage } from './paths.js'
 
 const STALE_DAYS = 7
@@ -58,6 +59,19 @@ export function runDoctor(projectRoot: string, config: ProjectConfig): boolean {
     const stale = age > STALE_DAYS
     checks.push({ label: 'cache freshness', ok: !stale, warn: stale, detail: `${age}d old${stale ? ' — re-sync لازمه' : ''}` })
   }
+
+  // 7. پوشش layout snapshot (warn) — بدون این، ماژول layout-diff بی‌صدا no-op می‌شه
+  //    و preflight «سبز» می‌ده در حالی که هیچ تطابقی با طرح چک نمی‌شه.
+  const snapshots = loadLayoutSnapshots(projectRoot)
+  const tracked = Object.keys(snapshots).length
+  checks.push({
+    label: 'layout snapshots',
+    ok: tracked > 0,
+    warn: tracked === 0,
+    detail: tracked > 0
+      ? `${tracked} component(s) — layout-diff فعاله`
+      : 'خالی — layout-diff هیچی چک نمی‌کنه. dev-implement STEP 2 یا: dev-engine layout-sync --set',
+  })
 
   // print
   console.log(chalk.bold(`\n🩺 dev-engine doctor — ${projectRoot}\n`))

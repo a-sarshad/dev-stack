@@ -2,20 +2,19 @@
 > آخرین آپدیت: 2026-08-02
 
 ## الان
-فیچر `layout-diff` (+ `layout-sync` command) به `dev-engine` اضافه شد — uncommitted روی `main`، در حال commit شدن همین الان:
-- `packages/dev-engine/src/layout-cache.ts` (جدید) — read/write `<project>/.claude/context/figma-layout.json`، تک‌لایه (Local only، per-instance).
-- `packages/dev-engine/src/layout-sync.ts` (جدید) — CLI command `layout-sync [path] [--init]`: status یا scaffold فایل خالی.
-- `packages/dev-engine/src/modules/layout-diff.ts` (جدید) — ماژول چک: `child-order-mismatch`، `text-align-mismatch` (auto-fixable)، `icon-side-mismatch`. اگه snapshot برای یه کامپوننت نباشه، صفر violation (false-positive نمی‌زنه).
-- `cli.ts`/`engine.ts`/`types.ts`/`modules/dom-order.ts` — سیم‌کشی command جدید + type `LayoutSnapshot`/`LayoutSnapshotCache` + ثبت ماژول در `getModules`.
-- **واقعاً end-to-end تست شد** (نه فقط unit) — روی پروژه Vitrina: `layout-sync --init` زده شد، snapshot دستی برای دو کامپوننت نوشته شد، و با یه decoy file تأیید شد که `child-order-mismatch` واقعاً detect می‌شه.
+Audit کامل روی `dev-engine` (لایه‌ی تطابق کد ↔ طرح فیگما) — uncommitted روی `main`:
 
-## نکتهٔ مهم کشف‌شده (حل نشده، فعلاً فقط مستند)
-باینری `dev-engine` **global لینک نیست** — دستور خام `dev-engine` در PATH نیست، باید با `node dist/cli.js` صداش زد.
-**gotcha جدی‌تر:** آرگومان `path` هم‌زمان هم root اسکن فایل‌هاست هم root حل‌کردن `.dev-engine.json`/`.claude/context/*`. اگه یه subdirectory بدی (نه repo root)، cacheها silently پیدا نمی‌شن و ماژول‌هایی مثل `layout-diff` بی‌صدا «۰ issue» می‌دن — یعنی «هیچی چک نشد»، نه «تمیزه». باید همیشه از repo root (`path="."`) اجرا بشه. این تو Vitrina کشف شد؛ در `packages/dev-engine` هیچ‌جا مستند نشده بود.
+- **`src/direction.ts` (جدید)** — تک‌منبع نگاشت جهت (فیزیکی↔semantic). باگ ریشه‌ای فیکس شد: `normalizeAlign` قبلاً جهت‌کور بود (`right`→`end` بدون توجه به RTL) که در پروژه‌ی RTL کل قضاوت `textAlign` رو معکوس می‌کرد — هم false-negative (کد غلط تمیز)، هم false-positive (کد درست error، با auto-fix ای که متن رو غلط جابه‌جا می‌کرد).
+- **`src/modules/layout-diff.ts` (بازنویسی)** — سه باگ دیگه فیکس شد: کامپوننت با ریشه‌ی Fragment (`<>`) کاملاً نامرئی بود؛ فقط دکمه‌ی اول هر فایل چک می‌شد (نه همه‌ی دکمه‌ها)؛ چک‌ها روی کل فایل اسکن می‌شدن نه بازه‌ی خود کامپوننت. + دو چک جدید: `justify`/`align` mismatch و `icon-color` mismatch.
+- **`src/verify-render.ts` (جدید)** — لایه‌ای که وجود نداشت: diff عددی بین geometry واقعیِ DOM رندرشده (دامپ از preview) و طرح. `layout-diff` فقط متن کد رو می‌خونه؛ این لایه چیزهایی مثل «`justify` زیر `dir=rtl` واقعاً کجا نشست» رو قطعی می‌گیره. subcommand `verify-render [--snippet]`.
+- **`src/layout-sync.ts`** — نوشتن snapshot دستی JSON بود؛ الان `layout-sync --set <name> --data '<json>'` با اعتبارسنجی (`validateSnapshot`) اضافه شد — مقدار فیزیکی (`right`) یا رنگ خام (`#hex`) رد می‌شه.
+- **`src/doctor.ts`** — چک جدید: پوشش layout snapshot (۰ یعنی `layout-diff` no-op است، ولی قبلاً preflight همچنان سبز بود).
+- **`src/types.ts`** — فیلدهای `justify`/`align`/`iconColor` به `LayoutSnapshot` + type های `RenderedSnapshot`/`RenderedChild` برای verify-render.
+- همه با harness ایزوله (نه Vitrina) تست شد — هر باگ قبل/بعد از فیکس reproduce شد.
+
+## نکته‌ی حل‌شده از قبل
+باینری `dev-engine` global لینک شد (`npm link` از این پکیج) — دیگه نیازی به `node dist/cli.js` نیست. مستند شد در `dev-knowledge/universal/dev-engine.md`.
 
 ## بعدی
-یکی از این دو (کاربر هنوز تصمیم نگرفته):
-1. `dev-engine` رو global لینک کنیم (`pnpm link` یا `npm i -g`) تا دستور خام کار کنه.
-2. یا حداقل `cli.ts` رو طوری فیکس کنیم که `path` فقط scan-root باشه و config/cache همیشه از نزدیک‌ترین `.dev-engine.json` بالادستی resolve بشه (مستقل از `path` آرگومان) — ریشهٔ واقعی باگ.
-
-فعلاً فقط در `README.md`/مستندات dev-knowledge (`universal/dev-engine.md`) این gotcha جایی مستند نشده — باید اضافه بشه (جدا از این repo).
+- دو اسکیل (`dev-engine`, `dev-implement` در dev-knowledge) با نردبان resolve باینری + قانون «هیچ‌وقت بی‌صدا skip نکن» هاردن شدن — commit موازی در `dev-knowledge`.
+- تصمیم باز: آیا `verify-render` باید در `dev-implement` STEP 4 اجباری بشه یا اختیاری بمونه؟ فعلاً اختیاری (Tier 2، وقتی justify/align/رنگ در snapshot باشه).

@@ -86,8 +86,14 @@ export interface MergedResolve extends FigmaResolveCache {
 // ── Figma layout snapshot cache (layout-diff module) ──────────────────────────
 // per-component snapshot از facts واقعی طرح فیگما (نه rule عمومی) — برای مقایسه
 // با کد پیاده‌شده. population: MCP (Claude موقع STEP 2 dev-implement می‌نویسه).
+// ⚠️ قرارداد کل این interface: هر مقدار جهت‌دار **semantic** است، نه فیزیکی.
+//    start = سمت شروعِ خواندن (RTL: راست · LTR: چپ)
+//    end   = سمت پایانِ خواندن (RTL: چپ  · LTR: راست)
+// canvas فیگما همیشه LTR رندر می‌شه، پس مقدار خام فیگما (RIGHT/LEFT) را باید
+// اول نسبت به direction پروژه به start/end ترجمه کرد، بعد اینجا نوشت.
 export interface LayoutSnapshot {
-  // ترتیب واقعی فرزندهای مستقیم root element (اسم tag/component)، به همون ترتیبی که تو فیگما دیده می‌شه
+  // ترتیب واقعی فرزندهای مستقیم root element (اسم tag/component)، به ترتیب visual طراحی —
+  // در RTL یعنی از راست به چپ (چون first-in-DOM = rightmost)
   childOrder?: string[]
   // جهت auto-layout فیگما برای root
   layoutMode?: 'HORIZONTAL' | 'VERTICAL' | 'NONE'
@@ -95,8 +101,37 @@ export interface LayoutSnapshot {
   iconSide?: 'start' | 'end'
   // چیدمان متن، به‌صورت semantic (نه چپ/راست خام)
   textAlign?: 'start' | 'end' | 'center'
+  // چیدمان محور اصلی (justify-content) — semantic
+  justify?: 'start' | 'end' | 'center' | 'between' | 'around' | 'evenly'
+  // چیدمان محور عرضی (align-items) — semantic
+  align?: 'start' | 'end' | 'center' | 'stretch' | 'baseline'
+  // توکن رنگ آیکون که طرح می‌گه — مثلاً "fg.muted" یا "brand.solid" (نه hex خام)
+  iconColor?: string
   _synced?: string   // ISO date
   _source?: 'mcp' | 'rest' | 'manual'
+}
+
+// ── Rendered geometry snapshot (ماژول verify-render) ──────────────────────────
+// از DOM واقعیِ preview دامپ می‌شه (getBoundingClientRect + getComputedStyle) و با
+// LayoutSnapshot مقایسه می‌شه. این تنها لایه‌ایه که چیزهایی مثل «justify زیر dir=rtl
+// برعکس resolve شد» رو قطعی می‌گیره، چون عدد اندازه‌گیری‌شده‌ست نه متن کد.
+export interface RenderedChild {
+  tag: string
+  x: number        // left نسبت به viewport (فیزیکی)
+  width: number
+}
+
+export interface RenderedSnapshot {
+  children?: RenderedChild[]
+  textAlign?: string    // computed style خام: left/right/center/start/end
+  iconColor?: string    // computed color خام: rgb(...)
+  x?: number
+  width?: number
+}
+
+export interface RenderedSnapshotFile {
+  _meta?: { dir?: 'rtl' | 'ltr'; viewport?: number; capturedAt?: string }
+  [componentName: string]: RenderedSnapshot | RenderedSnapshotFile['_meta'] | undefined
 }
 
 export type LayoutSnapshotCache = Record<string, LayoutSnapshot>   // key: component name
