@@ -15,6 +15,7 @@ import { debugArtifactsModule } from './modules/debug-artifacts.js'
 import { createTokenReplacerModule } from './modules/token-replacer.js'
 import { runBuildCheck, runGitCheck, runHandoffCheck } from './modules/build-git-check.js'
 import { dsComponentUsageModule } from './modules/ds-component-usage.js'
+import { createLayoutDiffModule } from './modules/layout-diff.js'
 
 const BASE_MODULES: CheckModule[] = [
   cssLogicalPropsModule,
@@ -27,7 +28,11 @@ const BASE_MODULES: CheckModule[] = [
 ]
 
 function getModules(projectRoot: string, config: ProjectConfig, selectedIds?: string[]): CheckModule[] {
-  const ALL_MODULES = [...BASE_MODULES, createTokenReplacerModule(projectRoot)]
+  const ALL_MODULES = [
+    ...BASE_MODULES,
+    createTokenReplacerModule(projectRoot),
+    createLayoutDiffModule(projectRoot),
+  ]
   return ALL_MODULES.filter(m => {
     if (selectedIds && !selectedIds.includes(m.id)) return false
     if (m.supportedDS && config.ds !== 'generic' && !m.supportedDS.includes(config.ds)) return false

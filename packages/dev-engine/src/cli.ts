@@ -9,6 +9,7 @@ import { printResult, printJSON } from './reporter.js'
 import { runInit } from './init.js'
 import { runDoctor } from './doctor.js'
 import { runFigmaSync } from './figma-sync.js'
+import { runLayoutSync } from './layout-sync.js'
 import { loadMergedResolve, resolveName } from './cache.js'
 import type { RunOptions } from './types.js'
 
@@ -145,6 +146,17 @@ program
     const projectRoot = resolve(process.cwd(), path ?? '.')
     const config = loadConfig(projectRoot, opts.config)
     runFigmaSync(projectRoot, config, { init: opts.init, scan: opts.scan })
+  })
+
+// ── Layout-sync — validate/scaffold figma-layout.json (per-component design facts) ──
+program
+  .command('layout-sync [path]')
+  .description('وضعیت/scaffold cache figma-layout.json برای ماژول layout-diff (population: MCP توسط Claude)')
+  .option('--config <path>', 'explicit path to .dev-engine.json')
+  .option('--init', 'یه template خالی figma-layout.json در .claude/context/ بساز', false)
+  .action((path: string | undefined, opts: { config?: string; init: boolean }) => {
+    const projectRoot = resolve(process.cwd(), path ?? '.')
+    runLayoutSync(projectRoot, { init: opts.init })
   })
 
 program.parse()

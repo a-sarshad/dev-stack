@@ -82,3 +82,21 @@ export interface FigmaResolveCache {
 export interface MergedResolve extends FigmaResolveCache {
   _layers: { ds: boolean; local: boolean }   // کدوم لایه‌ها contribute کردن
 }
+
+// ── Figma layout snapshot cache (layout-diff module) ──────────────────────────
+// per-component snapshot از facts واقعی طرح فیگما (نه rule عمومی) — برای مقایسه
+// با کد پیاده‌شده. population: MCP (Claude موقع STEP 2 dev-implement می‌نویسه).
+export interface LayoutSnapshot {
+  // ترتیب واقعی فرزندهای مستقیم root element (اسم tag/component)، به همون ترتیبی که تو فیگما دیده می‌شه
+  childOrder?: string[]
+  // جهت auto-layout فیگما برای root
+  layoutMode?: 'HORIZONTAL' | 'VERTICAL' | 'NONE'
+  // سمت آیکون نسبت به متن، جهت‌آگاه (start = اول در DOM، مستقل از RTL/LTR)
+  iconSide?: 'start' | 'end'
+  // چیدمان متن، به‌صورت semantic (نه چپ/راست خام)
+  textAlign?: 'start' | 'end' | 'center'
+  _synced?: string   // ISO date
+  _source?: 'mcp' | 'rest' | 'manual'
+}
+
+export type LayoutSnapshotCache = Record<string, LayoutSnapshot>   // key: component name

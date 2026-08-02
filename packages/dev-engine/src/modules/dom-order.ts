@@ -3,7 +3,7 @@ import type { CheckModule, ProjectConfig, Violation } from '../types.js'
 // Find every <Button …>…</Button> block via a brace/quote-aware scan of the opening tag,
 // so arrow fns (onClick={() => …}) and multi-line props don't break detection.
 // Returns the children (inner) of each non-self-closing Button plus its start offset.
-function findButtonBlocks(content: string): { inner: string; index: number }[] {
+export function findButtonBlocks(content: string): { inner: string; index: number }[] {
   const out: { inner: string; index: number }[] = []
   let idx = 0
   while ((idx = content.indexOf('<Button', idx)) !== -1) {
