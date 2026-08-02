@@ -27,6 +27,7 @@
 | [dev-engine](#dev-engine) | dev | اجرای dev-engine — بررسی و auto-fix کد (شامل token/hardcode) |
 | vitrina-project-context | context | thin loader — context ویترینا از repo پروژه |
 | airport-project-context | context | thin loader — context Airport از repo پروژه |
+| [figma-mcp-reconnect](#figma-mcp-reconnect) | figma | وقتی اتصال Figma MCP قطع شده — reconnect خودکار با computer-use |
 
 > **Figma → code:** skill جدا توی این repo نیست. از skill رسمی `figma-implement-design` استفاده کن. قانون اجباری (Component Resolution / DS MCP / DoD) در **CLAUDE.md هر پروژه** هست (always-on). جزئیات: بخش [Figma → Code](#figma--code) پایین.
 
@@ -147,6 +148,27 @@
 | اتصال کد ↔ Figma | `figma-code-connect` |
 
 **اصل:** قانونِ «نباید فراموش شه» → CLAUDE.md پروژه (always-on). skill = شتاب، نه منبع قانون.
+
+---
+
+## Figma — نگهداری اتصال
+
+### figma-mcp-reconnect
+
+**فایل:** `figma-mcp-reconnect.skill`
+
+**کاربرد:** وقتی اتصال Figma MCP قطع شده (وضعیت «needs authentication» یا خطای auth روی هر Figma tool)، این skill مراحل کلیک‌کردن در تنظیمات Claude Desktop رو با computer-use خودکار می‌کنه تا فرآیند reconnect شروع بشه. اگه صفحه‌ی OAuth فرم لاگین (ایمیل/پسورد) نشون بده، **هیچ‌وقت credential وارد نمی‌کنه** — متوقف می‌شه و از کاربر می‌خواد خودش لاگین کنه.
+
+**چه موقع فعال می‌شه:**
+- «figma رو reconnect کن» / «figma قطع شده» / «دوباره به figma وصل شو»
+- «figma mcp رو وصل کن»
+- خودکار وقتی هر فراخوانی ابزار Figma با خطای auth/not-connected مواجه بشه
+
+**خروجی:** وضعیت اتصال (وصل شد / نشد و چرا) — بعد از ۲-۳ تلاش ناموفق، مراحل دستی رو به کاربر می‌گه (Settings → Connectors → Figma → Reconnect) به جای تلاش بی‌پایان
+
+**وابستگی:** دسترسی computer-use برای اپ Claude + ابزارهای `mcp__claude-in-chrome__*` برای مرحله OAuth مرورگر
+
+**محدودیت شناخته‌شده:** قطع‌شدن مکرر اتصال Figma MCP یه مشکل token persistence سمت پلتفرمه، نه چیزی که این skill ریشه‌ای حلش کنه — فقط فرآیند reconnect رو سریع‌تر می‌کنه.
 
 ---
 

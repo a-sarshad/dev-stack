@@ -104,6 +104,11 @@ Claude: [loads vitrina-project-context skill] → [reads Vitrina/.claude/context
 > **مهم:** قانون اجباری Figma→code (Component Resolution / DS MCP / DoD) در **CLAUDE.md هر پروژه** زندگی میکنه (always-on)، نه در skill. skill فقط شتاب‌دهنده‌ست. مرجع عمیق: `universal/figma-to-code.md`.
 > skill قدیمی `figma-page-implement` بازنشسته شد — محتوای اجباریش در `figma-to-code.md` + gate پروژه‌ها ادغام شد.
 
+### Figma — نگهداری اتصال (فایل local در `skills/`، نه پلاگین رسمی)
+| Skill | کاربرد |
+|-------|---------|
+| `figma-mcp-reconnect` | وقتی اتصال Figma MCP قطع شده/نیاز به authenticate مجدد داره، با computer-use مراحل reconnect در تنظیمات Claude Desktop رو خودکار می‌کنه. هرگز credential وارد نمی‌کنه — اگه فرم لاگین دید متوقف می‌شه |
+
 ### project context (نصب‌شده)
 | Skill | کاربرد |
 |-------|---------|

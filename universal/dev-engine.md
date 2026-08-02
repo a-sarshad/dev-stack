@@ -43,10 +43,37 @@ npm i -g dev-engine
 
 ---
 
+## ⚠️ اجرای صحیح — `path` هم scan-root است هم config/cache-root
+
+آرگومان `path` که به `dev-engine` می‌دی، هم‌زمان **هم** root اسکن فایل‌هاست **هم** root حل‌کردن
+`.dev-engine.json` و کل `.claude/context/*` (`figma-resolve.json`, `figma-layout.json`, ...).
+اگه یه subdirectory بدی (نه repo root) — مثلاً `dev-engine ./src/components/foo` — این cacheها
+silently پیدا نمی‌شن (چون دنبالشون تو `./src/components/foo/.claude/context/...` می‌گرده) و
+ماژول‌هایی مثل `layout-diff` بدون هیچ خطایی «۰ issue» گزارش می‌دن. این یعنی «هیچی چک نشد»، نه
+«چک شد و تمیز بود» — یه false-negative بی‌صدا.
+
+**همیشه از repo root اجرا کن، حتی برای چک یه subfolder خاص:**
+```bash
+cd <repo-root>
+dev-engine .              # نه dev-engine ./src/components/foo
+```
+
+اگه `dev-engine` global لینک نشده (دستور خام «command not found» می‌ده)، باینری build‌شده رو
+مستقیم با `node` صدا بزن:
+```bash
+node ~/Documents/GitHub/Tools/dev-agents/packages/dev-engine/dist/cli.js .
+```
+
+سابقه: 1404 — پروژه Vitrina، یه session کامل `dev-engine src/components/marketing --fix` زد و
+«۰ issue» گرفت؛ بعداً با `node cli.js . --module layout-diff --report-only` از repo root معلوم
+شد که cache اصلاً لود نشده بود. با یه decoy file تأیید شد که از root واقعاً mismatch رو می‌گیره.
+
+---
+
 ## دستورات Terminal
 
 ```bash
-# بررسی کامل src/
+# بررسی کامل src/ — از repo root اجرا کن (بالا رو بخون)
 dev-engine ./src
 
 # فقط فایل‌های تغییرکرده (git diff HEAD)
@@ -98,6 +125,10 @@ dev-engine resolve Button --json
 dev-engine figma-sync ./           # وضعیت DS + Local + شمارش merge
 dev-engine figma-sync ./ --scan    # auto-populate لایه Local از scan src/components
 dev-engine figma-sync ./ --init    # template خالی در .claude/context/
+
+# figma-layout cache (facts واقعی layout هر component — برای ماژول layout-diff)
+dev-engine layout-sync ./          # وضعیت cache + سن هر component
+dev-engine layout-sync ./ --init   # template خالی در .claude/context/figma-layout.json
 ```
 
 **cache دو-لایه:**
@@ -107,6 +138,8 @@ dev-engine figma-sync ./ --init    # template خالی در .claude/context/
 - `resolve` و scan صفر MCP مصرف می‌کنن — همه local
 
 **`.dev-engine.json` فیلدهای Figma:** `figma_source` (mcp|rest)، `figma_file_key`، `ds_mcp`، `import_alias` (پیش‌فرض `@/`)، `dev_knowledge_path` (override).
+
+**figma-layout cache — فرق با figma-resolve:** فقط **Local** (تک‌لایه، `<project>/.claude/context/figma-layout.json`) — چون per-instance و مخصوص همون طرحه، نه چیزی که بین پروژه‌ها shared بشه (بر خلاف figma-resolve که DS+Local داره). population: STEP 2 در `dev-implement` (Claude موقع `get_design_context` می‌نویسه)، نه REST/scan.
 
 ---
 
@@ -138,6 +171,7 @@ alias den-ci='dev-engine ./src --json --exit-zero'
 | `token-replacer` | hardcode → token: hex رنگ + spacing (`padding="16px"` و shorthand چاکرا `p/m/mt/...`) + fontSize/fontWeight/borderRadius · + `raw-palette-on-theme-prop`: palette خام روی bg/border/fg (`teal.50`) → semantic (`brand.bg`) چون dark نمی‌شکنه | همه |
 | `persian-numerals` | اعداد لاتین در رشته فارسی + display number بدون locale (comment/scale-prop رو نادیده) | fa-IR |
 | `icon-direction` | آیکون‌های جهت‌دار (arrow) در RTL | RTL |
+| `layout-diff` | مقایسه‌ی instance-specific کد با facts واقعی طرح فیگما (از `.claude/context/figma-layout.json`): ترتیب فرزند (`child-order-mismatch`)، سمت آیکون (`icon-side-mismatch`)، textAlign (`text-align-mismatch`، auto-fix). rule عمومی نیست — اگه snapshot نباشه، صفر violation | همه |
 | `build-git` | ۳ چک project-level (نه per-file): **①** `pnpm type-check` / build failure — **②** uncommitted files + unpushed commits — **③** HANDOFF.md staleness (N commits behind) | همه |
 
 ---
