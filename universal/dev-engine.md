@@ -7,13 +7,24 @@
 ## نصب
 
 ```bash
-# از dev-agents build شده (یه بار)
+# build + لینک گلوبال (یه بار — بعدش `dev-engine` مستقیم در PATH هست)
 cd ~/Documents/GitHub/Tools/dev-agents/packages/dev-engine
-pnpm build
+npm run build && npm link
 
-# یا اگه publish شد
-npm i -g dev-engine
+# تست
+command -v dev-engine && dev-engine --version
 ```
+
+> **این پکیج روی npm منتشر نشده** — `npm i -g dev-engine` چیز دیگه‌ای نصب می‌کنه.
+> تنها راه درست `npm link` از همین پوشه‌ست.
+>
+> اگه `command -v dev-engine` چیزی برنگردوند، **متوقف نشو و کار رو skip نکن** —
+> یا `npm link` بالا رو بزن، یا مستقیم باینری build‌شده رو صدا کن:
+> ```bash
+> node ~/Documents/GitHub/Tools/dev-agents/packages/dev-engine/dist/cli.js <args>
+> ```
+> سابقه: 1404 — چون اسکیل‌ها `command -v dev-engine` می‌زدن و «نصب نیست → stop»
+> می‌گفتن، یه session کامل بدون هیچ چکی کد زد و بعداً معلوم شد pipeline اصلاً اجرا نشده.
 
 ---
 
@@ -47,7 +58,7 @@ npm i -g dev-engine
 
 آرگومان `path` که به `dev-engine` می‌دی، هم‌زمان **هم** root اسکن فایل‌هاست **هم** root حل‌کردن
 `.dev-engine.json` و کل `.claude/context/*` (`figma-resolve.json`, `figma-layout.json`, ...).
-اگه یه subdirectory بدی (نه repo root) — مثلاً `dev-engine ./src/components/foo` — این cacheها
+اگه یه subdirectory بدی (نه repo root) — مثلاً `dev-engine ./components/foo` — این cacheها
 silently پیدا نمی‌شن (چون دنبالشون تو `./src/components/foo/.claude/context/...` می‌گرده) و
 ماژول‌هایی مثل `layout-diff` بدون هیچ خطایی «۰ issue» گزارش می‌دن. این یعنی «هیچی چک نشد»، نه
 «چک شد و تمیز بود» — یه false-negative بی‌صدا.
@@ -55,7 +66,7 @@ silently پیدا نمی‌شن (چون دنبالشون تو `./src/components/
 **همیشه از repo root اجرا کن، حتی برای چک یه subfolder خاص:**
 ```bash
 cd <repo-root>
-dev-engine .              # نه dev-engine ./src/components/foo
+dev-engine .              # نه dev-engine ./components/foo
 ```
 
 اگه `dev-engine` global لینک نشده (دستور خام «command not found» می‌ده)، باینری build‌شده رو
@@ -74,35 +85,35 @@ node ~/Documents/GitHub/Tools/dev-agents/packages/dev-engine/dist/cli.js .
 
 ```bash
 # بررسی کامل src/ — از repo root اجرا کن (بالا رو بخون)
-dev-engine ./src
+dev-engine .
 
 # فقط فایل‌های تغییرکرده (git diff HEAD)
-dev-engine ./src --changed
+dev-engine . --changed
 
 # auto-fix موارد قابل fix
-dev-engine ./src --fix
+dev-engine . --fix
 
 # فقط changed + fix
-dev-engine ./src --changed --fix
+dev-engine . --changed --fix
 
 # فقط یه module خاص
-dev-engine ./src --module css-logical-props
-dev-engine ./src --module dom-order,chakra-known-bugs
+dev-engine . --module css-logical-props
+dev-engine . --module dom-order,chakra-known-bugs
 
 # فقط گزارش بدون خروجی رنگی (برای CI)
-dev-engine ./src --json
+dev-engine . --json
 
 # CI — report بدون fail کردن pipeline
-dev-engine ./src --json --exit-zero
+dev-engine . --json --exit-zero
 
 # همه فایل‌ها (حتی clean) نمایش بده
-dev-engine ./src --verbose
+dev-engine . --verbose
 
 # config در مسیر دیگه (monorepo)
 dev-engine ./packages/ui/src --config ./packages/ui/.dev-engine.json
 
 # watch — اجرای خودکار روی تغییر فایل
-dev-engine ./src --watch
+dev-engine . --watch
 
 # ساخت .dev-engine.json به صورت interactive
 dev-engine init
@@ -127,9 +138,21 @@ dev-engine figma-sync ./ --scan    # auto-populate لایه Local از scan src/
 dev-engine figma-sync ./ --init    # template خالی در .claude/context/
 
 # figma-layout cache (facts واقعی layout هر component — برای ماژول layout-diff)
-dev-engine layout-sync ./          # وضعیت cache + سن هر component
-dev-engine layout-sync ./ --init   # template خالی در .claude/context/figma-layout.json
+dev-engine layout-sync .           # وضعیت cache + سن هر component (۰ یعنی layout-diff no-op است)
+dev-engine layout-sync . --init    # template خالی در .claude/context/figma-layout.json
+dev-engine layout-sync . --set AdChannelCard \
+  --data '{"textAlign":"start","iconSide":"start","iconColor":"fg.muted"}'   # نوشتن با اعتبارسنجی
+
+# verify-render — diff عددی بین DOM رندرشده و طرح
+dev-engine verify-render --snippet  # اسنیپت JS رو چاپ کن → در کنسول preview اجرا کن
+dev-engine verify-render .          # دامپ رو با figma-layout.json مقایسه کن
 ```
+
+**⚠️ قرارداد semantic برای figma-layout.json:** همه‌ی مقادیر جهت‌دار `start`/`end` ان،
+نه `left`/`right`. در RTL: `start` = راست · `end` = چپ. canvas فیگما **همیشه LTR**
+رندر می‌شه، پس متنی که در فیگما راست‌چین می‌بینی در پروژه‌ی RTL یعنی `start`، نه `end`.
+نگاشت مستقیمِ `textAlignHorizontal: RIGHT` فیگما به `"end"` رایج‌ترین خطاست و کل
+قضاوت رو معکوس می‌کنه — `--set` مقدار فیزیکی رو رد می‌کنه تا جلوش گرفته شه.
 
 **cache دو-لایه:**
 - لایه DS (shared): `dev-knowledge/design-systems/<ds>/figma-resolve.json`
@@ -147,12 +170,12 @@ dev-engine layout-sync ./ --init   # template خالی در .claude/context/figm
 
 ```bash
 # dev-engine shortcuts
-alias den='dev-engine ./src'
-alias denc='dev-engine ./src --changed'
-alias denf='dev-engine ./src --fix'
-alias dencf='dev-engine ./src --changed --fix'
-alias denw='dev-engine ./src --watch'
-alias den-ci='dev-engine ./src --json --exit-zero'
+alias den='dev-engine .'
+alias denc='dev-engine . --changed'
+alias denf='dev-engine . --fix'
+alias dencf='dev-engine . --changed --fix'
+alias denw='dev-engine . --watch'
+alias den-ci='dev-engine . --json --exit-zero'
 ```
 
 بعد از اضافه کردن: `source ~/.zshrc`
@@ -171,7 +194,8 @@ alias den-ci='dev-engine ./src --json --exit-zero'
 | `token-replacer` | hardcode → token: hex رنگ + spacing (`padding="16px"` و shorthand چاکرا `p/m/mt/...`) + fontSize/fontWeight/borderRadius · + `raw-palette-on-theme-prop`: palette خام روی bg/border/fg (`teal.50`) → semantic (`brand.bg`) چون dark نمی‌شکنه | همه |
 | `persian-numerals` | اعداد لاتین در رشته فارسی + display number بدون locale (comment/scale-prop رو نادیده) | fa-IR |
 | `icon-direction` | آیکون‌های جهت‌دار (arrow) در RTL | RTL |
-| `layout-diff` | مقایسه‌ی instance-specific کد با facts واقعی طرح فیگما (از `.claude/context/figma-layout.json`): ترتیب فرزند (`child-order-mismatch`)، سمت آیکون (`icon-side-mismatch`)، textAlign (`text-align-mismatch`، auto-fix). rule عمومی نیست — اگه snapshot نباشه، صفر violation | همه |
+| `layout-diff` | مقایسه‌ی instance-specific کد با facts واقعی طرح فیگما (از `.claude/context/figma-layout.json`): ترتیب فرزند (`child-order-mismatch`)، سمت آیکون (`icon-side-mismatch`)، textAlign (`text-align-mismatch`)، justify/align (`justify-mismatch`/`align-mismatch`)، رنگ آیکون (`icon-color-mismatch`). rule عمومی نیست — اگه snapshot نباشه، صفر violation | همه |
+| `verify-render` | (subcommand جدا، نه ماژول per-file) diff **عددی** بین geometry واقعیِ DOM رندرشده و طرح: ردیف آینه‌ای (`visual-order-mirrored`)، textAlign محاسبه‌شده (`rendered-text-align`)، رنگ آیکون resolve‌شده (`rendered-icon-color`) | همه |
 | `build-git` | ۳ چک project-level (نه per-file): **①** `pnpm type-check` / build failure — **②** uncommitted files + unpushed commits — **③** HANDOFF.md staleness (N commits behind) | همه |
 
 ---
@@ -206,5 +230,5 @@ alias den-ci='dev-engine ./src --json --exit-zero'
 قبل از commit؟
   → den (full scan)
 CI؟
-  → den-ci (= dev-engine ./src --json --exit-zero)
+  → den-ci (= dev-engine . --json --exit-zero)
 ```
