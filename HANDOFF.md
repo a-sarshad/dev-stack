@@ -1,8 +1,8 @@
 # dev-agents — Handoff
-> آخرین آپدیت: 2026-08-02
+> آخرین آپدیت: 2026-08-08
 
 ## الان
-Audit کامل روی `dev-engine` (لایه‌ی تطابق کد ↔ طرح فیگما) — uncommitted روی `main`:
+**Commit شده (e8649b5 + commits قبل‌تر)** — Audit کامل روی `dev-engine` (لایه‌ی تطابق کد ↔ طرح فیگما) اجرا شد:
 
 - **`src/direction.ts` (جدید)** — تک‌منبع نگاشت جهت (فیزیکی↔semantic). باگ ریشه‌ای فیکس شد: `normalizeAlign` قبلاً جهت‌کور بود (`right`→`end` بدون توجه به RTL) که در پروژه‌ی RTL کل قضاوت `textAlign` رو معکوس می‌کرد — هم false-negative (کد غلط تمیز)، هم false-positive (کد درست error، با auto-fix ای که متن رو غلط جابه‌جا می‌کرد).
 - **`src/modules/layout-diff.ts` (بازنویسی)** — سه باگ دیگه فیکس شد: کامپوننت با ریشه‌ی Fragment (`<>`) کاملاً نامرئی بود؛ فقط دکمه‌ی اول هر فایل چک می‌شد (نه همه‌ی دکمه‌ها)؛ چک‌ها روی کل فایل اسکن می‌شدن نه بازه‌ی خود کامپوننت. + دو چک جدید: `justify`/`align` mismatch و `icon-color` mismatch.
@@ -12,9 +12,12 @@ Audit کامل روی `dev-engine` (لایه‌ی تطابق کد ↔ طرح ف�
 - **`src/types.ts`** — فیلدهای `justify`/`align`/`iconColor` به `LayoutSnapshot` + type های `RenderedSnapshot`/`RenderedChild` برای verify-render.
 - همه با harness ایزوله (نه Vitrina) تست شد — هر باگ قبل/بعد از فیکس reproduce شد.
 
+- **`src/modules/css-logical-props.ts` (بازنویسی, 17fd726)** — بهبود دستاویزات و اصلاح نگاشت جهت. تاریخچه‌ی RTL logical props bug: این فایل قبلاً `right→InlineEnd` / `left→InlineStart` ثابت می‌کرد؛ طبق MDN "in RTL: inline-start=right, inline-end=left"؛ نگاشت ثابت فقط در LTR درست است و در پروژه RTL برعکس می‌شد. حالا `physicalToSemantic()` از `direction.ts` استفاده می‌کنه و RTL-aware نگاشت انجام می‌دهد. اضافه شد +108 خط دستاویزات توضیح‌دهنده.
+
 ## نکته‌ی حل‌شده از قبل
 باینری `dev-engine` global لینک شد (`npm link` از این پکیج) — دیگه نیازی به `node dist/cli.js` نیست. مستند شد در `dev-knowledge/universal/dev-engine.md`.
 
 ## بعدی
-- دو اسکیل (`dev-engine`, `dev-implement` در dev-knowledge) با نردبان resolve باینری + قانون «هیچ‌وقت بی‌صدا skip نکن» هاردن شدن — commit موازی در `dev-knowledge`.
-- تصمیم باز: آیا `verify-render` باید در `dev-implement` STEP 4 اجباری بشه یا اختیاری بمونه؟ فعلاً اختیاری (Tier 2، وقتی justify/align/رنگ در snapshot باشه).
+- **Upstream (Vitrina):** css-logical-props و direction.ts fixes را test کند و اگه نیاز باشه (false-positive/negative) بگزارش دهد.
+- **Optional:** بهبود‌های اضافی برای `verify-render` اگه در Vitrina یا پروژه دیگه case edge جدید کشف شود.
+- **Scope:** دو repo (dev-knowledge + dev-agents) الان sync شدند؛ audit کامل RTL logical props انجام شد.
