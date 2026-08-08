@@ -1,5 +1,5 @@
 import type { CheckModule, ProjectConfig, Violation } from '../types.js'
-import { isRtl, physicalToSemantic } from '../direction.js'
+import { isRtl, physicalToSemantic, semanticToPhysical, physicalFa } from '../direction.js'
 
 // ── نگاشت فیزیکی → منطقی ─────────────────────────────────────────────────────
 // ⚠️ باگ تاریخی (کل این فایل قبلاً به همین شکل بود): هر ورودی مستقیم و ثابت
@@ -61,6 +61,32 @@ const RADIUS_CORNERS: RadiusCorner[] = [
 // textAlign: فرم prop-value است (نه اسم property)، هم style-object
 // (`textAlign: "right"`) هم JSX prop (`textAlign="right"`) رو می‌گیره.
 const TEXT_ALIGN_RE = /textAlign(\s*[:=]\s*)\{?\s*(["'`])(right|left)\2/g
+
+// ── یک idiom برای چیدمان محورها ────────────────────────────────────────────────
+// ⚠️ چرا این rule وجود داره — سه incident در Vitrina (CampaignCard 2026-08-03،
+// NewCampaignDialog 2026-08-03، DiscountCodesTable 2026-08-08): همه یک الگو.
+//
+// `flex-start`/`flex-end` از نظر CSS **درست و جهت‌آگاه** ان — دقیقاً مثل
+// `start`/`end`. مشکل رفتاری نیست، مشکل **اسم** است: کلمهٔ «end» با آموزشِ
+// LTR-first یعنی «راست»، و در RTL یعنی چپ. پس هر نوشتنِ آن یک flip ذهنیِ دستی
+// می‌خواهد که در ۲۶۰+ سایت قابل‌اتکا نیست. بدتر: هر دو idiom هم‌زمان زنده بودند،
+// پس خواندنِ یک sibling با intent متفاوت به‌عنوان الگو، باگ را تکثیر می‌کرد.
+// (نمونهٔ واقعی: idiom درستِ `justify="flex-end"` ستون عملیاتِ BulkSmsHistoryTable
+// روی ۴ سلولِ DiscountCodesTable کپی شد که نیازشان برعکس بود.)
+//
+// فیکس: یک idiom، `start`/`end` — همان واژگانی که snapshotها، layout-diff و خودِ
+// CLAUDE.md با آن حرف می‌زنند. آن‌وقت «چه سمتی؟» یک فکتِ واحدِ یادگرفتنی است
+// (RTL: start=راست)، نه یک ترجمهٔ per-site.
+//
+// ⚠️ تنها حالتی که `start` ≠ `flex-start`: محورِ معکوس (`row-reverse`/
+// `column-reverse`) — `flex-*` از جهتِ معکوس‌شده تبعیت می‌کند، `start` از
+// writing-mode. پس خطوطی که reverse دارند skip می‌شوند.
+const FLEX_ALIGN_PROPS = 'justify|justifyContent|justifySelf|align|alignItems|alignSelf|alignContent|placeItems|placeContent'
+const FLEX_VALUE_RE = new RegExp(`\\b(${FLEX_ALIGN_PROPS})(\\s*[:=]\\s*[^\\n]*?)(["'\`])(flex-start|flex-end)\\3`, 'g')
+
+// مقادیر واقعاً فیزیکیِ همین propها — این یکی برخلاف بالا یک باگ واقعی است،
+// چون `left`/`right` جهت‌کورند و در RTL اصلاً flip نمی‌شوند.
+const PHYSICAL_ALIGN_RE = new RegExp(`\\b(${FLEX_ALIGN_PROPS})(\\s*[:=]\\s*[^\\n]*?)(["'\`])(right|left)\\3`, 'g')
 
 export const cssLogicalPropsModule: CheckModule = {
   id: 'css-logical-props',
@@ -128,6 +154,47 @@ export const cssLogicalPropsModule: CheckModule = {
           rule: 'use-logical-props',
           message: `Physical prop "textAlign: ${physicalVal}" — use "textAlign: ${semantic}" instead (direction: ${config.direction})`,
           severity: 'warning',
+          autoFixable: true,
+          original: full,
+          replacement: full.replace(`${quote}${physicalVal}${quote}`, `${quote}${semantic}${quote}`),
+        })
+      }
+
+      // یک idiom: flex-start/flex-end → start/end. جزئیات «چرا» بالای FLEX_VALUE_RE.
+      if (!/\b(?:row|column)-reverse\b/.test(line)) {
+        FLEX_VALUE_RE.lastIndex = 0
+        while ((m = FLEX_VALUE_RE.exec(line)) !== null) {
+          const [full, prop, , quote, value] = m
+          const semantic = value === 'flex-start' ? 'start' : 'end'
+          // ⚠️ original باید کلِ match باشه نه فقط مقدار — چون fix() از replaceAll
+          // استفاده می‌کنه و مثلاً original="right" کل فایل رو خراب می‌کرد
+          // (placement="right" روی Tooltip، textAlign="right"، …).
+          violations.push({
+            file: filePath,
+            line: i + 1,
+            module: 'css-logical-props',
+            rule: 'one-align-idiom',
+            message: `${prop}="${value}" — «${semantic}» بنویس. رفتار یکیه، ولی «${value}» به‌غلط فیزیکی خوانده می‌شه (در ${config.direction} مقدار end یعنی ${physicalFa(semanticToPhysical('end', rtl))}). سه incident از همین اسم آمده`,
+            severity: 'error',
+            autoFixable: true,
+            original: full,
+            replacement: full.replace(`${quote}${value}${quote}`, `${quote}${semantic}${quote}`),
+          })
+        }
+      }
+
+      // مقدار فیزیکیِ واقعی روی propهای چیدمان — در RTL flip نمی‌شه، باگ واقعیه.
+      PHYSICAL_ALIGN_RE.lastIndex = 0
+      while ((m = PHYSICAL_ALIGN_RE.exec(line)) !== null) {
+        const [full, prop, , quote, physicalVal] = m
+        const semantic = physicalToSemantic(physicalVal as 'right' | 'left', rtl)
+        violations.push({
+          file: filePath,
+          line: i + 1,
+          module: 'css-logical-props',
+          rule: 'one-align-idiom',
+          message: `${prop}="${physicalVal}" مقدار فیزیکیه و با جهت flip نمی‌شه — «${semantic}» بنویس (direction: ${config.direction})`,
+          severity: 'error',
           autoFixable: true,
           original: full,
           replacement: full.replace(`${quote}${physicalVal}${quote}`, `${quote}${semantic}${quote}`),

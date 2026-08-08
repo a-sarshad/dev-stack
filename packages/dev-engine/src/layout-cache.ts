@@ -29,13 +29,21 @@ export function writeLayoutSnapshot(
 ): void {
   const path = layoutCachePath(projectRoot)
   const existing = loadLayoutSnapshots(projectRoot)
+  // ⚠️ merge است نه replace — پس بدون این، یک fact غلط هرگز قابل پس‌گرفتن نبود
+  // (نمونهٔ واقعی 2026-08-08: childOrder با اسم‌های خیالی که با هیچ فرزندی match
+  // نمی‌کرد و چک را بی‌صدا خاموش نگه می‌داشت؛ --set دوباره فقط رویش می‌نوشت).
+  // قرارداد: مقدار `null` یعنی «این فیلد را حذف کن».
+  const entry: Record<string, unknown> = {
+    ...existing[componentName],
+    ...snapshot,
+    _synced: new Date().toISOString().slice(0, 10),
+  }
+  for (const [k, v] of Object.entries(entry)) {
+    if (v === null) delete entry[k]
+  }
   const merged: LayoutSnapshotCache = {
     ...existing,
-    [componentName]: {
-      ...existing[componentName],
-      ...snapshot,
-      _synced: new Date().toISOString().slice(0, 10),
-    },
+    [componentName]: entry as LayoutSnapshot,
   }
   mkdirSync(dirname(path), { recursive: true })
   writeFileSync(path, JSON.stringify(merged, null, 2) + '\n')

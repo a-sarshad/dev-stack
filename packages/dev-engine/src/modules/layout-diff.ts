@@ -114,6 +114,32 @@ function topLevelChildNames(jsx: string, maxChildren = 12): string[] {
   return names
 }
 
+// متنِ کاملِ یک المان (از `<` تا تگِ بستهٔ متناظرش) — برای اینکه بشود فرزندهای
+// مستقیمِ یک container داخلی را با topLevelChildNames شمرد، نه فقط root کامپوننت.
+function extractElement(s: string, lt: number): string {
+  const { end, selfClosing } = scanOpeningTag(s, lt)
+  if (selfClosing) return s.slice(lt, end + 1)
+  let depth = 1
+  let i = end + 1
+  while (i < s.length && depth > 0) {
+    const next = s.indexOf('<', i)
+    if (next === -1) break
+    if (s[next + 1] === '/') {
+      depth--
+      const gt = s.indexOf('>', next)
+      i = gt === -1 ? s.length : gt + 1
+      if (depth === 0) return s.slice(lt, i)
+      continue
+    }
+    const tag = /^<([A-Za-z][A-Za-z0-9.]*)/.test(s.slice(next))
+    if (!tag) { i = next + 1; continue }
+    const inner = scanOpeningTag(s, next)
+    if (!inner.selfClosing) depth++
+    i = inner.end + 1
+  }
+  return s.slice(lt, i)
+}
+
 function isCommentLine(line: string): boolean {
   const t = line.trim()
   return t.startsWith('//') || t.startsWith('*') || t.startsWith('{/*')
@@ -155,62 +181,238 @@ function checkTextAlign(
   return out
 }
 
+const sideFa = (v: string, rtl: boolean) =>
+  v === 'start' || v === 'end' ? ` (${physicalFa(semanticToPhysical(v, rtl))})` : ''
+
+// ⚠️ محدود به تگِ بازِ **root** بلوک return — نه هر تطبیقی در کل کامپوننت.
+// snapshot توصیف‌گرِ همان یک node فیگماست، پس تعمیم دادنش به همهٔ containerهای
+// داخلی از پایه غلط بود: هر کامپوننت چندردیفی روی مقدار درست هم false-positive
+// می‌گرفت، و نتیجه‌اش این شد که کسی فیلد را پر نکند و چک بی‌صدا خاموش بماند.
+// چیدمانِ containerهای داخلی → `snap.containers` + marker (checkContainers).
+function rootTagProps(content: string, span: ComponentSpan): { props: string; line: number } | null {
+  const block = findReturnBlock(content, span.start, span.end)
+  if (!block) return null
+  const lt = block.jsx.indexOf('<')
+  if (lt === -1) return null
+  const { end } = scanOpeningTag(block.jsx, lt)
+  return { props: block.jsx.slice(lt, end), line: lineAt(content, block.offset + lt) }
+}
+
 function checkJustify(
   filePath: string, content: string, span: ComponentSpan, snap: LayoutSnapshot, rtl: boolean
 ): Violation[] {
   if (!snap.justify) return []
-  const out: Violation[] = []
-  const re = /\b(justify|justifyContent)=\s*\{?\s*["'`]([a-z-]+)["'`]/g
-  const region = content.slice(span.start, span.end)
-  let m: RegExpExecArray | null
-  re.lastIndex = 0
-  while ((m = re.exec(region)) !== null) {
-    const abs = span.start + m.index
-    const line = lineAt(content, abs)
-    if (isCommentLine(content.split('\n')[line - 1] ?? '')) continue
+  const root = rootTagProps(content, span)
+  if (!root) return []
+  const m = /\b(justify|justifyContent)=\s*\{?\s*["'`]([a-z-]+)["'`]/.exec(root.props)
+  if (!m) return []
+  const actual = normalizeJustify(m[2], rtl)
+  if (!actual || actual === snap.justify) return []
 
-    const actual = normalizeJustify(m[2], rtl)
-    if (!actual || actual === snap.justify) continue
-
-    const sideNote = (v: string) =>
-      v === 'start' ? ` (${physicalFa(semanticToPhysical('start', rtl))})`
-      : v === 'end' ? ` (${physicalFa(semanticToPhysical('end', rtl))})` : ''
-    out.push({
-      file: filePath, line,
-      module: 'layout-diff', rule: 'justify-mismatch',
-      message: `${m[1]}="${m[2]}" در ${span.name} یعنی ${actual}${sideNote(actual)}، ولی طرح ${snap.justify}${sideNote(snap.justify)} می‌خواد`,
-      severity: 'error', autoFixable: false,
-      fix: `${m[1]} را به معادل ${snap.justify} تغییر بده (زیر dir=rtl مقدار flex-start می‌ره راست و flex-end می‌ره چپ)`,
-    })
-  }
-  return out
+  return [{
+    file: filePath, line: root.line,
+    module: 'layout-diff', rule: 'justify-mismatch',
+    message: `${m[1]}="${m[2]}" روی root ${span.name} یعنی ${actual}${sideFa(actual, rtl)}، ولی طرح ${snap.justify}${sideFa(snap.justify, rtl)} می‌خواد`,
+    severity: 'error', autoFixable: true,
+    original: m[0],
+    replacement: m[0].replace(m[2], snap.justify),
+  }]
 }
 
 function checkAlign(
   filePath: string, content: string, span: ComponentSpan, snap: LayoutSnapshot, rtl: boolean
 ): Violation[] {
   if (!snap.align) return []
-  const out: Violation[] = []
-  const re = /\b(align|alignItems)=\s*\{?\s*["'`]([a-z-]+)["'`]/g
+  const root = rootTagProps(content, span)
+  if (!root) return []
+  const m = /\b(align|alignItems)=\s*\{?\s*["'`]([a-z-]+)["'`]/.exec(root.props)
+  if (!m) return []
+  const actual = normalizeAlign(m[2], rtl)
+  if (!actual || actual === snap.align) return []
+
+  return [{
+    file: filePath, line: root.line,
+    module: 'layout-diff', rule: 'align-mismatch',
+    message: `${m[1]}="${m[2]}" روی root ${span.name} یعنی ${actual}${sideFa(actual, rtl)}، ولی طرح ${snap.align}${sideFa(snap.align, rtl)} می‌خواد`,
+    severity: 'error', autoFixable: true,
+    original: m[0],
+    replacement: m[0].replace(m[2], snap.align),
+  }]
+}
+
+// ── containerهای داخلی، anchor شده با prop ────────────────────────────────────
+// `data-layout="ComponentName.containerName"` روی خودِ تگِ container.
+//
+// چرا prop و نه کامنت: anchor باید در **هر دو لایه** پیدا شود — این ماژول متن کد
+// را می‌خواند، ولی verify-render دامپِ DOM را. کامنت در DOM وجود ندارد، پس با
+// کامنت هرگز نمی‌شد همان container را در رندر پیدا کرد و هر لایه anchor جدا
+// می‌خواست. `data-layout` هم در source قابل‌regex است هم در DOM قابل‌query —
+// یک مکانیزم، دو لایه، یک زبان. (سود جانبی: prop برخلاف `{/* */}` داخل شاخهٔ
+// ternary هم parse می‌شود.)
+//
+// نامِ کامل (Component.container) لازم است چون دامپِ DOM اسم کامپوننت React را
+// نمی‌داند؛ و همین باعث می‌شود prefix هم قابل‌اعتبارسنجی باشد (پایین).
+// جزئیاتِ «چرا اصلاً container-level» در types.ts (ContainerLayout).
+const ANCHOR_RE = /data-layout=\s*["'`]([A-Za-z][A-Za-z0-9_]*)\.([A-Za-z][A-Za-z0-9_]*)["'`]/g
+
+function checkContainers(
+  filePath: string, content: string, span: ComponentSpan, snap: LayoutSnapshot, rtl: boolean
+): Violation[] {
+  const spec = snap.containers
   const region = content.slice(span.start, span.end)
+  const seen = new Set<string>()
+  const out: Violation[] = []
+
+  ANCHOR_RE.lastIndex = 0
   let m: RegExpExecArray | null
-  re.lastIndex = 0
-  while ((m = re.exec(region)) !== null) {
-    const abs = span.start + m.index
-    const line = lineAt(content, abs)
-    if (isCommentLine(content.split('\n')[line - 1] ?? '')) continue
+  while ((m = ANCHOR_RE.exec(region)) !== null) {
+    const [, prefix, name] = m
+    const line = lineAt(content, span.start + m.index)
 
-    const actual = normalizeAlign(m[2], rtl)
-    if (!actual || actual === snap.align) continue
+    // prefix باید اسم کامپوننتِ در‌بر‌گیرنده باشه — وگرنه verify-render دنبال
+    // کلیدی می‌گرده که در snapshot وجود نداره و بی‌صدا هیچی مقایسه نمی‌کنه.
+    if (prefix !== span.name) {
+      out.push({
+        file: filePath, line,
+        module: 'layout-diff', rule: 'container-name-mismatch',
+        message: `data-layout="${prefix}.${name}" داخل ${span.name} است — prefix باید «${span.name}» باشه وگرنه هیچ لایه‌ای این container را پیدا نمی‌کند`,
+        severity: 'error', autoFixable: true,
+        original: m[0],
+        replacement: m[0].replace(`${prefix}.${name}`, `${span.name}.${name}`),
+      })
+      continue
+    }
+    seen.add(name)
+    const want = spec?.[name]
 
+    // anchor در کد ولی هیچ facts ای در snapshot → صریح بگو، نه سکوت.
+    if (!want) {
+      out.push({
+        file: filePath, line,
+        module: 'layout-diff', rule: 'container-snapshot-missing',
+        message: `data-layout="${prefix}.${name}" در کد هست ولی snapshot براش چیزی نداره — این container بی‌چک می‌مونه`,
+        severity: 'warning', autoFixable: false,
+        fix: `dev-engine layout-sync . --set ${span.name} --data '{"containers":{"${name}":{"justify":"start"}}}'`,
+      })
+      continue
+    }
+
+    // خودِ تگِ حاملِ attribute — پس `<` قبل از آن، نه بعد از آن.
+    const lt = region.lastIndexOf('<', m.index)
+    if (lt === -1) continue
+    const { end } = scanOpeningTag(region, lt)
+    const props = region.slice(lt, end)
+    const tagLine = lineAt(content, span.start + lt)
+
+    const checks: Array<[keyof typeof want, RegExp, (v: string, r: boolean) => string | null]> = [
+      ['justify', /\b(?:justify|justifyContent)=\s*\{?\s*["'`]([a-z-]+)["'`]/, normalizeJustify],
+      ['align', /\b(?:align|alignItems)=\s*\{?\s*["'`]([a-z-]+)["'`]/, normalizeAlign],
+      ['textAlign', /\btextAlign=\s*\{?\s*["'`]([a-z-]+)["'`]/, normalizeTextAlign],
+    ]
+
+    if (want.childOrder && want.childOrder.length >= 2) {
+      const el = extractElement(region, lt)
+      const actual = topLevelChildNames(el, want.childOrder.length + 4)
+      const expected = want.childOrder
+      const overlap = actual.filter(n => expected.includes(n))
+      if (overlap.length < Math.min(2, expected.length)) {
+        out.push({
+          file: filePath, line: tagLine,
+          module: 'layout-diff', rule: 'snapshot-stale',
+          message: `childOrder برای container «${name}» با هیچ فرزند واقعی نمی‌خونه — طرح: [${expected.join(', ')}]، کد: [${actual.join(', ')}] → چک اجرا نشد`,
+          severity: 'warning', autoFixable: false,
+          fix: 'اسم فرزندها را با تگ‌های واقعی کد هم‌راستا کن',
+        })
+      } else {
+        const ef = expected.filter(n => actual.includes(n))
+        const af = actual.filter(n => expected.includes(n))
+        if (!ef.every((n, i) => n === af[i])) {
+          out.push({
+            file: filePath, line: tagLine,
+            module: 'layout-diff', rule: 'child-order-mismatch',
+            message: `ترتیب فرزندهای container «${name}» (${span.name}) آینه‌ایه — طرح: [${expected.join(', ')}]، کد: [${af.join(', ')}]. اولین فرزند DOM = راست‌ترین در RTL`,
+            severity: 'error', autoFixable: false,
+            fix: `ترتیب JSX داخل این container را به [${expected.join(', ')}] عوض کن`,
+          })
+        }
+      }
+    }
+
+    for (const [key, re, normalize] of checks) {
+      const expected = want[key]
+      if (!expected || typeof expected !== 'string') continue
+      const pm = re.exec(props)
+      // prop غایب → مقدار default اعمال می‌شه. برای justify/align دیفالت فلکس
+      // `start` است، پس فقط وقتی طرح چیزِ دیگری می‌خواهد ایراد است.
+      const actual = pm ? normalize(pm[1], rtl) : (key === 'textAlign' ? null : 'start')
+      if (!actual || actual === expected) continue
+
+      out.push({
+        file: filePath, line: tagLine,
+        module: 'layout-diff', rule: `${key === 'textAlign' ? 'text-align' : key}-mismatch`,
+        message: `${key} در container «${name}» (${span.name}) ${actual}${sideFa(actual, rtl)} است، ولی طرح ${expected}${sideFa(expected, rtl)} می‌خواد`,
+        severity: 'error', autoFixable: pm !== null,
+        ...(pm ? { original: pm[0], replacement: pm[0].replace(pm[1], expected) } : {}),
+        ...(pm ? {} : { fix: `${key}="${expected}" را صریح روی این تگ بذار (الان دیفالت ${actual} می‌گیره)` }),
+      })
+    }
+  }
+
+  // snapshot facts دارد ولی marker اش در کد نیست → یعنی چک اجرا نشد. سکوت ممنوع.
+  for (const name of Object.keys(spec ?? {})) {
+    if (seen.has(name)) continue
     out.push({
-      file: filePath, line,
-      module: 'layout-diff', rule: 'align-mismatch',
-      message: `${m[1]}="${m[2]}" در ${span.name} یعنی ${actual}، ولی طرح ${snap.align} می‌خواد`,
-      severity: 'error', autoFixable: false,
-      fix: `${m[1]} را به معادل ${snap.align} تغییر بده`,
+      file: filePath, line: lineAt(content, span.start),
+      module: 'layout-diff', rule: 'container-anchor-missing',
+      message: `snapshot برای container «${name}» در ${span.name} facts دارد ولی anchor «data-layout="${span.name}.${name}"» در کد نیست — این چک بی‌صدا اجرا نشد`,
+      severity: 'warning', autoFixable: false,
+      fix: `prop data-layout="${span.name}.${name}" را روی همان container بگذار`,
     })
   }
+
+  return out
+}
+
+// ── سلامتِ خودِ snapshot ───────────────────────────────────────────────────────
+// «۰ issue» باید یعنی «چک شد و تمیز بود»، نه «هیچی چک نشد». هر حالتی که باعث
+// خاموشیِ بی‌صدای چک می‌شود از این‌جا صدا در می‌آورد.
+function checkSnapshotHealth(
+  filePath: string, content: string, span: ComponentSpan, snap: LayoutSnapshot
+): Violation[] {
+  const out: Violation[] = []
+  const line = lineAt(content, span.start)
+
+  const hasAxisFacts = snap.justify || snap.align || (snap.containers && Object.keys(snap.containers).length > 0)
+  if (snap.layoutMode === 'HORIZONTAL' && !hasAxisFacts) {
+    out.push({
+      file: filePath, line,
+      module: 'layout-diff', rule: 'snapshot-incomplete',
+      message: `${span.name}: layoutMode=HORIZONTAL ولی نه justify/align نه containers — چیدمان محورها اصلاً چک نمی‌شه`,
+      severity: 'warning', autoFixable: false,
+      fix: `justify/align را از طرح بخوان و بنویس؛ برای containerهای داخلیِ با intent متفاوت از containers + marker استفاده کن`,
+    })
+  }
+
+  // childOrder ای که با هیچ فرزند واقعی همپوشانی ندارد = چکِ مرده. قبلاً همین
+  // حالت بی‌صدا `[]` برمی‌گرداند (اسم‌های خیالی مثل "Title"/"Code" در برابر
+  // فرزندهای واقعیِ "Table.Root") — یعنی گزارشِ تمیزِ کاملاً توخالی.
+  if (snap.childOrder && snap.childOrder.length >= 2) {
+    const block = findReturnBlock(content, span.start, span.end)
+    if (block) {
+      const actual = topLevelChildNames(block.jsx, snap.childOrder.length + 4)
+      const overlap = actual.filter(n => snap.childOrder!.includes(n))
+      if (overlap.length < Math.min(2, snap.childOrder.length)) {
+        out.push({
+          file: filePath, line,
+          module: 'layout-diff', rule: 'snapshot-stale',
+          message: `childOrder برای ${span.name} با هیچ فرزند واقعی نمی‌خونه — طرح: [${snap.childOrder.join(', ')}]، کد: [${actual.join(', ')}] → این چک بی‌صدا اجرا نشد`,
+          severity: 'warning', autoFixable: false,
+          fix: `childOrder را با اسم واقعی تگ‌های سطح‌اولِ کد بنویس، یا اگر فرزندها generic اند (Flex/Box) حذفش کن و از containers + marker استفاده کن`,
+        })
+      }
+    }
+  }
+
   return out
 }
 
@@ -336,9 +538,11 @@ export function createLayoutDiffModule(projectRoot: string): CheckModule {
         violations.push(...checkTextAlign(filePath, content, span, snap, rtl))
         violations.push(...checkJustify(filePath, content, span, snap, rtl))
         violations.push(...checkAlign(filePath, content, span, snap, rtl))
+        violations.push(...checkContainers(filePath, content, span, snap, rtl))
         violations.push(...checkChildOrder(filePath, content, span, snap))
         violations.push(...checkIconSide(filePath, content, span, snap))
         violations.push(...checkIconColor(filePath, content, span, snap))
+        violations.push(...checkSnapshotHealth(filePath, content, span, snap))
       }
 
       return violations

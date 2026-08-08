@@ -1,9 +1,12 @@
 import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 import chalk from 'chalk'
-import type { LayoutSnapshot, ProjectConfig, RenderedSnapshot } from './types.js'
+import type { ContainerLayout, LayoutSnapshot, ProjectConfig, RenderedSnapshot } from './types.js'
 import { loadLayoutSnapshots } from './layout-cache.js'
-import { isRtl, normalizeTextAlign, semanticToPhysical, physicalFa } from './direction.js'
+import {
+  isRtl, normalizeTextAlign, normalizeJustify, normalizeAlign,
+  semanticToPhysical, physicalFa,
+} from './direction.js'
 
 // ── verify-render ──────────────────────────────────────────────────────────────
 // حلقه‌ای که تا حالا وجود نداشت. layout-diff متنِ کد رو می‌خونه، پس چیزهایی که فقط
@@ -25,8 +28,9 @@ interface Finding {
 
 export function printRenderSnippet(): void {
   console.log(`
-${chalk.bold('// در کنسول preview اجرا کن. MAP رو با کامپوننت‌های همین task پر کن.')}
-${chalk.gray('// اگه کامپوننت data-dev-id داره، همون خودکار پیدا می‌شه و MAP لازم نیست.')}
+${chalk.bold('// در کنسول preview اجرا کن.')}
+${chalk.gray('// خودکار پیدا می‌شن: [data-layout="Component.container"] و [data-dev-id="Component"].')}
+${chalk.gray('// MAP فقط برای کامپوننتی لازمه که هیچ‌کدوم رو نداره.')}
 
 (() => {
   const MAP = { /* "AdChannelCard": ".ad-channel-card", */ };
@@ -44,6 +48,13 @@ ${chalk.gray('// اگه کامپوننت data-dev-id داره، همون خود�
   const targets = {};
   document.querySelectorAll('[data-dev-id]').forEach(el => {
     targets[el.getAttribute('data-dev-id')] = el;
+  });
+  // همون anchor ای که layout-diff در source می‌خونه — کلید "Component.container".
+  // فقط اولین instance هر کلید: در جدول‌ها یک container در هر ردیف تکرار می‌شه و
+  // همه‌شون یک ساختار دارن، پس اولی نمایندهٔ کافیه.
+  document.querySelectorAll('[data-layout]').forEach(el => {
+    const k = el.getAttribute('data-layout');
+    if (k && !(k in targets)) targets[k] = el;
   });
   for (const [name, sel] of Object.entries(MAP)) {
     const el = document.querySelector(sel);
@@ -67,6 +78,9 @@ ${chalk.gray('// اگه کامپوننت data-dev-id داره، همون خود�
       x: Math.round(r.left),
       width: Math.round(r.width),
       textAlign: cs.textAlign,
+      justifyContent: cs.justifyContent,
+      alignItems: cs.alignItems,
+      flexDirection: cs.flexDirection,
       iconColor: icon ? getComputedStyle(icon).color : undefined,
       children: Array.from(el.children).map(c => {
         const cr = c.getBoundingClientRect();
@@ -151,6 +165,87 @@ function checkRenderedIconColor(
   }]
 }
 
+// ── containerهای anchor شده با data-layout ────────────────────────────────────
+// چرا این لازم بود: تا قبل از این، verify-render فقط کلیدهای سطحِ **کامپوننت** را
+// می‌شناخت، پس دقیقاً همان granularity gap ای که در layout-diff بسته شد این‌جا باز
+// بود. یک کارت با سه ردیفِ داخلیِ آینه‌ای را map می‌کردی → فرزندهای مستقیمش
+// ستونی بودند → skip → «۰ مغایرت». باگ 1404/05/17 (DiscountCodeCard) از همین
+// شکاف رد می‌شد. حالا هر دو لایه یک anchor می‌خوانند: data-layout="Comp.name".
+function checkContainerRender(
+  key: string, comp: string, cname: string,
+  rendered: RenderedSnapshot, want: ContainerLayout, rtl: boolean
+): Finding[] {
+  const out: Finding[] = []
+  const label = `${comp} › ${cname}`
+
+  // ترتیب افقی رندرشده — تنها چیزی که «آینه‌ای شد» را قطعی می‌گیرد، چون عدد است.
+  const kids = rendered.children ?? []
+  const isRow = !rendered.flexDirection || rendered.flexDirection.startsWith('row')
+  if (want.childOrder && want.childOrder.length >= 2 && kids.length >= 2 && isRow) {
+    const xs = kids.map(k => k.x)
+    if (new Set(xs).size >= 2) {
+      let ascending = true
+      let descending = true
+      for (let i = 1; i < xs.length; i++) {
+        if (xs[i] <= xs[i - 1]) ascending = false
+        if (xs[i] >= xs[i - 1]) descending = false
+      }
+      // wrap/grid → قضاوت نکن
+      if (ascending || descending) {
+        // ⚠️ row-reverse محورِ فیزیکی را برمی‌گرداند، پس انتظار هم برمی‌گردد
+        const reversed = rendered.flexDirection === 'row-reverse'
+        const wantDescending = rtl !== reversed
+        if (descending !== wantDescending) {
+          out.push({
+            component: label,
+            rule: 'visual-order-mirrored',
+            message:
+              `ردیف آینه‌ای رندر شده — در ${rtl ? 'RTL' : 'LTR'} اولین فرزند DOM باید ` +
+              `${rtl ? 'راست‌ترین' : 'چپ‌ترین'} باشه، ولی x ها ${descending ? 'نزولی' : 'صعودی'} اند ` +
+              `[${xs.join(', ')}] · طرح: [${want.childOrder.join(', ')}]`,
+          })
+        }
+      }
+    }
+  }
+
+  const axes: Array<['justify' | 'align', string | undefined]> = [
+    ['justify', rendered.justifyContent],
+    ['align', rendered.alignItems],
+  ]
+  for (const [key2, raw] of axes) {
+    const expected = want[key2]
+    if (!expected || !raw) continue
+    const actual = key2 === 'justify' ? normalizeJustify(raw, rtl) : normalizeAlign(raw, rtl)
+    if (!actual || actual === expected) continue
+    out.push({
+      component: label,
+      rule: `rendered-${key2}`,
+      message:
+        `${key2} واقعاً ${actual}${actual === 'start' || actual === 'end' ? ` (${physicalFa(semanticToPhysical(actual, rtl))})` : ''} ` +
+        `رندر شده (computed: ${raw})، ولی طرح ${expected}` +
+        `${expected === 'start' || expected === 'end' ? ` (${physicalFa(semanticToPhysical(expected, rtl))})` : ''} می‌خواد`,
+    })
+  }
+
+  if (want.textAlign && rendered.textAlign) {
+    const actual = normalizeTextAlign(rendered.textAlign, rtl)
+    if (actual && actual !== want.textAlign) {
+      out.push({
+        component: label,
+        rule: 'rendered-text-align',
+        message:
+          `متن واقعاً ${physicalFa(semanticToPhysical(actual, rtl))} رندر شده ` +
+          `(computed: ${rendered.textAlign})، ولی طرح ${want.textAlign} ` +
+          `(${physicalFa(semanticToPhysical(want.textAlign, rtl))}) می‌خواد`,
+      })
+    }
+  }
+
+  void key
+  return out
+}
+
 export function runVerifyRender(
   projectRoot: string,
   config: ProjectConfig,
@@ -181,11 +276,26 @@ export function runVerifyRender(
   const findings: Finding[] = []
   let compared = 0
 
+  const unmatched: string[] = []
+
   for (const [name, value] of Object.entries(dump)) {
     if (name.startsWith('_')) continue
-    const snap = snapshots[name]
-    if (!snap) continue
     const rendered = value as RenderedSnapshot
+
+    // کلیدِ container: "Component.containerName" — همان anchor data-layout.
+    if (name.includes('.')) {
+      const dot = name.indexOf('.')
+      const comp = name.slice(0, dot)
+      const cname = name.slice(dot + 1)
+      const want = snapshots[comp]?.containers?.[cname]
+      if (!want) { unmatched.push(name); continue }
+      compared++
+      findings.push(...checkContainerRender(name, comp, cname, rendered, want, rtl))
+      continue
+    }
+
+    const snap = snapshots[name]
+    if (!snap) { unmatched.push(name); continue }
     compared++
     findings.push(...checkVisualOrder(name, rendered, snap, rtl))
     findings.push(...checkRenderedTextAlign(name, rendered, snap, rtl))
@@ -206,8 +316,14 @@ export function runVerifyRender(
     return false
   }
 
+  // در دامپ بود ولی snapshot نداشت — یعنی آن هدف بی‌چک ماند. سکوت ممنوع.
+  if (unmatched.length > 0) {
+    console.log(chalk.yellow(`⚠️  ${unmatched.length} هدف در دامپ بود ولی snapshot نداشت (بی‌چک ماند):`))
+    console.log(chalk.gray(`   ${unmatched.join(', ')}\n`))
+  }
+
   if (findings.length === 0) {
-    console.log(chalk.green(`✅ رندر با طرح می‌خونه — ${compared} کامپوننت، ۰ مغایرت\n`))
+    console.log(chalk.green(`✅ رندر با طرح می‌خونه — ${compared} هدف، ۰ مغایرت\n`))
     return true
   }
 

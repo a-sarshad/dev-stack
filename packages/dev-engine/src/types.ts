@@ -107,8 +107,48 @@ export interface LayoutSnapshot {
   align?: 'start' | 'end' | 'center' | 'stretch' | 'baseline'
   // توکن رنگ آیکون که طرح می‌گه — مثلاً "fg.muted" یا "brand.solid" (نه hex خام)
   iconColor?: string
+  // چیدمانِ containerهای *داخلی* که با marker در کد anchor شدن — پایینتر ببین.
+  containers?: Record<string, ContainerLayout>
   _synced?: string   // ISO date
   _source?: 'mcp' | 'rest' | 'manual'
+}
+
+// ── چیدمان یک container داخلی، anchor شده با marker ────────────────────────────
+// ⚠️ چرا این وجود داره — INCIDENT 2026-08-08 (Vitrina/DiscountCodesTable):
+// فیلدهای `justify`/`align` بالا سطحِ **component** ان، ولی واقعیتِ چیدمان سطح
+// **container** است. یک کامپوننت جدول ۸ ردیف افقی با intent متفاوت داره (۷ سلول
+// باید start باشن، ستون عملیات باید end باشه). قبلاً layout-diff هر تطبیقِ
+// justify در کل کامپوننت را با همان یک مقدار مقایسه می‌کرد، پس:
+//   • مقدار درست را می‌نوشتی → ۷ خط درست پاس، ۱ خط درست false-positive
+//   • پس عملاً هیچ‌کس این فیلد را پر نمی‌کرد → `if (!snap.justify) return []` → سکوت
+// این دقیقاً در `_note` خودِ CampaignCard مستند شده بود («NO justify field here on
+// purpose … any single value false-positives on one of the two lines») و بعد سه بار
+// همان باگ ship شد (CampaignCard 08-03، NewCampaignDialog 08-03، DiscountCodes 08-08).
+//
+// راه‌حل: container را در کد با یک marker کامنت نام‌گذاری کن:
+//     {/* @layout actionsCell */}
+//     <Flex justify="end"> … </Flex>
+// و در snapshot:
+//     "containers": { "actionsCell": { "justify": "end" } }
+// layout-diff تگِ بازِ **بلافاصله بعدِ** marker را چک می‌کند — نه کل کامپوننت.
+// هر دو سمتِ نبودن هم warning می‌دهد (marker بی‌snapshot، snapshot بی‌marker)، پس
+// دیگر «۰ issue» نمی‌تواند یعنی «هیچی چک نشد».
+export interface ContainerLayout {
+  // node فیگمای متناظر — تنها فیلدی که نمی‌شود از ذهن ساخت.
+  // با این، `justify`/`align`/`childOrder` را `layout-derive` **حساب** می‌کند
+  // (x + width در برابر لبهٔ والد) به‌جای اینکه دست آدم تایپ کند. نوشتن دستیِ
+  // `"align":"start"` همان مرحله‌ای بود که سه بار برعکس نوشته شد.
+  nodeId?: string
+  justify?: LayoutSnapshot['justify']
+  align?: LayoutSnapshot['align']
+  textAlign?: LayoutSnapshot['textAlign']
+  // ترتیب فرزندهای مستقیمِ همین container — به ترتیب visual طرح (RTL: راست→چپ).
+  // `childOrder` سطح بالا فقط root را می‌گیرد؛ باگ‌های واقعی اغلب در زوج‌های
+  // *داخلی* اند. INCIDENT 2026-08-08: قاعدهٔ «sort نزولی روی x» فقط روی ردیف
+  // بیرونیِ DiscountCodeCard اعمال شد و سه زوج داخلی آینه‌ای ship شدند —
+  // قاعده بازگشتی است و این فیلد همان بازگشت را قابل‌چک می‌کند.
+  childOrder?: string[]
+  _note?: string
 }
 
 // ── Rendered geometry snapshot (ماژول verify-render) ──────────────────────────
@@ -127,6 +167,12 @@ export interface RenderedSnapshot {
   iconColor?: string    // computed color خام: rgb(...)
   x?: number
   width?: number
+  // computed خام — برای مقایسه با ContainerLayout. مرورگر `start`/`flex-start`
+  // را به مقدار resolve‌شدهٔ خودش برمی‌گرداند، پس این تنها جایی است که معلوم
+  // می‌شود `dir` ارثی واقعاً چه چیزی را flip کرد.
+  justifyContent?: string
+  alignItems?: string
+  flexDirection?: string
 }
 
 export interface RenderedSnapshotFile {

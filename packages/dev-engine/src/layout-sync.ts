@@ -25,9 +25,11 @@ export function validateSnapshot(snap: unknown): string[] {
   }
   const s = snap as Record<string, unknown>
 
+  // null = «حذفش کن» (writeLayoutSnapshot merge می‌کنه، پس تنها راه پس‌گرفتن یک
+  // fact غلط همینه) — پس از اعتبارسنجیِ مقدار معاف است.
   for (const [key, allowed] of Object.entries(ALLOWED)) {
     const v = s[key]
-    if (v === undefined) continue
+    if (v === undefined || v === null) continue
     if (typeof v !== 'string' || !allowed.includes(v)) {
       const hint = typeof v === 'string' && PHYSICAL.includes(v)
         ? `  ← «${v}» فیزیکیه. اول به semantic ترجمه کن: در RTL راست=start و چپ=end`
@@ -36,7 +38,7 @@ export function validateSnapshot(snap: unknown): string[] {
     }
   }
 
-  if (s.childOrder !== undefined) {
+  if (s.childOrder !== undefined && s.childOrder !== null) {
     if (!Array.isArray(s.childOrder) || s.childOrder.some(n => typeof n !== 'string')) {
       errs.push('childOrder: باید آرایه‌ای از رشته (اسم tag/component) باشه')
     } else if (s.childOrder.length < 2) {
@@ -51,7 +53,53 @@ export function validateSnapshot(snap: unknown): string[] {
     }
   }
 
-  const known = new Set([...Object.keys(ALLOWED), 'childOrder', 'iconColor', '_synced', '_source', '_note'])
+  // containers: چیدمانِ per-container با marker (چرا → types.ts ContainerLayout).
+  // همان ALLOWED برای justify/align/textAlign اعمال می‌شه، پس مقدار فیزیکی
+  // («flex-end») این‌جا هم رد می‌شه نه فقط در سطح بالا.
+  if (s.containers !== undefined) {
+    if (typeof s.containers !== 'object' || s.containers === null || Array.isArray(s.containers)) {
+      errs.push('containers: باید آبجکتی از name → {justify?, align?, textAlign?} باشه')
+    } else {
+      for (const [name, raw] of Object.entries(s.containers as Record<string, unknown>)) {
+        if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+          errs.push(`containers.${name}: باید آبجکت باشه`)
+          continue
+        }
+        const c = raw as Record<string, unknown>
+        for (const key of ['justify', 'align', 'textAlign'] as const) {
+          const v = c[key]
+          if (v === undefined) continue
+          if (typeof v !== 'string' || !ALLOWED[key].includes(v)) {
+            const hint = typeof v === 'string' && PHYSICAL.includes(v)
+              ? `  ← «${v}» فیزیکیه. در RTL راست=start و چپ=end`
+              : ''
+            errs.push(`containers.${name}.${key}: «${String(v)}» مجاز نیست — یکی از [${ALLOWED[key].join(', ')}]${hint}`)
+          }
+        }
+        if (c.childOrder !== undefined) {
+          if (!Array.isArray(c.childOrder) || c.childOrder.some(n => typeof n !== 'string')) {
+            errs.push(`containers.${name}.childOrder: باید آرایه‌ای از اسم تگ باشه`)
+          } else if (c.childOrder.length < 2) {
+            errs.push(`containers.${name}.childOrder: کمتر از ۲ عضو چیزی رو چک نمی‌کنه`)
+          }
+        }
+        if (c.nodeId !== undefined && c.nodeId !== null) {
+          if (typeof c.nodeId !== 'string' || !/^\d+[:-]\d+$/.test(c.nodeId)) {
+            errs.push(`containers.${name}.nodeId: «${String(c.nodeId)}» شکل node فیگما نیست (مثل 2659:82005)`)
+          }
+        }
+        const knownC = new Set(['nodeId', 'justify', 'align', 'textAlign', 'childOrder', '_note'])
+        for (const k of Object.keys(c)) {
+          if (!knownC.has(k)) errs.push(`containers.${name}: فیلد ناشناخته «${k}»`)
+        }
+        if (Object.keys(c).filter(k => !k.startsWith('_')).length === 0) {
+          errs.push(`containers.${name}: خالیه — چیزی چک نمی‌کنه. یا مقدار بده یا حذفش کن`)
+        }
+      }
+    }
+  }
+
+  const known = new Set([...Object.keys(ALLOWED), 'childOrder', 'iconColor', 'containers', '_synced', '_source', '_note'])
   for (const k of Object.keys(s)) {
     if (!known.has(k)) errs.push(`فیلد ناشناخته «${k}» — تایپی؟ (فیلدهای معتبر: ${[...known].filter(x => !x.startsWith('_')).join(', ')})`)
   }

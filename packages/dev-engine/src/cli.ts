@@ -11,6 +11,7 @@ import { runDoctor } from './doctor.js'
 import { runFigmaSync } from './figma-sync.js'
 import { runLayoutSync, runLayoutSet } from './layout-sync.js'
 import { runVerifyRender, printRenderSnippet } from './verify-render.js'
+import { runLayoutDerive } from './layout-derive.js'
 import { loadMergedResolve, resolveName } from './cache.js'
 import type { RunOptions } from './types.js'
 
@@ -185,6 +186,24 @@ program
     const projectRoot = resolve(process.cwd(), path ?? '.')
     const config = loadConfig(projectRoot, opts.config)
     const ok = runVerifyRender(projectRoot, config, { input: opts.input, json: opts.json })
+    process.exit(ok ? 0 : 1)
+  })
+
+// ── Layout-derive — سمت و ترتیب را از هندسهٔ فیگما حساب کن، نه از قضاوت آدم ─────
+program
+  .command('layout-derive [path]')
+  .description('justify/align/ترتیب را از مختصات خام فیگما (دامپ get_metadata) حساب می‌کند و در snapshot می‌نویسد')
+  .option('--config <path>', 'explicit path to .dev-engine.json')
+  .option('--metadata <file>', 'فایل دامپ XML خروجی get_metadata')
+  .option('--write', 'نتیجه را در figma-layout.json ذخیره کن', false)
+  .action((path: string | undefined, opts: { config?: string; metadata?: string; write: boolean }) => {
+    if (!opts.metadata) {
+      console.error('--metadata <file> لازم است (خروجی get_metadata را در فایل بریز)')
+      process.exit(1)
+    }
+    const projectRoot = resolve(process.cwd(), path ?? '.')
+    const config = loadConfig(projectRoot, opts.config)
+    const ok = runLayoutDerive(projectRoot, config, { metadata: opts.metadata, write: opts.write })
     process.exit(ok ? 0 : 1)
   })
 
