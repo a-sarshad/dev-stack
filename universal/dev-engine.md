@@ -197,6 +197,41 @@ alias den-ci='dev-engine . --json --exit-zero'
 | `layout-diff` | مقایسه‌ی instance-specific کد با facts واقعی طرح فیگما (از `.claude/context/figma-layout.json`): ترتیب فرزند (`child-order-mismatch`)، سمت آیکون (`icon-side-mismatch`)، textAlign (`text-align-mismatch`)، justify/align (`justify-mismatch`/`align-mismatch`)، رنگ آیکون (`icon-color-mismatch`). rule عمومی نیست — اگه snapshot نباشه، صفر violation | همه |
 | `verify-render` | (subcommand جدا، نه ماژول per-file) diff **عددی** بین geometry واقعیِ DOM رندرشده و طرح: ردیف آینه‌ای (`visual-order-mirrored`)، textAlign محاسبه‌شده (`rendered-text-align`)، رنگ آیکون resolve‌شده (`rendered-icon-color`) | همه |
 | `build-git` | ۳ چک project-level (نه per-file): **①** `pnpm type-check` / build failure — **②** uncommitted files + unpushed commits — **③** HANDOFF.md staleness (N commits behind) | همه |
+| `direction-audit` 🔒 | **opt-in، گزارش‌محض.** فهرست رتبه‌بندی‌شدهٔ نامزدهای جهت‌معکوس در کد **موجود** — هر `end` روی محور افقی. `end-usage-unexplained` (warning) / `end-usage-documented` (info) | همه |
+
+---
+
+### `direction-audit` — ماژول درمانی (opt-in)
+
+```bash
+dev-engine . --module direction-audit      # فقط همین ماژول
+```
+
+**چرا جداست از بقیه.** `css-logical-props` و `one-align-idiom` فقط می‌گویند «فیزیکی
+ننویس» — **نمی‌گویند `start` درست است یا `end`.** کدی که همه‌جا logical است می‌تواند
+کاملاً معکوس باشد و همهٔ چک‌ها سبز بمانند؛ دقیقاً همان چیزی که در چهار incident واقعی
+رخ داد. آن ماژول‌ها پیشگیرانه‌اند (کار جدید)؛ این یکی درمانی است (کد موجود).
+
+**منطق.** در RTL، `end` یعنی چپ — استثنا، نه قاعده. پس هر `end` روی محور افقی یک
+تصمیم آگاهانه بوده که می‌توانسته ترجمهٔ معکوس باشد. ماژول محور را درست تشخیص می‌دهد:
+`justify` روی ردیف افقی است، `align` روی ستون افقی است، `textAlign` همیشه افقی.
+
+**رتبه‌بندی.** نامزدی که کامنتِ **جهت‌دار** در ۳ خط بالایش ندارد → `warning` (اول
+اینها). نامزدی که دارد → `info`. کامنتِ نامربوط حساب نمی‌شود.
+
+**سه قید طراحی (عمدی، تغییرشان نده):**
+
+1. **هرگز auto-fix.** درست بودن `end` فقط با دیدن طرح معلوم می‌شود. سابقه در کامنت
+   `src/direction.ts`: auto-fixِ جهت قبلاً «متن رو به سمت اشتباه می‌برد».
+2. **opt-in، نه default.** ~۱۰۰ نامزد روی یک کدبیس متوسط؛ در اجرای عادی errorهای
+   واقعی را زیر نویز دفن می‌کند. فیلتر: `OPT_IN_MODULE_IDS` در `engine.ts`.
+3. **هرگز severity=error.** خروجی «مشکوک» است نه «غلط»؛ بیشتر نامزدها مشروع‌اند.
+
+**روش استفاده:** لیست warning را بگیر → برای هر مورد screenshot طرح را ببین → اگر
+درست بود کامنت جهت بگذار (دفعهٔ بعد `info` می‌شود) → اگر غلط بود `start` کن.
+**هر بار فقط یک متغیر** (یا ترتیب DOM یا مقدار logical، نه هر دو).
+
+مرجع مفهومی: `universal/language.md` § «دابل-فلیپ».
 
 ---
 
