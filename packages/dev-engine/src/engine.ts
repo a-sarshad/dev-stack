@@ -16,6 +16,12 @@ import { createTokenReplacerModule } from './modules/token-replacer.js'
 import { runBuildCheck, runGitCheck, runHandoffCheck } from './modules/build-git-check.js'
 import { dsComponentUsageModule } from './modules/ds-component-usage.js'
 import { createLayoutDiffModule } from './modules/layout-diff.js'
+import { directionAuditModule } from './modules/direction-audit.js'
+
+// ماژول‌هایی که **فقط با انتخاب صریح** اجرا می‌شن (`--modules <id>`).
+// چرا: خروجی‌شون «نامزد بازبینی» است نه «خطا». روی یه کدبیس متوسط ~۱۰۰ مورد
+// می‌دن و اگه در اجرای عادی بیان، errorهای واقعی رو زیر نویز دفن می‌کنن.
+const OPT_IN_MODULE_IDS = new Set(['direction-audit'])
 
 const BASE_MODULES: CheckModule[] = [
   cssLogicalPropsModule,
@@ -32,9 +38,12 @@ function getModules(projectRoot: string, config: ProjectConfig, selectedIds?: st
     ...BASE_MODULES,
     createTokenReplacerModule(projectRoot),
     createLayoutDiffModule(projectRoot),
+    directionAuditModule,
   ]
   return ALL_MODULES.filter(m => {
     if (selectedIds && !selectedIds.includes(m.id)) return false
+    // opt-in فقط وقتی صریح انتخاب شده باشه (selectedIds بالا چک شد)
+    if (!selectedIds && OPT_IN_MODULE_IDS.has(m.id)) return false
     if (m.supportedDS && config.ds !== 'generic' && !m.supportedDS.includes(config.ds)) return false
     return true
   })

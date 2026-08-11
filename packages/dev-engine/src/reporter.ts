@@ -32,7 +32,10 @@ export function printResult(results: CheckResult[]): void {
 
 function printViolation(v: Violation): void {
   const location = chalk.gray(`${v.line}${v.column ? `:${v.column}` : ''}`)
-  const badge = v.severity === 'error' ? chalk.red('[error]') : chalk.yellow('[warn]')
+  const badge =
+    v.severity === 'error' ? chalk.red('[error]')
+    : v.severity === 'info' ? chalk.gray('[info]')
+    : chalk.yellow('[warn]')
   const fixable = v.autoFixable ? chalk.green(' [auto-fix available]') : ''
   const module = chalk.cyan(`[${v.module}]`)
 
