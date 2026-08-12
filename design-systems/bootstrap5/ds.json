@@ -1,0 +1,7 @@
+{
+  "id": "bootstrap5",
+  "aliases": [],
+  "package": "bootstrap",
+  "targets": "^5",
+  "contract": 1
+}
