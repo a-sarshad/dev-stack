@@ -13,6 +13,7 @@ import { runLayoutSync, runLayoutSet } from './layout-sync.js'
 import { runVerifyRender, printRenderSnippet } from './verify-render.js'
 import { runLayoutDerive } from './layout-derive.js'
 import { loadMergedResolve, resolveName } from './cache.js'
+import { loadDsRegistry, findDevKnowledge } from './paths.js'
 import type { RunOptions } from './types.js'
 
 const program = new Command()
@@ -205,6 +206,38 @@ program
     const config = loadConfig(projectRoot, opts.config)
     const ok = runLayoutDerive(projectRoot, config, { metadata: opts.metadata, write: opts.write })
     process.exit(ok ? 0 : 1)
+  })
+
+// ── ds-list — design systemهای موجود در dev-knowledge ─────────────────────────
+program
+  .command('ds-list')
+  .description('لیست design systemهای ثبت‌شده (design-systems/*/ds.json) با contract و targets')
+  .option('--config <path>', 'explicit path to dev-knowledge')
+  .option('--json', 'output as JSON', false)
+  .action((opts: { config?: string; json: boolean }) => {
+    const registry = loadDsRegistry(opts.config)
+    if (opts.json) {
+      console.log(JSON.stringify(registry, null, 2))
+      return
+    }
+    const dn = findDevKnowledge(opts.config)
+    console.log(chalk.bold(`\n🎨 design systems — ${dn ?? 'dev-knowledge پیدا نشد'}\n`))
+    if (registry.length === 0) {
+      console.log(chalk.yellow('  هیچ ds.json پیدا نشد.'))
+      console.log(chalk.gray('  یه DS جدید: پوشه‌ی design-systems/_TEMPLATE/ رو کپی کن و ds.json رو پر کن.\n'))
+      return
+    }
+    for (const m of registry) {
+      const alias = m.aliases?.length ? chalk.gray(` (${m.aliases.join(', ')})`) : ''
+      const meta = [
+        m.package ? `pkg ${m.package}` : 'بدون package',
+        m.targets ? `targets ${m.targets}` : null,
+        m.contract !== undefined ? `contract v${m.contract}` : chalk.yellow('بدون contract'),
+      ].filter(Boolean).join(chalk.gray(' · '))
+      console.log(`  ${chalk.cyan(m.id)}${alias}  ${chalk.gray('→')} ${m.folder}`)
+      console.log(`    ${chalk.gray(meta)}`)
+    }
+    console.log()
   })
 
 program.parse()

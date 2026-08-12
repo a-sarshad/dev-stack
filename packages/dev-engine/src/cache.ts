@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from 'fs'
 import { resolve } from 'path'
 import type { ProjectConfig, FigmaResolveCache, MergedResolve } from './types.js'
-import { findDevKnowledge, dsFolder } from './paths.js'
+import { findDevKnowledge, dsFolder, findDs } from './paths.js'
 
 const LOCAL_CACHE = '.claude/context/figma-resolve.json'
 
@@ -17,7 +17,11 @@ function readJSON(path: string): FigmaResolveCache | null {
 export function dsCachePath(config: ProjectConfig): string | null {
   const dn = findDevKnowledge(config.dev_knowledge_path)
   if (!dn) return null
-  return resolve(dn, 'design-systems', dsFolder(config.ds), 'figma-resolve.json')
+  // رجیستری رو با همون dev_knowledge_path پروژه resolve کن — dsFolder() این آرگومان
+  // رو نمی‌گیره (امضاش back-compat مونده)، پس اگه پروژه override داشته باشه
+  // بدون این خط دو تا مسیر متفاوت درمی‌اومد.
+  const folder = findDs(config.ds, config.dev_knowledge_path)?.folder ?? dsFolder(config.ds)
+  return resolve(dn, 'design-systems', folder, 'figma-resolve.json')
 }
 
 // لایه Local: <project>/.claude/context/figma-resolve.json

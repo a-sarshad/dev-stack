@@ -1,6 +1,7 @@
 export type Direction = 'rtl' | 'ltr' | 'both'
 export type Calendar = 'jalali' | 'hijri' | 'gregorian'
-export type DesignSystem = 'chakra-v3' | 'chakra-v2' | 'mui' | 'antd' | 'mantine' | 'generic'
+export type KnownDesignSystem = 'chakra-v3' | 'chakra-v2' | 'mui' | 'antd' | 'mantine' | 'generic'
+export type DesignSystem = KnownDesignSystem | (string & {})
 export type IconLibrary = 'lucide' | 'heroicons' | 'fa' | 'mdi' | 'generic'
 
 export interface PathConfig {
@@ -28,6 +29,7 @@ export interface ProjectConfig {
   ds_mcp?: string
   dev_knowledge_path?: string   // override برای پیدا کردن لایه DS cache
   import_alias?: string         // برای scan — مثلاً '@/' (پیش‌فرض)
+  ds_contract?: number          // نسخهٔ contract لایهٔ DS رو pin می‌کنه — doctor روی mismatch hard-fail می‌کنه
 }
 
 export interface Violation {
