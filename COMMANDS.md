@@ -29,9 +29,9 @@ type den               # تست: باید بگه "den is an alias for dev-engine
 > چی fix می‌کنه: hardcode رنگ→token، `right`→`insetInlineEnd`، RTL DOM order، console.log، و... .
 
 > **⚠️ همیشه repo root (`.`) بده، هیچ‌وقت `./src` یا زیرشاخه.** آرگومان `path` هم‌زمان
-> root اسکن فایل **و** root پیدا کردن cache است؛ با زیرشاخه، `figma-layout.json` و
-> `figma-resolve.json` پیدا نمی‌شن و ماژول‌هایی مثل `layout-diff` بی‌هیچ خطایی
-> «۰ issue» می‌دن — یعنی «هیچی چک نشد»، نه «تمیزه». دامنه رو با `--changed` محدود کن، نه با مسیر.
+> root اسکن فایل **و** root پیدا کردن cache است؛ با زیرشاخه، `.dev-engine.json` و
+> `figma-resolve.json` پیدا نمی‌شن و خروجی «۰ issue» می‌شه — یعنی «هیچی چک نشد»،
+> نه «تمیزه». دامنه رو با `--changed` محدود کن، نه با مسیر.
 
 ---
 
@@ -39,7 +39,7 @@ type den               # تست: باید بگه "den is an alias for dev-engine
 
 | دستور | چیکار می‌کنه | کِی دستی می‌زنی |
 |-------|--------------|----------------|
-| `dev-engine doctor .` | preflight: DS نصبه؟ cache هست؟ کهنه نشده؟ پوشش snapshot چقدره؟ | قبل شروع کار، چک آمادگی |
+| `dev-engine doctor .` | preflight: DS نصبه؟ نسخه/contract می‌خوره؟ cache هست و کهنه نشده؟ | قبل شروع کار، چک آمادگی |
 | `dev-engine resolve Button` | اسم Figma → import کد (از cache local، صفر MCP) | می‌خوای ببینی فلان کامپوننت به چی map می‌شه |
 | `dev-engine figma-sync .` | وضعیت cache دو لایه (DS + Local) + شمارش | ببینی cache چقدر پره |
 | `dev-engine figma-sync . --scan` | `src/components` رو scan کن، cache Local رو پر کن | کامپوننت جدید اضافه کردی، cache آپدیت شه |
@@ -47,21 +47,28 @@ type den               # تست: باید بگه "den is an alias for dev-engine
 
 ---
 
-## ۲.۵ تطابق با طرح فیگما (layout-diff + verify-render)
+## ۲.۵ تطابق با طرح فیگما
 
-دو لایه‌ی مستقل: یکی **متن کد** رو با طرح می‌سنجه، یکی **پیکسل رندرشده** رو.
+**تأیید نهایی = مقایسهٔ screenshot طرح با screenshot preview.** هیچ ابزار CLIای
+جایگزینش نیست و هیچ‌کدام «جهت درست است یا نه» را نمی‌گویند.
+
+تنها کمکِ ماشینی، حساب‌کردن سمت از **هندسهٔ خام** است به‌جای خواندن با چشم:
 
 | دستور | چیکار می‌کنه |
 |-------|--------------|
-| `dev-engine layout-sync .` | چند کامپوننت snapshot دارن + سنشون. **۰ یعنی layout-diff هیچی چک نمی‌کنه** |
-| `dev-engine layout-sync . --set Card --data '{"textAlign":"start"}'` | نوشتن snapshot **با اعتبارسنجی** (به‌جای ویرایش دستی JSON) |
-| `dev-engine verify-render --snippet` | اسنیپت JS رو چاپ می‌کنه تا در کنسول preview اجرا کنی |
-| `dev-engine verify-render .` | geometry دامپ‌شده رو **عددی** با طرح diff می‌کنه |
+| `dev-engine layout-derive . --metadata dump.xml` | از دامپ `get_metadata`، برای هر container: `layoutMode`، `justify`/`align`، و ترتیب صحیح DOM را **حساب** و چاپ می‌کند |
+| `… --node 2659:82005` | فقط همان node و زیرمجموعه‌اش |
+
+خروجی سوختِ **جدول ترجمه** است، نه یک چک خودکار — هیچ فایلی نمی‌نویسد.
 
 > **قرارداد semantic (مهم):** مقدارها `start`/`end` ان، نه `left`/`right`.
 > در RTL: `start` = راست · `end` = چپ. canvas فیگما همیشه LTR رندر می‌شه، پس
-> متنی که در فیگما راست‌چین می‌بینی در پروژه‌ی RTL یعنی `start`. اگه مقدار فیزیکی
-> بدی، `--set` ردش می‌کنه و همین اشتباه رو یادآوری می‌کنه.
+> متنی که در فیگما راست‌چین می‌بینی در پروژه‌ی RTL یعنی `start`.
+
+> **حذف‌شده در 1405/05:** `layout-diff` · `verify-render` · `layout-sync` ·
+> `figma-layout.json`. دلیل: snapshot و کد هر دو از یک خواندنِ screenshot می‌آمدند،
+> پس سبزشدنشان هیچ اطلاعات مستقلی نداشت — و ⚠️ روتینشان ⚠️ واقعی را در DoD
+> نامرئی می‌کرد.
 
 ---
 

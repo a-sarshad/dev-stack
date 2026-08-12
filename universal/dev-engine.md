@@ -57,10 +57,10 @@ command -v dev-engine && dev-engine --version
 ## ⚠️ اجرای صحیح — `path` هم scan-root است هم config/cache-root
 
 آرگومان `path` که به `dev-engine` می‌دی، هم‌زمان **هم** root اسکن فایل‌هاست **هم** root حل‌کردن
-`.dev-engine.json` و کل `.claude/context/*` (`figma-resolve.json`, `figma-layout.json`, ...).
+`.dev-engine.json` و کل `.claude/context/*` (`figma-resolve.json`, ...).
 اگه یه subdirectory بدی (نه repo root) — مثلاً `dev-engine ./components/foo` — این cacheها
 silently پیدا نمی‌شن (چون دنبالشون تو `./src/components/foo/.claude/context/...` می‌گرده) و
-ماژول‌هایی مثل `layout-diff` بدون هیچ خطایی «۰ issue» گزارش می‌دن. این یعنی «هیچی چک نشد»، نه
+خروجی بدون هیچ خطایی «۰ issue» می‌شه. این یعنی «هیچی چک نشد»، نه
 «چک شد و تمیز بود» — یه false-negative بی‌صدا.
 
 **همیشه از repo root اجرا کن، حتی برای چک یه subfolder خاص:**
@@ -76,8 +76,8 @@ node ~/Documents/GitHub/Tools/dev-agents/packages/dev-engine/dist/cli.js .
 ```
 
 سابقه: 1404 — پروژه Vitrina، یه session کامل `dev-engine src/components/marketing --fix` زد و
-«۰ issue» گرفت؛ بعداً با `node cli.js . --module layout-diff --report-only` از repo root معلوم
-شد که cache اصلاً لود نشده بود. با یه decoy file تأیید شد که از root واقعاً mismatch رو می‌گیره.
+«۰ issue» گرفت؛ بعداً از repo root معلوم شد که cache اصلاً لود نشده بود.
+با یه decoy file تأیید شد که از root واقعاً mismatch رو می‌گیره.
 
 ---
 
@@ -137,22 +137,17 @@ dev-engine figma-sync ./           # وضعیت DS + Local + شمارش merge
 dev-engine figma-sync ./ --scan    # auto-populate لایه Local از scan src/components
 dev-engine figma-sync ./ --init    # template خالی در .claude/context/
 
-# figma-layout cache (facts واقعی layout هر component — برای ماژول layout-diff)
-dev-engine layout-sync .           # وضعیت cache + سن هر component (۰ یعنی layout-diff no-op است)
-dev-engine layout-sync . --init    # template خالی در .claude/context/figma-layout.json
-dev-engine layout-sync . --set AdChannelCard \
-  --data '{"textAlign":"start","iconSide":"start","iconColor":"fg.muted"}'   # نوشتن با اعتبارسنجی
-
-# verify-render — diff عددی بین DOM رندرشده و طرح
-dev-engine verify-render --snippet  # اسنیپت JS رو چاپ کن → در کنسول preview اجرا کن
-dev-engine verify-render .          # دامپ رو با figma-layout.json مقایسه کن
+# layout-derive — سمت و ترتیب را از هندسهٔ خام حساب کن، نه با چشم
+dev-engine layout-derive . --metadata dump.xml        # کل دامپ، تا عمق ۳
+dev-engine layout-derive . --metadata dump.xml --node 2659:82005
 ```
 
-**⚠️ قرارداد semantic برای figma-layout.json:** همه‌ی مقادیر جهت‌دار `start`/`end` ان،
-نه `left`/`right`. در RTL: `start` = راست · `end` = چپ. canvas فیگما **همیشه LTR**
-رندر می‌شه، پس متنی که در فیگما راست‌چین می‌بینی در پروژه‌ی RTL یعنی `start`، نه `end`.
+**⚠️ قرارداد semantic:** همه‌ی مقادیر جهت‌دار `start`/`end` ان، نه `left`/`right`.
+در RTL: `start` = راست · `end` = چپ. canvas فیگما **همیشه LTR** رندر می‌شه، پس
+متنی که در فیگما راست‌چین می‌بینی در پروژه‌ی RTL یعنی `start`، نه `end`.
 نگاشت مستقیمِ `textAlignHorizontal: RIGHT` فیگما به `"end"` رایج‌ترین خطاست و کل
-قضاوت رو معکوس می‌کنه — `--set` مقدار فیزیکی رو رد می‌کنه تا جلوش گرفته شه.
+قضاوت رو معکوس می‌کنه — `layout-derive` این ترجمه رو مکانیکی انجام می‌ده تا از سرِ
+آدم دربیاد.
 
 **cache دو-لایه:**
 - لایه DS (shared): `dev-knowledge/design-systems/<ds>/figma-resolve.json`
@@ -162,7 +157,14 @@ dev-engine verify-render .          # دامپ رو با figma-layout.json مق�
 
 **`.dev-engine.json` فیلدهای Figma:** `figma_source` (mcp|rest)، `figma_file_key`، `ds_mcp`، `import_alias` (پیش‌فرض `@/`)، `dev_knowledge_path` (override).
 
-**figma-layout cache — فرق با figma-resolve:** فقط **Local** (تک‌لایه، `<project>/.claude/context/figma-layout.json`) — چون per-instance و مخصوص همون طرحه، نه چیزی که بین پروژه‌ها shared بشه (بر خلاف figma-resolve که DS+Local داره). population: STEP 2 در `dev-implement` (Claude موقع `get_design_context` می‌نویسه)، نه REST/scan.
+**تطابق با طرح — چه چیزی این‌جا نیست:** هیچ چکِ CLIای نمی‌گوید «`start` درست است یا `end`».
+ماژول‌ها فقط قاعده‌ی ثابت را اعمال می‌کنند («فیزیکی ننویس»، «آیکن اول DOM»). تشخیص سمتِ
+درست فقط از دو راه می‌آید: **جدول ترجمه** قبل از کد (که `layout-derive` تغذیه‌اش می‌کند) و
+**مقایسهٔ screenshot preview با طرح** بعد از کد.
+
+> زیرسیستم `layout-diff` / `verify-render` / `layout-sync` / `figma-layout.json` در 1405/05
+> ریشه‌ای حذف شد: snapshot و کد هر دو از یک خواندنِ screenshot می‌آمدند، پس سبزشدنش هیچ
+> اطلاعات مستقلی نداشت — یک تأییدِ خودارجاع که ⚠️ واقعی را در DoD زیر نویز می‌برد.
 
 ---
 
@@ -194,8 +196,6 @@ alias den-ci='dev-engine . --json --exit-zero'
 | `token-replacer` | hardcode → token: hex رنگ + spacing (`padding="16px"` و shorthand چاکرا `p/m/mt/...`) + fontSize/fontWeight/borderRadius · + `raw-palette-on-theme-prop`: palette خام روی bg/border/fg (`teal.50`) → semantic (`brand.bg`) چون dark نمی‌شکنه | همه |
 | `persian-numerals` | اعداد لاتین در رشته فارسی + display number بدون locale (comment/scale-prop رو نادیده) | fa-IR |
 | `icon-direction` | آیکون‌های جهت‌دار (arrow) در RTL | RTL |
-| `layout-diff` | مقایسه‌ی instance-specific کد با facts واقعی طرح فیگما (از `.claude/context/figma-layout.json`): ترتیب فرزند (`child-order-mismatch`)، سمت آیکون (`icon-side-mismatch`)، textAlign (`text-align-mismatch`)، justify/align (`justify-mismatch`/`align-mismatch`)، رنگ آیکون (`icon-color-mismatch`). rule عمومی نیست — اگه snapshot نباشه، صفر violation | همه |
-| `verify-render` | (subcommand جدا، نه ماژول per-file) diff **عددی** بین geometry واقعیِ DOM رندرشده و طرح: ردیف آینه‌ای (`visual-order-mirrored`)، textAlign محاسبه‌شده (`rendered-text-align`)، رنگ آیکون resolve‌شده (`rendered-icon-color`) | همه |
 | `build-git` | ۳ چک project-level (نه per-file): **①** `pnpm type-check` / build failure — **②** uncommitted files + unpushed commits — **③** HANDOFF.md staleness (N commits behind) | همه |
 | `direction-audit` 🔒 | **opt-in، گزارش‌محض.** فهرست رتبه‌بندی‌شدهٔ نامزدهای جهت‌معکوس در کد **موجود** — هر `end` روی محور افقی. `end-usage-unexplained` (warning) / `end-usage-documented` (info) | همه |
 

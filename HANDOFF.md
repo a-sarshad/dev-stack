@@ -1,11 +1,22 @@
 # dev-knowledge — Handoff
-> آخرین آپدیت: 2026-08-08
+> آخرین آپدیت: 2026-08-12
 
 ## الان
-**Commit شد (387aa3d + commits قبل‌تر)** — موازی با `dev-agents` audit:
+**دو کار بزرگ، هنوز commit نشده:**
 
-- **`skills/dev-engine.skill` + `skills/dev-implement.skill` (هاردن شدن, 387aa3d)** — علت: کشف شد که نسخه‌ی نصب‌شده (لود واقعی در session) با source این repo drift داشت — یه skill بروزرسانی‌شده نصب نشده بود و نسخه‌ی قدیمی هنوز فعال بود. هر دو اسکیل الان: (۱) نردبان resolve باینری دارن (`command -v` → مسیر dist شناخته‌شده → self-build+link → فقط آخرش به کاربر) تا دیگه «نصب نیست، stop» رخ نده، (۲) `RULE 0` — هر step که اجرا نشه، یا خودش درست می‌کنه یا می‌پرسه، هیچ‌وقت skip نمی‌کنه، (۳) دستورهای جدید `layout-sync --set` و `verify-render` سیم‌کشی شدن.
-- **`COMMANDS.md` + `universal/dev-engine.md`** — مثال‌ها و aliasها از `dev-engine ./src` به `dev-engine .` اصلاح شدن (خودِ سند gotcha رو مستند کرده بود ولی مثال‌هاش خلافش رو یاد می‌دادن). + بخش جدید برای `layout-sync --set` و `verify-render` + توضیح قرارداد semantic (`start`/`end`، نه `left`/`right`).
+- **رجیستری DS داده‌محور** — هر `design-systems/<ds>/` حالا `ds.json` دارد
+  (`id`/`aliases`/`package`/`targets`/`contract`). افزودن یک DS جدید = کپی
+  `_TEMPLATE/`، **بدون هیچ تغییر کدی**. `doctor` سه چک تازه گرفت (رجیستری،
+  نسخه در برابر `targets`، `contract`) و `dev-engine ds-list` اضافه شد.
+  قرارداد اسکلت → `design-systems/README.md`.
+
+- **حذف ریشه‌ای زیرسیستم snapshot متنی** — `layout-diff` · `verify-render` ·
+  `layout-sync` · `figma-layout.json` (~۱۳۰۰ خط) حذف شدند.
+  **دلیل:** snapshot در STEP 2 و کد در STEP 3 هر دو از یک خواندنِ screenshot
+  می‌آمدند، پس سبزشدنِ چک هیچ اطلاعات مستقلی نداشت — یک تأیید خودارجاع که ⚠️
+  روتینش ⚠️ واقعی را در DoD نامرئی می‌کرد. تطابق با طرح = **مقایسهٔ preview**.
+  `layout-derive` ماند ولی دیگر چیزی نمی‌نویسد؛ فقط چاپ می‌کند تا «جدول ترجمه»
+  را تغذیه کند (تنها لایه‌ای که واقعاً مستقل است — سمت را از هندسه حساب می‌کند).
 
 ## نکته‌ی مهم — چرا اسکیل drift کرد
 `.skill` زیر `skills/` **source** است، نه runtime. نسخه‌ی واقعاً لودشده یه `SKILL.md` جداست زیر
@@ -14,7 +25,8 @@
 `diff <(unzip -p <name>.skill <name>/SKILL.md) "<deployed path>"`.
 
 ## بعدی
-**✅ Complete:** `dev-agents` commit شد (17fd726 — css-logical-props.ts RTL-aware mapping).
-- اگه لازم شد: گسترش `layout-diff`/`verify-render` schema به موارد بیشتر (spacing، border، shadow).
+- **نصب مجدد اسکیل‌ها** — `dev-implement` و `dev-engine` هر دو ویرایش شدند
+  (STEP 4b و بلوک‌های snapshot حذف شدند). تا re-install نشوند، نسخه‌ی قدیمی فعال است.
+- تصمیم Tailwind: `4a-financial` و `azita-jafari` یا `tailwind-v4` بگیرند یا out-of-pipeline اعلام شوند.
+- `bootstrap5/_tokens.scss` رنگ برند واقعی در لایه‌ی shared دارد → `_tokens.template.scss`.
 - اختیاری: drift‌چک خودکار بین `.skill` source و deployed SKILL.md.
-- **Upstream (Vitrina):** بروزرسانی dev-engine و تست RTL logical props fixes.
