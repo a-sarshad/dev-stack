@@ -14,8 +14,8 @@ import { isRtl, physicalToSemantic, semanticToPhysical, physicalFa } from '../di
 //
 // فیکس: بجای ۲۰+ جفت hardcoded، فقط «کدوم اسم فیزیکی چه جفت منطقی‌ای داره» رو
 // نگه می‌داریم؛ سمت واقعی (Start/End) در لحظه‌ی چک از physicalToSemantic
-// (direction.ts — همون single source of truth که layout-diff هم ازش استفاده
-// می‌کنه) محاسبه می‌شه، بر اساس config.direction همون فایل (چون ProjectConfig
+// (direction.ts — همون single source of truth که direction-audit و layout-derive
+// هم ازش استفاده می‌کنن) محاسبه می‌شه، بر اساس config.direction همون فایل (چون ProjectConfig
 // امکان override جهت per-path هم داره — یه جدول ثابت اون رو هم می‌شکست).
 
 type Side = 'Start' | 'End'
@@ -74,7 +74,7 @@ const TEXT_ALIGN_RE = /textAlign(\s*[:=]\s*)\{?\s*(["'`])(right|left)\2/g
 // (نمونهٔ واقعی: idiom درستِ `justify="flex-end"` ستون عملیاتِ BulkSmsHistoryTable
 // روی ۴ سلولِ DiscountCodesTable کپی شد که نیازشان برعکس بود.)
 //
-// فیکس: یک idiom، `start`/`end` — همان واژگانی که snapshotها، layout-diff و خودِ
+// فیکس: یک idiom، `start`/`end` — همان واژگانی که جدول ترجمه، layout-derive و خودِ
 // CLAUDE.md با آن حرف می‌زنند. آن‌وقت «چه سمتی؟» یک فکتِ واحدِ یادگرفتنی است
 // (RTL: start=راست)، نه یک ترجمهٔ per-site.
 //

@@ -1,23 +1,28 @@
 import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 import chalk from 'chalk'
-import type { ContainerLayout, ProjectConfig } from './types.js'
-import { loadLayoutSnapshots, writeLayoutSnapshot } from './layout-cache.js'
+import type { ProjectConfig } from './types.js'
 import { isRtl, physicalToSemantic, physicalFa } from './direction.js'
 
 // ── layout-derive ──────────────────────────────────────────────────────────────
 // چرا این وجود دارد — INCIDENT ×3 (CampaignCard و NewCampaignDialog 1404/05/12،
-// DiscountCodesTable/Card 1404/05/17): هر سه بار مقدار جهتی **دستی** در snapshot
-// نوشته شد و هر سه بار برعکس نوشته شد. علت هم پیچیدگی RTL نبود؛ علت این بود که
-// canvas فیگما «راست/چپ» فیزیکی می‌گوید و کد `start`/`end` نسبت‌به‌جهت می‌خواهد،
-// و آن ترجمه هر بار در سرِ آدم انجام می‌شد.
+// DiscountCodesTable/Card 1404/05/17): هر سه بار سمت **با چشم** از روی طرح خوانده
+// شد و هر سه بار برعکس خوانده شد. علت هم پیچیدگی RTL نبود؛ علت این بود که canvas
+// فیگما «راست/چپ» فیزیکی می‌گوید و کد `start`/`end` نسبت‌به‌جهت می‌خواهد، و آن
+// ترجمه هر بار در سرِ آدم انجام می‌شد.
 //
-// این ماژول آن ترجمه را حذف می‌کند: مختصات خام فیگما (x + width نسبت به والد) را
+// این ابزار آن ترجمه را حذف می‌کند: مختصات خام فیگما (x + width نسبت به والد) را
 // می‌گیرد و سمت را **حساب** می‌کند. جمع دو عدد جای قضاوت جهتی را می‌گیرد.
+// همان الگوریتمی که `universal/figma-to-code.md` § «RTL DOM Order» اجباری کرده.
 //
 // ورودی: دامپ XML خروجی `get_metadata` (چون CLI به MCP دسترسی ندارد — آن را
-// Claude می‌گیرد و در فایل می‌ریزد). نگاشت node↔container از خودِ snapshot
-// خوانده می‌شود (فیلد `nodeId` هر container).
+// Claude می‌گیرد و در فایل می‌ریزد).
+//
+// ⚠️ این ابزار عمداً **هیچ‌جا چیزی نمی‌نویسد** و هیچ چکِ خودکاری را تغذیه نمی‌کند.
+// خروجی‌اش سوختِ «جدول ترجمه» است — یعنی برای چشمِ کسی که دارد کد را می‌نویسد.
+// نسخهٔ قبلی نتیجه را در `figma-layout.json` می‌ریخت تا `layout-diff` مصرفش کند؛
+// آن کل زنجیره در 1405/05 حذف شد چون snapshot و کد هر دو از یک خواندن می‌آمدند،
+// پس سبزشدنش هیچ اطلاعات مستقلی نداشت. تأیید واقعی = مقایسهٔ preview با طرح.
 
 interface FigmaNode {
   id: string
@@ -86,10 +91,14 @@ function findNode(nodes: FigmaNode[], id: string): FigmaNode | null {
 
 const EPS = 1.5   // فیگما مختصات کسری می‌دهد (170.6666…) — مقایسه باید tolerant باشد
 
+// مقادیر semantic اند، نه فیزیکی: start = سمت شروعِ خواندن (RTL: راست · LTR: چپ).
+export type Justify = 'start' | 'end' | 'center'
+export type Align = 'start' | 'end' | 'center' | 'stretch'
+
 export interface DerivedLayout {
   layoutMode: 'HORIZONTAL' | 'VERTICAL'
-  justify?: ContainerLayout['justify']
-  align?: ContainerLayout['align']
+  justify?: Justify
+  align?: Align
   childNames: string[]              // به ترتیب صحیحِ DOM (اولین = سمت start)
   notes: string[]
 }
@@ -140,7 +149,7 @@ export function deriveLayout(node: FigmaNode, rtl: boolean): DerivedLayout {
   // خودش یک باگ تازه می‌شد.
   const edgeSide = (
     starts: number[], sizes: number[], parentSize: number, translate: boolean
-  ): ContainerLayout['align'] | 'mixed' => {
+  ): Align | 'mixed' => {
     const per = starts.map((s, i) => {
       const flushLow = s <= EPS
       const flushHigh = Math.abs(parentSize - (s + sizes[i])) <= EPS
@@ -195,10 +204,24 @@ export function deriveLayout(node: FigmaNode, rtl: boolean): DerivedLayout {
   return out
 }
 
+
+// ── walk ───────────────────────────────────────────────────────────────────────
+// هر node با ≥۲ فرزند یک container است — همان جایی که سمت و ترتیب معنا دارد و
+// همان جایی که قاعده **بازگشتی** است. INCIDENT 1404/05/17: قاعدهٔ «راست‌ترین =
+// اولین فرزند» فقط روی ردیف بیرونی اعمال شد و سه زوج داخلی آینه‌ای ship شدند.
+// پس این‌جا عمداً کل درخت پیمایش می‌شود، نه فقط root.
+function collectContainers(
+  node: FigmaNode, depth: number, maxDepth: number, out: Array<{ node: FigmaNode; depth: number }>
+): void {
+  if (depth > maxDepth) return
+  if (node.children.length >= 2) out.push({ node, depth })
+  for (const kid of node.children) collectContainers(kid, depth + 1, maxDepth, out)
+}
+
 export function runLayoutDerive(
   projectRoot: string,
   config: ProjectConfig,
-  opts: { metadata: string; write: boolean }
+  opts: { metadata: string; node?: string; depth?: number }
 ): boolean {
   const metaPath = resolve(projectRoot, opts.metadata)
   if (!existsSync(metaPath)) {
@@ -208,99 +231,61 @@ export function runLayoutDerive(
   }
 
   const tree = parseMetadata(readFileSync(metaPath, 'utf-8'))
-  const snapshots = loadLayoutSnapshots(projectRoot)
   const rtl = isRtl(config.direction)
+  const maxDepth = opts.depth ?? 3
 
-  console.log(chalk.bold(`\n📐 layout-derive — ${projectRoot}`))
-  console.log(chalk.gray(`   dir: ${rtl ? 'rtl' : 'ltr'} | متادیتا: ${opts.metadata}\n`))
+  let roots = tree
+  if (opts.node) {
+    const hit = findNode(tree, opts.node)
+    if (!hit) {
+      console.log(chalk.red(`✗ node «${opts.node}» در این دامپ نیست`))
+      return false
+    }
+    roots = [hit]
+  }
 
-  let derived = 0
-  let missing = 0
+  const containers: Array<{ node: FigmaNode; depth: number }> = []
+  for (const r of roots) collectContainers(r, 0, maxDepth, containers)
 
-  for (const [comp, snap] of Object.entries(snapshots)) {
-    const containers = snap.containers
-    if (!containers) continue
+  console.log(chalk.bold(`\n📐 layout-derive — ${opts.metadata}`))
+  console.log(chalk.gray(`   dir: ${rtl ? 'rtl' : 'ltr'} | عمق: ${maxDepth} | ${containers.length} container\n`))
 
-    const updates: Record<string, ContainerLayout> = {}
+  if (containers.length === 0) {
+    console.log(chalk.yellow('⚠️  هیچ nodeای با ≥۲ فرزند پیدا نشد — دامپ درست است؟\n'))
+    return false
+  }
 
-    for (const [cname, spec] of Object.entries(containers)) {
-      if (!spec.nodeId) {
-        console.log(chalk.yellow(`  ⚠️  ${comp} › ${cname} — بدون nodeId، حساب نشد`))
-        console.log(chalk.gray('       مقادیرش دستی‌نوشته باقی می‌ماند = همان مرحله‌ای که سه بار برعکس شد'))
-        missing++
-        continue
-      }
-      const node = findNode(tree, spec.nodeId)
-      if (!node) {
-        console.log(chalk.yellow(`  ⚠️  ${comp} › ${cname} — node ${spec.nodeId} در این دامپ نیست`))
-        missing++
-        continue
-      }
+  for (const { node, depth } of containers) {
+    const d = deriveLayout(node, rtl)
+    const pad = '  '.repeat(depth)
+    const rowLayout = d.layoutMode === 'HORIZONTAL'
 
-      const d = deriveLayout(node, rtl)
-      derived++
-
-      // ⚠️ برچسبِ سمت باید محور-آگاه باشد: در یک ردیف، `align` محور block است
-      // (بالا/پایین) و ترجمهٔ راست/چپ برایش بی‌معنی — و نوشتنش خودش یک بدفهمیِ
-      // تازه می‌ساخت، دقیقاً از همان جنسی که این ابزار برای حذفش ساخته شده.
-      const label = (v: string | undefined, inline: boolean) => {
-        if (v !== 'start' && v !== 'end') return ''
-        const fa = inline
-          ? physicalFa(v === 'start' ? (rtl ? 'right' : 'left') : (rtl ? 'left' : 'right'))
-          : (v === 'start' ? 'بالا' : 'پایین')
-        return chalk.gray(` (${fa})`)
-      }
-      const rowLayout = d.layoutMode === 'HORIZONTAL'
-
-      console.log(chalk.cyan(`  ${comp} › ${cname}`) + chalk.gray(`  [${spec.nodeId}] «${node.name}» ${node.width.toFixed(0)}px`))
-      console.log(`     layoutMode: ${d.layoutMode}`)
-      const axisTag = (inline: boolean) => inline ? chalk.green(' ← ثبت می‌شود') : chalk.gray(' (محور block — فقط اطلاع)')
-      if (d.justify) console.log(`     justify: ${d.justify}${label(d.justify, rowLayout)}${axisTag(rowLayout)}`)
-      if (d.align) console.log(`     align:   ${d.align}${label(d.align, !rowLayout)}${axisTag(!rowLayout)}`)
-      if (d.childNames.length > 1) {
-        console.log(`     ترتیب DOM: ${d.childNames.map((n, i) => (i === 0 ? chalk.green(n) : n)).join(' → ')}`)
-        console.log(chalk.gray(`                (اولین = ${physicalFa(rtl ? 'right' : 'left')}‌ترین · اسم‌ها لایه‌های فیگما اند، نه تگ کد)`))
-      }
-      for (const n of d.notes) console.log(chalk.gray(`     · ${n}`))
-
-      // ⚠️ فقط محور **inline** ثبت می‌شود، نه block.
-      // دلیل: تلهٔ RTL منحصراً روی محور inline است (راست↔چپ). محور block
-      // (بالا/پایین) هیچ ترجمه‌ای ندارد و اغلب والد انجامش می‌دهد — مثلاً
-      // `Table.Cell` خودش عمودی وسط‌چین می‌کند، پس ثبتِ `justify:center` برای
-      // یک ستون باعث می‌شد layout-diff مطالبه‌اش کند و ۴ خطای کاذب بسازد.
-      // ثبتِ کمترِ درست بهتر از ثبتِ بیشترِ پرنویز است.
-      const next: ContainerLayout = { ...spec }
-      const rowLayout2 = d.layoutMode === 'HORIZONTAL'
-      delete next.justify
-      delete next.align
-      if (rowLayout2) { if (d.justify) next.justify = d.justify }
-      else { if (d.align) next.align = d.align }
-      updates[cname] = next
-
-      // اختلافِ مقدار قبلی (دستی) با مقدار حساب‌شده = همان کلاس باگ
-      for (const key of ['justify', 'align'] as const) {
-        const before = spec[key]
-        const after = next[key]
-        if (before && after && before !== after) {
-          console.log(chalk.red(`     ✗ ${key} دستی «${before}» بود ولی هندسه «${after}» می‌گوید — همان کلاس باگ`))
-        }
-      }
-      console.log()
+    // ⚠️ برچسبِ سمت باید محور-آگاه باشد: در یک ردیف، `align` محور block است
+    // (بالا/پایین) و ترجمهٔ راست/چپ برایش بی‌معنی — نوشتنش خودش یک بدفهمیِ تازه
+    // می‌سازد، دقیقاً از همان جنسی که این ابزار برای حذفش ساخته شده.
+    const label = (v: string | undefined, inline: boolean) => {
+      if (v !== 'start' && v !== 'end') return ''
+      const fa = inline
+        ? physicalFa(v === 'start' ? (rtl ? 'right' : 'left') : (rtl ? 'left' : 'right'))
+        : (v === 'start' ? 'بالا' : 'پایین')
+      return chalk.gray(` (${fa})`)
     }
 
-    if (opts.write && Object.keys(updates).length > 0) {
-      writeLayoutSnapshot(projectRoot, comp, {
-        containers: { ...containers, ...updates },
-        _source: 'mcp',
-      })
+    console.log(`${pad}${chalk.cyan(node.name || '(بی‌نام)')} ${chalk.gray(`[${node.id}] ${node.width.toFixed(0)}px · ${d.layoutMode}`)}`)
+    if (d.justify) console.log(`${pad}   justify: ${d.justify}${label(d.justify, rowLayout)}`)
+    if (d.align) console.log(`${pad}   align:   ${d.align}${label(d.align, !rowLayout)}`)
+    if (d.childNames.length > 1) {
+      console.log(`${pad}   ترتیب DOM: ${d.childNames.map((n, i) => (i === 0 ? chalk.green(n || '؟') : (n || '؟'))).join(' → ')}`)
     }
+    for (const n of d.notes) console.log(chalk.gray(`${pad}   · ${n}`))
+    console.log()
   }
 
   console.log('─'.repeat(60))
-  console.log(`${derived} container حساب شد${missing > 0 ? chalk.yellow(` · ${missing} بی‌nodeId/بی‌node`) : ''}`)
-  console.log(opts.write
-    ? chalk.green('✓ در snapshot نوشته شد\n')
-    : chalk.gray('(نوشته نشد — با --write ذخیره کن)\n'))
+  console.log(chalk.gray(
+    `اولین فرزند = ${physicalFa(rtl ? 'right' : 'left')}‌ترین بصری. اسم‌ها لایه‌های فیگما اند، نه تگ کد.\n` +
+    `این خروجی سوختِ «جدول ترجمه» است — تأیید نهایی همچنان مقایسهٔ preview با طرح است.\n`
+  ))
 
-  return missing === 0
+  return true
 }

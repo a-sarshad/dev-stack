@@ -3,7 +3,6 @@ import { resolve } from 'path'
 import chalk from 'chalk'
 import type { ProjectConfig } from './types.js'
 import { loadMergedResolve, cacheAgeDays } from './cache.js'
-import { loadLayoutSnapshots } from './layout-cache.js'
 import { findDevKnowledge, findDs, loadDsRegistry, dsPackage } from './paths.js'
 
 const STALE_DAYS = 7
@@ -153,18 +152,10 @@ export function runDoctor(projectRoot: string, config: ProjectConfig): boolean {
     checks.push({ label: 'cache freshness', ok: !stale, warn: stale, detail: `${age}d old${stale ? ' — re-sync لازمه' : ''}` })
   }
 
-  // 10. پوشش layout snapshot (warn) — بدون این، ماژول layout-diff بی‌صدا no-op می‌شه
-  //     و preflight «سبز» می‌ده در حالی که هیچ تطابقی با طرح چک نمی‌شه.
-  const snapshots = loadLayoutSnapshots(projectRoot)
-  const tracked = Object.keys(snapshots).length
-  checks.push({
-    label: 'layout snapshots',
-    ok: tracked > 0,
-    warn: tracked === 0,
-    detail: tracked > 0
-      ? `${tracked} component(s) — layout-diff فعاله`
-      : 'خالی — layout-diff هیچی چک نمی‌کنه. dev-implement STEP 2 یا: dev-engine layout-sync --set',
-  })
+  // چک «layout snapshots» در 1405/05 حذف شد، همراه با کل زیرسیستم layout-diff /
+  // verify-render / layout-sync / figma-layout.json. دلیل: snapshot و کد هر دو از
+  // یک خواندنِ screenshot می‌آمدند، پس سبزشدنِ آن چک هیچ اطلاعات مستقلی نداشت —
+  // و ⚠️ روتینش ⚠️ واقعی را در DoD نامرئی می‌کرد. تطابق با طرح = مقایسهٔ preview.
 
   // print
   console.log(chalk.bold(`\n🩺 dev-engine doctor — ${projectRoot}\n`))

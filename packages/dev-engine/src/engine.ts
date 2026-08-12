@@ -15,7 +15,6 @@ import { debugArtifactsModule } from './modules/debug-artifacts.js'
 import { createTokenReplacerModule } from './modules/token-replacer.js'
 import { runBuildCheck, runGitCheck, runHandoffCheck } from './modules/build-git-check.js'
 import { dsComponentUsageModule } from './modules/ds-component-usage.js'
-import { createLayoutDiffModule } from './modules/layout-diff.js'
 import { directionAuditModule } from './modules/direction-audit.js'
 
 // ماژول‌هایی که **فقط با انتخاب صریح** اجرا می‌شن (`--modules <id>`).
@@ -37,7 +36,6 @@ function getModules(projectRoot: string, config: ProjectConfig, selectedIds?: st
   const ALL_MODULES = [
     ...BASE_MODULES,
     createTokenReplacerModule(projectRoot),
-    createLayoutDiffModule(projectRoot),
     directionAuditModule,
   ]
   return ALL_MODULES.filter(m => {

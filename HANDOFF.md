@@ -1,23 +1,40 @@
 # dev-agents — Handoff
-> آخرین آپدیت: 2026-08-08
+> آخرین آپدیت: 2026-08-12
 
 ## الان
-**Commit شده (e8649b5 + commits قبل‌تر)** — Audit کامل روی `dev-engine` (لایه‌ی تطابق کد ↔ طرح فیگما) اجرا شد:
+**هنوز commit نشده** — دو تغییر در `packages/dev-engine`:
 
-- **`src/direction.ts` (جدید)** — تک‌منبع نگاشت جهت (فیزیکی↔semantic). باگ ریشه‌ای فیکس شد: `normalizeAlign` قبلاً جهت‌کور بود (`right`→`end` بدون توجه به RTL) که در پروژه‌ی RTL کل قضاوت `textAlign` رو معکوس می‌کرد — هم false-negative (کد غلط تمیز)، هم false-positive (کد درست error، با auto-fix ای که متن رو غلط جابه‌جا می‌کرد).
-- **`src/modules/layout-diff.ts` (بازنویسی)** — سه باگ دیگه فیکس شد: کامپوننت با ریشه‌ی Fragment (`<>`) کاملاً نامرئی بود؛ فقط دکمه‌ی اول هر فایل چک می‌شد (نه همه‌ی دکمه‌ها)؛ چک‌ها روی کل فایل اسکن می‌شدن نه بازه‌ی خود کامپوننت. + دو چک جدید: `justify`/`align` mismatch و `icon-color` mismatch.
-- **`src/verify-render.ts` (جدید)** — لایه‌ای که وجود نداشت: diff عددی بین geometry واقعیِ DOM رندرشده (دامپ از preview) و طرح. `layout-diff` فقط متن کد رو می‌خونه؛ این لایه چیزهایی مثل «`justify` زیر `dir=rtl` واقعاً کجا نشست» رو قطعی می‌گیره. subcommand `verify-render [--snippet]`.
-- **`src/layout-sync.ts`** — نوشتن snapshot دستی JSON بود؛ الان `layout-sync --set <name> --data '<json>'` با اعتبارسنجی (`validateSnapshot`) اضافه شد — مقدار فیزیکی (`right`) یا رنگ خام (`#hex`) رد می‌شه.
-- **`src/doctor.ts`** — چک جدید: پوشش layout snapshot (۰ یعنی `layout-diff` no-op است، ولی قبلاً preflight همچنان سبز بود).
-- **`src/types.ts`** — فیلدهای `justify`/`align`/`iconColor` به `LayoutSnapshot` + type های `RenderedSnapshot`/`RenderedChild` برای verify-render.
-- همه با harness ایزوله (نه Vitrina) تست شد — هر باگ قبل/بعد از فیکس reproduce شد.
+- **رجیستری DS داده‌محور** — `paths.ts` حالا `design-systems/*/ds.json` را می‌خواند
+  (`loadDsRegistry`/`findDs`)؛ نسخهٔ hardcoded (`DS_FOLDER`/`DS_PACKAGE`) فقط fallback
+  ماند. `doctor.ts` سه چک تازه گرفت: رجیستری، نسخهٔ نصب‌شده در برابر `targets`، و
+  `contract`. `cli.ts` دستور `ds-list` گرفت. `cache.ts` باگ کوچک داشت (`dsFolder()`
+  آرگومان `dev_knowledge_path` را نادیده می‌گرفت) که در همین کار فیکس شد.
 
-- **`src/modules/css-logical-props.ts` (بازنویسی, 17fd726)** — بهبود دستاویزات و اصلاح نگاشت جهت. تاریخچه‌ی RTL logical props bug: این فایل قبلاً `right→InlineEnd` / `left→InlineStart` ثابت می‌کرد؛ طبق MDN "in RTL: inline-start=right, inline-end=left"؛ نگاشت ثابت فقط در LTR درست است و در پروژه RTL برعکس می‌شد. حالا `physicalToSemantic()` از `direction.ts` استفاده می‌کنه و RTL-aware نگاشت انجام می‌دهد. اضافه شد +108 خط دستاویزات توضیح‌دهنده.
+- **حذف ریشه‌ای زیرسیستم snapshot متنی** — `modules/layout-diff.ts` ·
+  `verify-render.ts` · `layout-sync.ts` · `layout-cache.ts` حذف شدند (~۱۳۰۰ خط).
+  از `types.ts`: `LayoutSnapshot`/`ContainerLayout`/`RenderedSnapshot`/
+  `LayoutSnapshotCache` حذف. از `engine.ts` و `doctor.ts` ارجاعشان حذف.
+  **دلیل:** snapshot (نوشته‌شده در STEP 2 از یک screenshot) و کد (نوشته‌شده در
+  STEP 3 از همان screenshot) هر دو از یک خواندن می‌آمدند، پس سبزشدنِ چک هیچ
+  اطلاعات مستقلی نداشت — یک تأیید خودارجاع که ⚠️ روتینش ⚠️ واقعی را در DoD
+  نامرئی می‌کرد. جزئیات کامل و شواهد → `dev-knowledge/HANDOFF.md`.
+  `layout-derive.ts` ماند ولی بازنویسی شد: دیگر snapshot نمی‌نویسد، فقط بازگشتی
+  روی کل درخت `get_metadata` پیمایش می‌کند و چاپ می‌کند (سوخت جدول ترجمه).
 
-## نکته‌ی حل‌شده از قبل
-باینری `dev-engine` global لینک شد (`npm link` از این پکیج) — دیگه نیازی به `node dist/cli.js` نیست. مستند شد در `dev-knowledge/universal/dev-engine.md`.
+- `dist/` پاک و از نو build شد — بدون این کار، خروجی‌های کهنه‌ی `layout-*.js`
+  زیر `dist/` می‌ماندند.
+
+## تست رگرسیون (انجام شد)
+`tsc --noEmit` تمیز → build تمیز → `doctor` روی Vitrina: ۹ چک، همه ✓ →
+اجرای کامل روی Vitrina: ۸۹ warning، دقیقاً برابر پیش از تغییر (بدون false-negative
+جدید) → `layout-derive` روی دامپ ساختگی RTL درست کار کرد (تشخیص محور، ترتیب DOM،
+و `notes` وقتی هندسه نامتقارن بود).
 
 ## بعدی
-- **Upstream (Vitrina):** css-logical-props و direction.ts fixes را test کند و اگه نیاز باشه (false-positive/negative) بگزارش دهد.
-- **Optional:** بهبود‌های اضافی برای `verify-render` اگه در Vitrina یا پروژه دیگه case edge جدید کشف شود.
-- **Scope:** دو repo (dev-knowledge + dev-agents) الان sync شدند؛ audit کامل RTL logical props انجام شد.
+- **این commit + دو‌تای دیگه (dev-knowledge، Vitrina) با هم مرتبطن** — سه‌تا با هم
+  commit شوند تا یک repo نصفه‌کاره نماند.
+- **نصب مجدد skillها لازم است** — `dev-implement.skill`/`dev-engine.skill` ویرایش
+  شدند ولی نسخهٔ deployed جداست؛ تا re-install نشوند نسخهٔ قدیمی (که هنوز
+  `layout-sync`/`verify-render` صدا می‌زند) فعال می‌ماند.
+- تصمیم باز: آیا `layout-derive` هم حذف شود؟ (بررسی شد — صفر هزینهٔ زمان اجرا دارد،
+  هیچ‌جا خودکار صدا زده نمی‌شود؛ فعلاً نگه داشته شد.)

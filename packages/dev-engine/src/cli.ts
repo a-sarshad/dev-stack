@@ -9,8 +9,6 @@ import { printResult, printJSON } from './reporter.js'
 import { runInit } from './init.js'
 import { runDoctor } from './doctor.js'
 import { runFigmaSync } from './figma-sync.js'
-import { runLayoutSync, runLayoutSet } from './layout-sync.js'
-import { runVerifyRender, printRenderSnippet } from './verify-render.js'
 import { runLayoutDerive } from './layout-derive.js'
 import { loadMergedResolve, resolveName } from './cache.js'
 import { loadDsRegistry, findDevKnowledge } from './paths.js'
@@ -151,60 +149,28 @@ program
     runFigmaSync(projectRoot, config, { init: opts.init, scan: opts.scan })
   })
 
-// ── Layout-sync — validate/scaffold figma-layout.json (per-component design facts) ──
-program
-  .command('layout-sync [path]')
-  .description('وضعیت/scaffold/نوشتن cache figma-layout.json برای ماژول layout-diff')
-  .option('--config <path>', 'explicit path to .dev-engine.json')
-  .option('--init', 'یه template خالی figma-layout.json در .claude/context/ بساز', false)
-  .option('--set <component>', 'نوشتن snapshot یک کامپوننت (با --data)')
-  .option('--data <json>', 'بدنه‌ی JSON اسنپ‌شات — با --set استفاده می‌شه')
-  .action((path: string | undefined, opts: { config?: string; init: boolean; set?: string; data?: string }) => {
-    const projectRoot = resolve(process.cwd(), path ?? '.')
-    if (opts.set) {
-      if (!opts.data) {
-        console.error('--set نیاز به --data \'{"textAlign":"start"}\' داره')
-        process.exit(1)
-      }
-      process.exit(runLayoutSet(projectRoot, opts.set, opts.data) ? 0 : 1)
-    }
-    runLayoutSync(projectRoot, { init: opts.init })
-  })
-
-// ── Verify-render — diff بین DOM رندرشده و طرح فیگما (BLUEPRINT §7) ────────────
-program
-  .command('verify-render [path]')
-  .description('geometry واقعیِ DOM (دامپ‌شده از preview) رو عددی با figma-layout.json مقایسه می‌کنه')
-  .option('--config <path>', 'explicit path to .dev-engine.json')
-  .option('--input <file>', 'فایل دامپ رندر (پیش‌فرض: .claude/context/render-snapshot.json)')
-  .option('--snippet', 'اسنیپت JS رو چاپ کن تا در preview اجرا کنی', false)
-  .option('--json', 'output as JSON', false)
-  .action((path: string | undefined, opts: { config?: string; input?: string; snippet: boolean; json: boolean }) => {
-    if (opts.snippet) {
-      printRenderSnippet()
-      return
-    }
-    const projectRoot = resolve(process.cwd(), path ?? '.')
-    const config = loadConfig(projectRoot, opts.config)
-    const ok = runVerifyRender(projectRoot, config, { input: opts.input, json: opts.json })
-    process.exit(ok ? 0 : 1)
-  })
-
-// ── Layout-derive — سمت و ترتیب را از هندسهٔ فیگما حساب کن، نه از قضاوت آدم ─────
+// ── Layout-derive — سمت و ترتیب را از هندسهٔ فیگما حساب کن، نه از قضاوت چشم ─────
+// فقط چاپ می‌کند؛ هیچ فایلی نمی‌نویسد و هیچ چک خودکاری را تغذیه نمی‌کند (چرا →
+// کامنت بالای layout-derive.ts). خروجی برای پر کردن «جدول ترجمه» است.
 program
   .command('layout-derive [path]')
-  .description('justify/align/ترتیب را از مختصات خام فیگما (دامپ get_metadata) حساب می‌کند و در snapshot می‌نویسد')
+  .description('justify/align/ترتیب فرزندها را از مختصات خام فیگما (دامپ get_metadata) حساب و چاپ می‌کند')
   .option('--config <path>', 'explicit path to .dev-engine.json')
   .option('--metadata <file>', 'فایل دامپ XML خروجی get_metadata')
-  .option('--write', 'نتیجه را در figma-layout.json ذخیره کن', false)
-  .action((path: string | undefined, opts: { config?: string; metadata?: string; write: boolean }) => {
+  .option('--node <id>', 'فقط همین node و زیرمجموعه‌اش (پیش‌فرض: کل دامپ)')
+  .option('--depth <n>', 'حداکثر عمق پیمایش (پیش‌فرض ۳)')
+  .action((path: string | undefined, opts: { config?: string; metadata?: string; node?: string; depth?: string }) => {
     if (!opts.metadata) {
       console.error('--metadata <file> لازم است (خروجی get_metadata را در فایل بریز)')
       process.exit(1)
     }
     const projectRoot = resolve(process.cwd(), path ?? '.')
     const config = loadConfig(projectRoot, opts.config)
-    const ok = runLayoutDerive(projectRoot, config, { metadata: opts.metadata, write: opts.write })
+    const ok = runLayoutDerive(projectRoot, config, {
+      metadata: opts.metadata,
+      node: opts.node,
+      depth: opts.depth ? Number(opts.depth) : undefined,
+    })
     process.exit(ok ? 0 : 1)
   })
 
