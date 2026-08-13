@@ -6,7 +6,7 @@ import chalk from 'chalk'
 import { loadConfig } from './config.js'
 import { run } from './engine.js'
 import { printResult, printJSON } from './reporter.js'
-import { runInit } from './init.js'
+import { runInit, type InitOptions } from './init.js'
 import { runDoctor } from './doctor.js'
 import { runFigmaSync } from './figma-sync.js'
 import { runLayoutDerive } from './layout-derive.js'
@@ -96,10 +96,20 @@ program
 // ── Init subcommand ───────────────────────────────────────────────────────────
 program
   .command('init [dir]')
-  .description('create .dev-engine.json interactively')
-  .action(async (dir?: string) => {
+  .description('create .dev-engine.json + scaffold CLAUDE.md و .claude/ (تعاملی یا با --yes)')
+  .option('-y, --yes', 'non-interactive: از flagها/پیش‌فرض‌ها استفاده کن، سؤال نپرس', false)
+  .option('--direction <dir>', 'rtl | ltr | both')
+  .option('--locale <locale>', 'مثلاً fa-IR')
+  .option('--calendar <cal>', 'jalali | hijri | gregorian')
+  .option('--ds <id>', 'design system id')
+  .option('--icons <lib>', 'icon library')
+  .option('--name <name>', 'نام پروژه (پیش‌فرض: نام پوشه)')
+  .option('--typecheck <cmd>', 'دستور type-check')
+  .option('--no-scaffold', 'فقط .dev-engine.json بساز، CLAUDE.md/.claude/ نه')
+  .option('--force', 'اجازهٔ overwrite کردن .dev-engine.json موجود', false)
+  .action(async (dir: string | undefined, opts: InitOptions) => {
     const targetDir = resolve(process.cwd(), dir ?? '.')
-    await runInit(targetDir)
+    await runInit(targetDir, opts)
   })
 
 // ── Doctor — preflight (BLUEPRINT §3 STEP 0) ──────────────────────────────────

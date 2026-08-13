@@ -1,40 +1,29 @@
 # dev-agents — Handoff
-> آخرین آپدیت: 2026-08-12
+> 2026-08-13
 
 ## الان
-**هنوز commit نشده** — دو تغییر در `packages/dev-engine`:
+**uncommitted:** `dev-engine init` از «فقط ساخت `.dev-engine.json`» به **scaffold کامل
+harness پروژه** ارتقا پیدا کرد (`init.ts` + flagهای `cli.ts`).
 
-- **رجیستری DS داده‌محور** — `paths.ts` حالا `design-systems/*/ds.json` را می‌خواند
-  (`loadDsRegistry`/`findDs`)؛ نسخهٔ hardcoded (`DS_FOLDER`/`DS_PACKAGE`) فقط fallback
-  ماند. `doctor.ts` سه چک تازه گرفت: رجیستری، نسخهٔ نصب‌شده در برابر `targets`، و
-  `contract`. `cli.ts` دستور `ds-list` گرفت. `cache.ts` باگ کوچک داشت (`dsFolder()`
-  آرگومان `dev_knowledge_path` را نادیده می‌گرفت) که در همین کار فیکس شد.
+- می‌سازد: `CLAUDE.md` (ترکیبِ قالب پایهٔ `_TEMPLATE` + مکمل DS) · `.claude/hooks/rtl_gate.py`
+  (کپی از `dev-knowledge/universal/hooks/`) · `.claude/settings.json` (هوک `Stop`) ·
+  دو stub در `.claude/context/`.
+- **هیچ فایل موجودی overwrite نمی‌شود** — فقط غایب‌ها؛ بقیه `⏭` گزارش می‌شوند.
+  `settings.json` هم merge می‌شود نه replace. پس روی پروژهٔ زنده امن است.
+- **حالت غیرتعاملی** اضافه شد (`--yes` + flagها). قبلاً `readline` روی stdin پایپ‌شده
+  خطوط اضافه را drop می‌کرد، یعنی `init` اصلاً از اسکریپت/agent قابل اجرا نبود.
 
-- **حذف ریشه‌ای زیرسیستم snapshot متنی** — `modules/layout-diff.ts` ·
-  `verify-render.ts` · `layout-sync.ts` · `layout-cache.ts` حذف شدند (~۱۳۰۰ خط).
-  از `types.ts`: `LayoutSnapshot`/`ContainerLayout`/`RenderedSnapshot`/
-  `LayoutSnapshotCache` حذف. از `engine.ts` و `doctor.ts` ارجاعشان حذف.
-  **دلیل:** snapshot (نوشته‌شده در STEP 2 از یک screenshot) و کد (نوشته‌شده در
-  STEP 3 از همان screenshot) هر دو از یک خواندن می‌آمدند، پس سبزشدنِ چک هیچ
-  اطلاعات مستقلی نداشت — یک تأیید خودارجاع که ⚠️ روتینش ⚠️ واقعی را در DoD
-  نامرئی می‌کرد. جزئیات کامل و شواهد → `dev-knowledge/HANDOFF.md`.
-  `layout-derive.ts` ماند ولی بازنویسی شد: دیگر snapshot نمی‌نویسد، فقط بازگشتی
-  روی کل درخت `get_metadata` پیمایش می‌کند و چاپ می‌کند (سوخت جدول ترجمه).
+تست: chakra+rtl · generic+ltr · `--no-scaffold` · اجرای دوباره (idempotent) ·
+merge روی `settings.json` که هوک دیگری داشت · اجرا روی Vitrina (همه skip، `git status` تمیز).
 
-- `dist/` پاک و از نو build شد — بدون این کار، خروجی‌های کهنه‌ی `layout-*.js`
-  زیر `dist/` می‌ماندند.
-
-## تست رگرسیون (انجام شد)
-`tsc --noEmit` تمیز → build تمیز → `doctor` روی Vitrina: ۹ چک، همه ✓ →
-اجرای کامل روی Vitrina: ۸۹ warning، دقیقاً برابر پیش از تغییر (بدون false-negative
-جدید) → `layout-derive` روی دامپ ساختگی RTL درست کار کرد (تشخیص محور، ترتیب DOM،
-و `notes` وقتی هندسه نامتقارن بود).
+> `packages/dev-engine/package.json` یک تغییر uncommitted دارد (`chmod +x` در build script)
+> که **از قبلِ این session** بود.
 
 ## بعدی
-- **این commit + دو‌تای دیگه (dev-knowledge، Vitrina) با هم مرتبطن** — سه‌تا با هم
-  commit شوند تا یک repo نصفه‌کاره نماند.
-- **نصب مجدد skillها لازم است** — `dev-implement.skill`/`dev-engine.skill` ویرایش
-  شدند ولی نسخهٔ deployed جداست؛ تا re-install نشوند نسخهٔ قدیمی (که هنوز
-  `layout-sync`/`verify-render` صدا می‌زند) فعال می‌ماند.
-- تصمیم باز: آیا `layout-derive` هم حذف شود؟ (بررسی شد — صفر هزینهٔ زمان اجرا دارد،
-  هیچ‌جا خودکار صدا زده نمی‌شود؛ فعلاً نگه داشته شد.)
+- commit هر سه repo با هم (dev-agents + dev-knowledge + Vitrina) — به هم وابسته‌اند.
+- فاز ۳: `vision-diff` — crop + pixel-diff دترمینیستیک بین screenshot طرح و preview،
+  بدون مدل. جای پیشنهادی: `dev-agents/tools/vision-diff/` (Python + Pillow، نه TS —
+  چون build/link هر iteration را کند می‌کند و کار اصلی پردازش تصویر است).
+- **نصب مجدد skillها** همچنان معلق است (`dev-implement`/`dev-engine`) — نسخهٔ deployed
+  جداست؛ ویرایش `.skill` تا re-install اثر ندارد.
+- تصمیم باز: آیا `layout-derive` هم حذف شود؟ (فعلاً نگه داشته شد — صفر هزینه.)
