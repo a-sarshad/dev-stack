@@ -20,15 +20,20 @@ dev-knowledge/
 │   ├── app-conventions.md                ← قوانین cross-project: sidebar selected، asset موبایل بپرس
 │   ├── project-init-wizard.md            ← wizard تعاملی ساخت پروژه (شامل README template)
 │   ├── dev-engine.md                        ← راهنمای CLI dev-engine، aliases، modules، ignore
-│   └── session-management.md             ← مدیریت context و HANDOFF.md
+│   ├── session-management.md             ← مدیریت context و HANDOFF.md
+│   └── hooks/
+│       └── rtl_gate.py                   ← نسخهٔ canonical هوک Stop — `dev-engine init` کپی‌اش می‌کند
 │
 ├── design-systems/
+│   ├── _TEMPLATE/                        ← قالب ساخت DS جدید (کپی کن، ds.json را پر کن)
+│   │   ├── ds.json · tokens.md · components.md · known-bugs.md · rtl.md
+│   │   └── CLAUDE-template.md            ← **قالب پایهٔ** CLAUDE.md — DS-agnostic (پروتکل‌ها، جهت، DoD)
 │   ├── chakra-ui-v3/
 │   │   ├── chakra-ui-v3.md               ← مرجع اصلی: RTL، tokens، multilang
 │   │   ├── tokens.md                     ← جداول کامل همه token‌ها
 │   │   ├── known-bugs.md                 ← باگ‌های تأییدشده + راه‌حل
 │   │   ├── components.md                 ← لیست کامل همه component‌ها (بدون tool call)
-│   │   └── CLAUDE-template.md            ← template برای CLAUDE.md پروژه‌های Chakra
+│   │   └── CLAUDE-template.md            ← **مکملِ** قالب پایه (فقط Chakra) — نه فایل مستقل
 │   └── bootstrap5/
 │       ├── rtl.md                        ← RTL setup، logical classes، known fixes
 │       ├── scaffold.md                   ← راهنمای setup پروژه جدید + هشدارهای رایج

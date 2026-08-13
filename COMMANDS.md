@@ -79,7 +79,8 @@ type den               # تست: باید بگه "den is an alias for dev-engine
 | `dev-engine . --watch` | هر بار فایل عوض شه، خودکار دوباره check (زنده) |
 | `dev-engine . --module token-replacer` | فقط یه module خاص رو اجرا کن |
 | `dev-engine . --json` | خروجی JSON (برای CI/اسکریپت) |
-| `dev-engine init` | فایل `.dev-engine.json` رو سوال‌به‌سوال بساز |
+| `dev-engine init` | سوال‌به‌سوال: `.dev-engine.json` + scaffold کردن `CLAUDE.md` و `.claude/` |
+| `dev-engine init . --yes --ds chakra-v3 --name MyApp` | همان، **بدون سوال** (برای اسکریپت/agent) |
 | `dev-engine --help` | لیست کامل دستورها و گزینه‌ها |
 
 ---

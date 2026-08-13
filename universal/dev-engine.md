@@ -51,6 +51,8 @@ command -v dev-engine && dev-engine --version
 
 > **سریع‌تر:** `dev-engine init` رو اجرا کن — سوال‌به‌سوال پیش می‌ره و فایل رو می‌سازه.
 > اگه `.dev-engine.json` نباشه، skill `dev-engine` آن را auto-detect و می‌سازه.
+>
+> `init` علاوه بر config، **کل harness پروژه** را هم scaffold می‌کند ↓
 
 ---
 
@@ -115,9 +117,28 @@ dev-engine ./packages/ui/src --config ./packages/ui/.dev-engine.json
 # watch — اجرای خودکار روی تغییر فایل
 dev-engine . --watch
 
-# ساخت .dev-engine.json به صورت interactive
+# ساخت .dev-engine.json + scaffold کل harness — interactive
 dev-engine init
+
+# همان، غیرتعاملی (برای اسکریپت/agent/CI)
+dev-engine init . --yes --ds chakra-v3 --name MyApp --typecheck "pnpm build"
+dev-engine init . --yes --direction ltr --ds generic     # پروژهٔ LTR
+dev-engine init . --yes --no-scaffold                    # فقط config
 ```
+
+**`init` چه چیزی می‌سازد:**
+
+| فایل | منبع |
+|------|------|
+| `.dev-engine.json` | جواب‌های wizard / flagها |
+| `CLAUDE.md` | `_TEMPLATE/CLAUDE-template.md` (پایه) **+** `<ds>/CLAUDE-template.md` (مکمل) |
+| `.claude/hooks/rtl_gate.py` | کپی از `universal/hooks/rtl_gate.py` |
+| `.claude/settings.json` | هوک `Stop` → rtl_gate (اگه فایل باشد **merge** می‌شود، نه overwrite) |
+| `.claude/context/{known-bugs,project-context}.md` | stub خالی با ساختار درست |
+
+> **هیچ فایل موجودی overwrite نمی‌شود** — فقط غایب‌ها ساخته می‌شوند و بقیه `⏭` گزارش
+> می‌شوند. پس روی یک پروژهٔ زنده هم امن است (برای گرفتن فایل‌های تازه‌اضافه‌شده).
+> تنها استثنا `.dev-engine.json` با `--force`.
 
 ---
 
