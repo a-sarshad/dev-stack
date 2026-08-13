@@ -29,18 +29,36 @@ dependency دیگه، بدون build step. تست شد با تصاویر synthet
 `tools/vision-diff/README.md`.
 
 **فاز ۴ هم اضافه شد (uncommitted):** `tools/vision-diff/model_review.py` —
-لایهٔ اختیاری vision model روی خروجی فاز ۳، فقط برای regionهای `pass: false`
-(نه همه، نه جایگزین preview review خودِ Claude). OpenRouter API با
-`urllib` خام (صفر dependency شبکه‌ای اضافه)، پیش‌فرض مدل رایگان
-(`nvidia/nemotron-nano-12b-v2-vl:free`)، `--model`/`$VISION_DIFF_MODEL`
-برای عوض کردنش. خروجی JSON ساخت‌یافته (`verdict`/`issue_type`/`explanation`)
-با extraction مقاوم در برابر متن اضافه دور JSON یا JSON خراب. تست end-to-end واقعی با ۲ کلید مختلف کاربر انجام شد:
-- آیکون جابه‌جا (باگ واقعی) → `differs/direction-or-order` — درست
-- آیکون هم‌سمت (سالم، فقط نویز resize ~۵٪) → **باز هم `differs/direction-or-order`
-  گفت — false positive.** یعنی verdict مدل رایگان authoritative نیست، فقط
-  «ارزش نگاه دوباره داره». در README ثبت شد.
-- کلید دوم در `tools/vision-diff/.env` ذخیره شد (gitignored، auto-load در
-  `model_review.py` اضافه شد) تا دیگه لازم نباشه هر بار export بشه.
+لایهٔ **اختیاری/opt-in** vision model روی خروجی فاز ۳، فقط برای regionهای
+`pass: false` در حالت پیش‌فرض `batch` (نه همه — `--all` override می‌کنه).
+هیچ‌جا (نه hook، نه dev-engine، نه vision_diff.py) خودکار صداش نمی‌زنه.
+OpenRouter API با `urllib` خام (صفر dependency اضافه)، کلید از
+`$OPENROUTER_API_KEY` یا `tools/vision-diff/.env` (gitignored).
+
+۵ مدل روی ۵ تست synthetic مقایسه شدن (آیکون جابه‌جا، آیکون هم‌سمت‌سالم
+[چک false-positive]، تودرتو vs تخت، ۳ آیکون کوچیک کاملاً غایب، جابه‌جایی
+ترتیب دو دکمه):
+
+| مدل | جابه‌جا | سالم | تودرتو | غایب | ترتیب |
+|---|---|---|---|---|---|
+| `nemotron-3-ultra-550b:free` | — قابل‌استفاده نیست (text-only، 404 روی image) |
+| `nemotron-nano-12b-v2-vl:free` | ✅ | ❌ FP | — | ❌ miss | — |
+| `ui-tars-1.5-7b` | ✅ | ✅ | ⚠️ دلیل غلط | ❌ miss | ✅ |
+| `gemma-4-31b-it:free` | — | — | ⚠️ دلیل غلط | ✅ | rate-limit شد |
+| **`gpt-5.6-luna`** | ✅ | — | ⚠️ دلیل غلط | ✅ | ✅ |
+
+**default شد `openai/gpt-5.6-luna`** — تنها مدل (با `gemma-4-31b`) که مورد
+سخت «۳ آیکون کوچیک غایب» رو گرفت، و برخلاف gemma به rate-limit نخورد.
+«تودرتو vs تخت» رو همهٔ مدل‌ها با دلیل غلط (`spacing` به‌جای ساختار) جواب
+دادن — محدودیت شناخته‌شده، نه چیزی که با عوض‌کردن مدل حل بشه.
+
+**نتیجهٔ کلیدی از این دور تست:** فاز ۳ به‌تنهایی (رایگان، بدون مدل) ۲ از ۳
+تست سخت رو با تنظیمات پیش‌فرض پرچم می‌زد (`❌`)؛ فقط تشخیصِ *چرا* نداشت. مورد
+سوم (آیکون غایب) رو فاز ۳ هم می‌گرفت اگه crop طبق `regions.py` تنگ گرفته
+می‌شد. یعنی فاز ۴ چیزی رو «کشف» نمی‌کنه که فاز ۳ نمی‌گرفت — فقط تشخیصِ خودکار
+اضافه می‌کنه روی چیزی که از قبل پرچم خورده. به همین دلیل عمداً نگه داشته شد
+(نه حذف) ولی هیچ‌وقت پیش‌فرض/اجباری نمی‌شه — کد و README هر دو این status رو
+صریح مستند می‌کنن.
 
 ## بعدی
 - commit هر سه repo با هم (dev-agents + dev-knowledge + Vitrina) — به هم وابسته‌اند.

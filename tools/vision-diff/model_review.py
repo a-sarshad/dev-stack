@@ -15,6 +15,13 @@ Why this exists, and why it is NOT the previous "vision layer" idea revived:
     (CLAUDE.md § preview comparison) — it's an optional, occasional, additive
     second opinion on the small subset of regions that already look different.
 
+Status: OPT-IN ONLY. Not called by rtl_gate.py, dev-engine, or any other
+    automatic step — nothing in this repo invokes this file for you. Run it
+    yourself, on purpose, when you want a second opinion. Kept here rather
+    than deleted specifically so this capability isn't rebuilt from scratch
+    next time it seems useful (see dev-agents/HANDOFF.md for the model
+    comparison that picked the default below).
+
 Privacy note: this SENDS the flagged crop images to a third-party API
 (OpenRouter, or whatever your own model gateway is). Only run this on UI
 screenshots you're fine leaving your machine — never on anything containing
@@ -53,7 +60,12 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-DEFAULT_MODEL = "nvidia/nemotron-nano-12b-v2-vl:free"
+# Picked after testing 5 models on 5 synthetic cases (icon-flip, resize-noise
+# false-positive check, nested-vs-flat structure, missing small icons, button
+# order swap) — see dev-agents/HANDOFF.md for the full table. gpt-5.6-luna and
+# gemma-4-31b-it:free were the only two that caught "missing element"; luna
+# was picked over gemma for not hitting upstream rate-limits during testing.
+DEFAULT_MODEL = "openai/gpt-5.6-luna"
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 
@@ -85,7 +97,12 @@ Judge only what's visible. Answer with ONLY a JSON object, no other text:
 
 "direction-or-order" means an icon/element appears on the opposite side, or child order is
 reversed, versus the design. Only use it if you can actually see that in the images — don't
-guess from general RTL knowledge."""
+guess from general RTL knowledge.
+
+Check specifically for an element (icon, badge, button, small mark) that is clearly present
+in "design" but completely absent in "preview" — this is a common, easy-to-miss bug. Use
+"missing-element" for it even if the overall diff looks small (a missing small element can
+still be a real bug)."""
 
 
 def _api_key(cli_key):

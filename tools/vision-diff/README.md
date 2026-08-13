@@ -107,9 +107,11 @@ python3 regions.py elements.json
 
 ## `model_review.py` — optional external vision-model second opinion
 
-Sends only the `❌` (`pass: false`) `.compare.png` crops from a `batch` run to
-a vision-capable LLM (default: a free OpenRouter model) for a second opinion —
-not every region, not a replacement for Claude's own browser-based preview
+**Opt-in only** — nothing in this repo calls this file automatically (not
+`rtl_gate.py`, not `dev-engine`, not `vision_diff.py` itself). Run it
+yourself when you want one. Sends only the `❌` (`pass: false`) `.compare.png`
+crops from a `batch` run to a vision-capable LLM for a second opinion — not
+every region, not a replacement for Claude's own browser-based preview
 review. Needs `$OPENROUTER_API_KEY` and **sends those images to a third-party
 API** — see the privacy note in the script's docstring before using it on
 anything but disposable UI screenshots.
@@ -142,3 +144,17 @@ pixel change) was still called `differs / direction-or-order`. Treat any
 confirmed bug — same rule as every other automated layer in this pipeline
 (see CLAUDE.md § preview comparison: it's the only thing that decides `start`
 vs `end` is actually correct).
+
+**Verified false negative — small missing elements (tested 1405/08, several
+models, both default and an explicit "check for missing elements" prompt):**
+a crop where 3 small delete icons were completely absent in preview was still
+called `match` by `nemotron-nano-12b-v2-vl:free` and `ui-tars-1.5-7b`. The
+icons were a small fraction of the crop's pixels, and the composite gets
+shrunk before the model sees it. `openai/gpt-5.6-luna` (current default) and
+`google/gemma-4-31b-it:free` both caught this exact case correctly — but
+don't rely on the model alone for it regardless of which one you use.
+**This is exactly why `regions.py` exists:** small icon+text
+composites must get their own zoomed crop (design box tight around just that
+element) before diffing/reviewing, never judged inside a wide multi-element
+composite. If a region contains small elements, run `regions.py` on it first
+and diff/review each flagged element individually.
