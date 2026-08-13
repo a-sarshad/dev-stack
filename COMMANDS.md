@@ -70,6 +70,12 @@ type den               # تست: باید بگه "den is an alias for dev-engine
 > پس سبزشدنشان هیچ اطلاعات مستقلی نداشت — و ⚠️ روتینشان ⚠️ واقعی را در DoD
 > نامرئی می‌کرد.
 
+> **ابزار جانبی اختیاری (1405/08):** `dev-agents/tools/vision-diff/` —
+> `vision_diff.py` (crop + pixel-diff دترمینیستیک، بدون مدل، pass/fail خودکار
+> روی یه جفت screenshot) و `model_review.py` (نظر دوم اختیاری از یه vision
+> model فقط روی regionهای `❌`). جایگزین مقایسهٔ چشمی نیست، فقط pre-filter
+> ارزون قبلش. جزئیات: `tools/vision-diff/README.md`.
+
 ---
 
 ## ۳. گزینه‌های بیشتر dev-engine

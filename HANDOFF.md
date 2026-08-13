@@ -16,13 +16,19 @@
   ضمناً یک **توصیهٔ غلط** فیکس شد: `bg="bg.default"` → «از `bg="white"` استفاده کن»
   که dark mode را می‌شکند؛ درستش `bg="bg.panel"` است.
 - README (درخت) · COMMANDS · `universal/dev-engine.md` با قابلیت جدید sync شدند.
+- **COMMANDS.md** یک پاراگراف پرچم اضافه کرد به `dev-agents/tools/vision-diff/`
+  (فاز ۳+۴ pipeline optimization، جزئیات کامل در `dev-agents/HANDOFF.md`).
 
 ## بعدی
 - commit هر سه repo با هم (dev-knowledge + dev-agents + Vitrina).
-- فاز ۳: vision-diff (crop + pixel-diff بدون مدل) — جزئیات در `dev-agents/HANDOFF.md`.
 - **نصب مجدد اسکیل‌ها** — `dev-implement` و `dev-engine` ویرایش شده‌اند ولی نسخهٔ
   deployed جداست؛ تا re-install نشوند نسخهٔ قدیمی فعال است.
   تشخیص drift: `diff <(unzip -p <name>.skill <name>/SKILL.md) "<deployed path>"`.
 - تصمیم Tailwind: `4a-financial` و `azita-jafari` یا `tailwind-v4` بگیرند یا
   out-of-pipeline اعلام شوند.
 - `bootstrap5/_tokens.scss` رنگ برند واقعی در لایهٔ shared دارد → `_tokens.template.scss`.
+- **تصمیم باز: ادغام `Tools/dev-agents` + `Tools/dev-knowledge` (+ `claude-live-dashboard`
+  بی‌گیت) به یک مونوریپوی `Tools/`.** بحث شد، هنوز commit به مسیر (با/بدون حفظ
+  تاریخچه) انتخاب نشده. با حفظ تاریخچه ~۱۰ دقیقه گران‌تر از بدون‌تاریخچه‌ست چون هر دو
+  ریپو push شده‌ان (چیزی از دست نمی‌ره). قبل از شروع: دو فایل معلق همین‌جا
+  (`COMMANDS.md`, `HANDOFF.md`) باید commit بشن.
