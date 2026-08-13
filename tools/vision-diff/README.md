@@ -105,10 +105,40 @@ Then:
 python3 regions.py elements.json
 ```
 
-## Optional next layer (not built here, on purpose)
+## `model_review.py` — optional external vision-model second opinion
 
-A paid/free vision model (see `dev-agents/HANDOFF.md`) can be pointed at the
-`.compare.png` files this script produces for a second opinion — but only on
-the regions flagged `❌`, not every region on every run. That keeps it an
-additive, occasional check rather than a replacement for Claude's own
-browser-based preview review.
+Sends only the `❌` (`pass: false`) `.compare.png` crops from a `batch` run to
+a vision-capable LLM (default: a free OpenRouter model) for a second opinion —
+not every region, not a replacement for Claude's own browser-based preview
+review. Needs `$OPENROUTER_API_KEY` and **sends those images to a third-party
+API** — see the privacy note in the script's docstring before using it on
+anything but disposable UI screenshots.
+
+```bash
+export OPENROUTER_API_KEY=sk-or-...
+
+# one crop
+python3 model_review.py review --compare out/badge_bug.compare.png
+
+# everything vision_diff.py batch flagged as differing, in one pass
+python3 model_review.py batch --dir out/
+```
+
+Each writes `<name>.review.json` next to the `.compare.png`:
+```json
+{"verdict": "differs", "issue_type": "direction-or-order",
+ "explanation": "icon is on the left in preview, right in design"}
+```
+
+`issue_type` values: `direction-or-order` · `color` · `missing-element` ·
+`spacing` · `text` · `other` · `none`. Override the model with `--model` or
+`$VISION_DIFF_MODEL` — check current pricing/availability at
+https://openrouter.ai/models, it changes.
+
+**Verified false positive (free model, tested 1405/08):** a crop with no real
+bug (icon on the same side in both, only resize/anti-aliasing noise ~5%
+pixel change) was still called `differs / direction-or-order`. Treat any
+`differs` verdict as "worth a human glance at the `.compare.png`", not as a
+confirmed bug — same rule as every other automated layer in this pipeline
+(see CLAUDE.md § preview comparison: it's the only thing that decides `start`
+vs `end` is actually correct).

@@ -28,10 +28,22 @@ dependency دیگه، بدون build step. تست شد با تصاویر synthet
 تغییر، حالت باگ (آیکن جابه‌جا) ۲۳٪ — تفکیک واضح. جزئیات و مثال کامل:
 `tools/vision-diff/README.md`.
 
+**فاز ۴ هم اضافه شد (uncommitted):** `tools/vision-diff/model_review.py` —
+لایهٔ اختیاری vision model روی خروجی فاز ۳، فقط برای regionهای `pass: false`
+(نه همه، نه جایگزین preview review خودِ Claude). OpenRouter API با
+`urllib` خام (صفر dependency شبکه‌ای اضافه)، پیش‌فرض مدل رایگان
+(`nvidia/nemotron-nano-12b-v2-vl:free`)، `--model`/`$VISION_DIFF_MODEL`
+برای عوض کردنش. خروجی JSON ساخت‌یافته (`verdict`/`issue_type`/`explanation`)
+با extraction مقاوم در برابر متن اضافه دور JSON یا JSON خراب. تست end-to-end واقعی با ۲ کلید مختلف کاربر انجام شد:
+- آیکون جابه‌جا (باگ واقعی) → `differs/direction-or-order` — درست
+- آیکون هم‌سمت (سالم، فقط نویز resize ~۵٪) → **باز هم `differs/direction-or-order`
+  گفت — false positive.** یعنی verdict مدل رایگان authoritative نیست، فقط
+  «ارزش نگاه دوباره داره». در README ثبت شد.
+- کلید دوم در `tools/vision-diff/.env` ذخیره شد (gitignored، auto-load در
+  `model_review.py` اضافه شد) تا دیگه لازم نباشه هر بار export بشه.
+
 ## بعدی
 - commit هر سه repo با هم (dev-agents + dev-knowledge + Vitrina) — به هم وابسته‌اند.
-- فاز ۴ (اختیاری): لایهٔ vision model روی خروجی `.compare.png` فقط برای موارد `❌` —
-  نه جایگزین بررسی preview خودِ Claude، فقط یه نظر دوم اضافه روی موارد پرچم‌شده.
 - **نصب مجدد skillها** همچنان معلق است (`dev-implement`/`dev-engine`) — نسخهٔ deployed
   جداست؛ ویرایش `.skill` تا re-install اثر ندارد.
 - تصمیم باز: آیا `layout-derive` هم حذف شود؟ (فعلاً نگه داشته شد — صفر هزینه.)
