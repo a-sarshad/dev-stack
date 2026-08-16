@@ -8,7 +8,7 @@
 
 ```bash
 # build + لینک گلوبال (یه بار — بعدش `dev-engine` مستقیم در PATH هست)
-cd ~/Documents/GitHub/Tools/dev-agents/packages/dev-engine
+cd ~/Documents/GitHub/dev-stack/packages/dev-engine
 npm run build && npm link
 
 # تست
@@ -21,7 +21,7 @@ command -v dev-engine && dev-engine --version
 > اگه `command -v dev-engine` چیزی برنگردوند، **متوقف نشو و کار رو skip نکن** —
 > یا `npm link` بالا رو بزن، یا مستقیم باینری build‌شده رو صدا کن:
 > ```bash
-> node ~/Documents/GitHub/Tools/dev-agents/packages/dev-engine/dist/cli.js <args>
+> node ~/Documents/GitHub/dev-stack/packages/dev-engine/dist/cli.js <args>
 > ```
 > سابقه: 1404 — چون اسکیل‌ها `command -v dev-engine` می‌زدن و «نصب نیست → stop»
 > می‌گفتن، یه session کامل بدون هیچ چکی کد زد و بعداً معلوم شد pipeline اصلاً اجرا نشده.
@@ -74,7 +74,7 @@ dev-engine .              # نه dev-engine ./components/foo
 اگه `dev-engine` global لینک نشده (دستور خام «command not found» می‌ده)، باینری build‌شده رو
 مستقیم با `node` صدا بزن:
 ```bash
-node ~/Documents/GitHub/Tools/dev-agents/packages/dev-engine/dist/cli.js .
+node ~/Documents/GitHub/dev-stack/packages/dev-engine/dist/cli.js .
 ```
 
 سابقه: 1404 — پروژه Vitrina، یه session کامل `dev-engine src/components/marketing --fix` زد و

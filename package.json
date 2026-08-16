@@ -1,14 +1,15 @@
 {
-  "name": "dev-agents",
+  "name": "dev-stack",
   "version": "0.0.1",
   "private": true,
-  "description": "Collection of dev agents for code quality, consistency, and fixing",
+  "description": "Unified dev toolchain — dev-engine, design-system knowledge base, and Claude skills",
   "packageManager": "pnpm@11.1.2",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "build": "pnpm -r build",
+    "build": "pnpm -r build && pnpm build:skills",
+    "build:skills": "bash scripts/build-skills.sh",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test"
   }

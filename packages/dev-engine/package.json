@@ -1,5 +1,5 @@
 {
-  "name": "@dev-agents/dev-engine",
+  "name": "@dev-stack/dev-engine",
   "version": "0.1.0",
   "description": "Consistency checker & auto-fixer for RTL/LTR projects — DS-agnostic",
   "type": "module",

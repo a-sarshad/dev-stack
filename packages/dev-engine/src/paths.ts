@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'fs'
 import { resolve, dirname, basename } from 'path'
 import { homedir } from 'os'
+import { fileURLToPath } from 'url'
 import { globSync } from 'glob'
 
 // config DS id → نام پوشه در dev-knowledge/design-systems/ — fallback وقتی هیچ
@@ -23,13 +24,41 @@ const DS_PACKAGE: Record<string, string> = {
   'mantine': '@mantine/core',
 }
 
-// محل dev-knowledge: env DN_PATH > config > مسیرهای رایج (local Mac یا Cowork mount)
+// از startDir به سمت بالا دنبال rel می‌گردد. سقف ۸ سطح — از بی‌نهایت شدن روی
+// فایل‌سیستم‌های عجیب جلوگیری می‌کند.
+function findInAncestors(startDir: string, rel: string): string | null {
+  let dir = startDir
+  for (let i = 0; i < 8; i++) {
+    if (existsSync(resolve(dir, rel))) return resolve(dir, rel)
+    const parent = dirname(dir)
+    if (parent === dir) break
+    dir = parent
+  }
+  return null
+}
+
+// محل knowledge: env DN_PATH > config > مونوریپو (نسبت به خودِ engine) >
+// مسیرهای legacy > Cowork mount.
+//
+// مسیر مونوریپو مقدم بر hardcode است: engine در dev-stack/packages/dev-engine/
+// است و knowledge در dev-stack/knowledge/ — پس بالا رفتن از محل خودِ ماژول
+// جواب می‌دهد، صرف‌نظر از اینکه repo کجای دیسک clone شده باشد. مسیرهای
+// homedir زیر فقط fallback‌اند برای وقتی engine جای دیگری نصب شده (npm link).
 export function findDevKnowledge(configPath?: string): string | null {
   const candidates: string[] = []
   if (process.env.DN_PATH) candidates.push(process.env.DN_PATH)
   if (configPath) candidates.push(configPath)
+
+  // dev-stack/packages/dev-engine/{src,dist}/ → dev-stack/knowledge/
+  const selfDir = dirname(fileURLToPath(import.meta.url))
+  const inRepo = findInAncestors(selfDir, 'knowledge/design-systems')
+  if (inRepo) candidates.push(dirname(inRepo))
+
+  candidates.push(resolve(homedir(), 'Documents/GitHub/dev-stack/knowledge'))
+  // legacy — چیدمان قبل از ادغام dev-agents + dev-knowledge
   candidates.push(resolve(homedir(), 'Documents/GitHub/Tools/dev-knowledge'))
   try {
+    candidates.push(...globSync('/sessions/*/mnt/dev-stack/knowledge'))
     candidates.push(...globSync('/sessions/*/mnt/dev-knowledge'))
   } catch { /* /sessions نیست — local */ }
   return candidates.find(p => existsSync(p)) ?? null

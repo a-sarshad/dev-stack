@@ -1,6 +1,15 @@
 node_modules/
+
+# build output — dist/ هر package و همچنین skills/dist/
 dist/
 *.tsbuildinfo
-.DS_Store
+
+# محلی، هیچ‌وقت commit نشود
 .env
 .env.local
+.claude/settings.local.json
+
+# macOS / editor junk
+.DS_Store
+*.swp
+Thumbs.db

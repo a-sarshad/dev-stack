@@ -50,7 +50,7 @@ def main() -> int:
         )
     except FileNotFoundError:
         print("⚠️  rtl_gate: dev-engine در PATH نیست — چک چیدمان اجرا نشد.\n"
-              "   fix: cd ~/Documents/GitHub/Tools/dev-agents/packages/dev-engine "
+              "   fix: cd ~/Documents/GitHub/dev-stack/packages/dev-engine "
               "&& npm run build && npm link", file=sys.stderr)
         return 0
     except subprocess.TimeoutExpired:
