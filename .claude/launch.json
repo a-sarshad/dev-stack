@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "vitrina-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "/Users/ali_1/Documents/GitHub/Projects/Vitrina", "dev", "--port", "5174"],
+      "port": 5174
+    },
+    {
+      "name": "vitrina-preview",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "/Users/ali_1/Documents/GitHub/Projects/Vitrina", "preview", "--port", "4173"],
+      "port": 4173
+    }
+  ]
+}

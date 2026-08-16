@@ -1,0 +1,17 @@
+// ─── Brand Tokens — per-project ──────────────────────────────────────────────
+// This is the ONLY file that changes between projects.
+// Replace the values below with the new project's brand palette.
+//
+// Convention: match the CSS custom property scale in index.css
+//   $brand-500 → --brand-500 (mid-brand, used as primary action color)
+//   $brand-600 → --brand-600 (hover state)
+//   $brand-700 → --brand-700 (active / dark state)
+//   $brand-300 → --brand-300 (secondary / muted)
+
+// Primary action color (mid-brand)
+$brand-primary:   #3a7486;  // → $primary
+$brand-secondary: #6c757d;  // → $secondary (neutral gray — often unchanged)
+
+// Font stack
+$brand-font-sans: 'Inter', system-ui, sans-serif;     // LTR / default
+$brand-font-rtl:  'Vazirmatn', system-ui, sans-serif; // RTL (Persian/Arabic)

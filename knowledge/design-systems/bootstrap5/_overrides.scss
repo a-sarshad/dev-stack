@@ -1,0 +1,14 @@
+// ─── Bootstrap Variable Overrides ────────────────────────────────────────────
+// Maps brand tokens → Bootstrap SCSS variables.
+// Must be imported AFTER _tokens.scss and BEFORE bootstrap source.
+//
+// ⚠️  Do NOT define $theme-colors here.
+//     Overriding the full map removes danger/success/warning utility classes
+//     (.text-danger, .bg-success, etc.). Bootstrap builds $theme-colors
+//     automatically from the individual $primary / $secondary vars below.
+
+$primary:   $brand-primary;
+$secondary: $brand-secondary;
+
+// Font — Bootstrap uses $font-family-base for all body text
+$font-family-base: $brand-font-sans;

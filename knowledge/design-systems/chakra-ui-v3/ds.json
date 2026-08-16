@@ -1,0 +1,7 @@
+{
+  "id": "chakra-v3",
+  "aliases": ["chakra-v2"],
+  "package": "@chakra-ui/react",
+  "targets": "^3",
+  "contract": 1
+}

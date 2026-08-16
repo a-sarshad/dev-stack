@@ -1,0 +1,7 @@
+{
+  "id": "REPLACE-ME",
+  "aliases": ["REPLACE-ME-alias"],
+  "package": "REPLACE-ME-npm-package",
+  "targets": "REPLACE-ME-semver-range",
+  "contract": 1
+}

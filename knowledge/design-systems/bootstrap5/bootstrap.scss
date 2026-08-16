@@ -1,0 +1,12 @@
+// ─── Bootstrap Entry Point ───────────────────────────────────────────────────
+// Copy this file (and _tokens.scss, _overrides.scss) into a new project's
+// src/styles/ directory. Only edit _tokens.scss for the new brand.
+//
+// Import order is strict:
+//   1. _tokens   — raw brand values
+//   2. _overrides — maps tokens → Bootstrap vars (must precede bootstrap source)
+//   3. bootstrap  — full Bootstrap SCSS compilation
+
+@import "tokens";
+@import "overrides";
+@import "bootstrap/scss/bootstrap";
