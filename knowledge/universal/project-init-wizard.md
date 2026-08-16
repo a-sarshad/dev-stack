@@ -550,7 +550,7 @@ VITE_API_TIMEOUT=10000
 <project-root>/.claude/context/
   project-context.md  ← brand tokens، stack، layout این پروژه
 ```
-+ thin-loader skill `<project>-context.skill` در dev-knowledge/skills/ (فقط loader — محتوا رو از repo پروژه می‌خونه، embed نمی‌کنه)
++ thin-loader skill `<project>-context.skill` در skills/ (فقط loader — محتوا رو از repo پروژه می‌خونه، embed نمی‌کنه)
 
 ### گام ۵ — Git
 

@@ -20,21 +20,26 @@
 
 ---
 
-## ۱. سه repo — سه مسئولیت (هیچ overlap)
+## ۱. دو repo — سه مسئولیت (هیچ overlap)
 
-| repo | مسئولیت واحد | چی توش هست | چی **نباید** توش باشه |
-|------|--------------|-----------|----------------------|
-| `Tools/dev-agents` | **ENGINE** — همه‌ی check دترمینیستیک (صفر توکن) | dev-engine CLI + subcommandها | دانش، context، قانون نرم |
-| `Tools/dev-knowledge` | **دانش cross-project** + source اسکیل‌ها | universal/، design-systems/، skills/ (source) | context یک پروژه‌ی خاص |
+> **تغییر ۱۴۰۵/۰۵:** `dev-agents` و `dev-knowledge` در یک مونوریپو به نام
+> `dev-stack` ادغام شدند. دلیل: وابستگی دوطرفه بود (engine مسیرهای knowledge را
+> می‌خواند، knowledge به CLI ارجاع می‌داد) ولی تغییر هماهنگ در یک commit ممکن
+> نبود. مسئولیت‌ها همان سه‌تای قبلی‌اند — فقط دو تای اولی حالا هم‌ریپو هستند.
+
+| محل | مسئولیت واحد | چی توش هست | چی **نباید** توش باشه |
+|-----|--------------|-----------|----------------------|
+| `dev-stack/packages/` | **ENGINE** — همه‌ی check دترمینیستیک (صفر توکن) | dev-engine CLI + subcommandها | دانش، context، قانون نرم |
+| `dev-stack/knowledge/` + `dev-stack/skills/` | **دانش cross-project** + source اسکیل‌ها | universal/، design-systems/، skills/src/ | context یک پروژه‌ی خاص |
 | `Projects/<X>` | **قانون + context خودِ پروژه** | CLAUDE.md (always-on)، .claude/context/، .dev-engine.json | دانشی که روی همه پروژه‌ها صدق می‌کنه |
 
 **قانون طلایی جای فایل:**
 ```
-روی همه پروژه‌ها صدق می‌کنه؟        → dev-knowledge/universal یا dev-agents
+روی همه پروژه‌ها صدق می‌کنه؟        → knowledge/universal یا packages/dev-engine
 فقط یک پروژه؟                       → repo همون پروژه
 باید هرگز فراموش نشه؟               → CLAUDE.md پروژه (always-on)
-check دترمینیستیک (قابل اجرا)؟      → dev-agents (CLI)
-شتاب‌دهنده‌ی فلو (نه منبع قانون)؟   → skills/
+check دترمینیستیک (قابل اجرا)؟      → packages/dev-engine (CLI)
+شتاب‌دهنده‌ی فلو (نه منبع قانون)؟   → skills/src/
 ```
 
 ---
@@ -45,7 +50,7 @@ check دترمینیستیک (قابل اجرا)؟      → dev-agents (CLI)
 |------|-----|---------------|---------|--------------|
 | **RULE** | `{project}/CLAUDE.md` | هر پیام، خودکار | gate اجباری + DoD | صفر |
 | **ENGINE** | `dev-agents` (dev-engine) | وقتی CLI صدا زده شه | check + auto-fix | صفر (fail-hard) |
-| **REFERENCE** | `dev-knowledge/*.md` | وقتی صریح read شه | دانش عمیق | بالا — فقط on-demand |
+| **REFERENCE** | `knowledge/*.md` | وقتی صریح read شه | دانش عمیق | بالا — فقط on-demand |
 | **ACCELERATOR** | `skills/*.skill` | فقط trigger match | orchestration فلو | متوسط — اگه trigger نخوره |
 
 > **duplication بین لایه‌ها = منبع گیجی.** هر فکت فقط **یک خونه** داره.
@@ -127,15 +132,15 @@ screenshot/visual-diff = opt-in، نه default. خونه‌ی canonical: `univer
 │   └─ بله → dev-agents: dev-engine module یا subcommand
 │
 ├─ روی همه پروژه‌ها صدق می‌کنه؟
-│   ├─ بله، DS-agnostic → dev-knowledge/universal/
-│   └─ بله، DS-specific → dev-knowledge/design-systems/<ds>/
+│   ├─ بله، DS-agnostic → knowledge/universal/
+│   └─ بله، DS-specific → knowledge/design-systems/<ds>/
 │
 ├─ فقط یک پروژه؟
 │   ├─ قانون اجباری (نباید فراموش شه) → {project}/CLAUDE.md
 │   └─ context/reference          → {project}/.claude/context/
 │
 └─ شتاب‌دهنده‌ی فلو؟
-    └─ skill (source در dev-knowledge/skills، نصب global در Cowork)
+    └─ skill (source در skills، نصب global در Cowork)
 ```
 
 ---
@@ -146,7 +151,7 @@ screenshot/visual-diff = opt-in، نه default. خونه‌ی canonical: `univer
 (نه per-project). پروژه‌ها `.claude/skills` ندارن.
 
 نتیجه:
-- **source اسکیل** → مرکزی در `dev-knowledge/skills/` می‌مونه (یک‌جا مدیریت/نصب)
+- **source اسکیل** → مرکزی در `skills/` می‌مونه (یک‌جا مدیریت/نصب)
 - **محتوای project-specific** → از dev-knowledge منتقل می‌شه به repo خود پروژه:
   `{project}/.claude/context/`
 - **skill project-context** → یه loader نازک می‌شه که محتوا رو از repo پروژه read می‌کنه،
@@ -241,7 +246,7 @@ detection = scan `src/components/` (اسم→path). لازم نیست داخل c
 ## ۷. ساختار مقصد (target tree)
 
 ```
-Tools/dev-agents/                          ← ENGINE
+dev-stack/                          ← ENGINE
 └── packages/dev-engine/
     ├── modules/ (موجود)                   ← token-replacer، css-logical-props، ...
     └── subcommands/ (جدید)
@@ -249,18 +254,20 @@ Tools/dev-agents/                          ← ENGINE
         ├── figma-sync                      ← Figma Variables → local JSON
         └── visual-diff                     ← screenshot vs Figma
 
-Tools/dev-knowledge/                        ← دانش cross-project + skill source
+dev-stack/knowledge/                        ← دانش cross-project
 ├── BLUEPRINT.md                            ← همین فایل (constitution)
-├── CLAUDE.md                               ← قوانین کار با DN
 ├── universal/                              ← DS-agnostic
-├── design-systems/<ds>/                    ← DS-specific
-│   ├── components.md، tokens.md (موجود)    ← لیست DS بدون tool call
-│   └── figma-resolve.json   (generated)    ← لایه DS: Figma→code map (shared)
-└── skills/
-    ├── dev-implement.skill        (جدید)        ← orchestrator واحد Figma→code
-    ├── dev-engine.skill
-    ├── wf-*.skill
-    └── <project>-context.skill (نازک)      ← فقط loader، محتوا در repo پروژه
+└── design-systems/<ds>/                    ← DS-specific
+    ├── components.md، tokens.md (موجود)    ← لیست DS بدون tool call
+    └── figma-resolve.json   (generated)    ← لایه DS: Figma→code map (shared)
+
+dev-stack/CLAUDE.md                         ← قوانین کار با خودِ dev-stack
+dev-stack/skills/src/                       ← سورس اسکیل‌ها (متن، نه zip)
+├── dev-implement/SKILL.md                  ← orchestrator واحد Figma→code
+├── dev-engine/SKILL.md
+├── wf-*/SKILL.md
+└── <project>-context/SKILL.md (نازک)       ← فقط loader، محتوا در repo پروژه
+                                               build → skills/dist/*.skill
 
 Projects/<X>/                               ← قانون + context خودِ پروژه
 ├── CLAUDE.md                               ← فقط قانون اجباری (gate + DoD)

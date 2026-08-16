@@ -171,7 +171,7 @@ dev-engine layout-derive . --metadata dump.xml --node 2659:82005
 آدم دربیاد.
 
 **cache دو-لایه:**
-- لایه DS (shared): `dev-knowledge/design-systems/<ds>/figma-resolve.json`
+- لایه DS (shared): `knowledge/design-systems/<ds>/figma-resolve.json`
 - لایه Local (پروژه): `<project>/.claude/context/figma-resolve.json`
 - merge: **Local-first** — local روی DS override (آینه‌ی Component Resolution)
 - `resolve` و scan صفر MCP مصرف می‌کنن — همه local

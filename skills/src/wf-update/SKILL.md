@@ -89,7 +89,7 @@ HANDOFF.md رو بنویس/آپدیت کن — **کوتاه و فقط چیزها
 | اگه این اتفاق افتاده... | این فایل باید آپدیت بشه |
 |------------------------|------------------------|
 | باگ جدید project-specific کشف شد | `CLAUDE.md` → بخش **Project-Specific Bugs** |
-| باگ DS-level کشف شد | `dev-knowledge/design-systems/<ds>/known-bugs.md` |
+| باگ DS-level کشف شد | `knowledge/design-systems/<ds>/known-bugs.md` |
 | قانون یا pattern جدید DS | `CLAUDE.md` پروژه |
 | تصمیم معماری گرفته شد | `CLAUDE.md` → بخش **Architectural Decisions** + pointer در HANDOFF |
 | library یا tool جدید به stack | `CLAUDE.md` + `README.md` |

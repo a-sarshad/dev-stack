@@ -26,8 +26,8 @@ linked. Walk this ladder; only the last rung involves the user.
 ```bash
 if command -v dev-engine >/dev/null 2>&1; then
   DE="dev-engine"
-elif [ -f "$HOME/Documents/GitHub/Tools/dev-agents/packages/dev-engine/dist/cli.js" ]; then
-  DE="node $HOME/Documents/GitHub/Tools/dev-agents/packages/dev-engine/dist/cli.js"
+elif [ -f "$HOME/Documents/GitHub/dev-stack/packages/dev-engine/dist/cli.js" ]; then
+  DE="node $HOME/Documents/GitHub/dev-stack/packages/dev-engine/dist/cli.js"
 else
   DE=""
 fi
@@ -37,7 +37,7 @@ fi
 - Resolved → use `$DE` **everywhere below**, never a bare `dev-engine`.
 - `UNRESOLVED` → **build and link it yourself** (one-time, no user needed):
   ```bash
-  cd "$HOME/Documents/GitHub/Tools/dev-agents/packages/dev-engine" && npm run build && npm link
+  cd "$HOME/Documents/GitHub/dev-stack/packages/dev-engine" && npm run build && npm link
   ```
   Then re-run the ladder.
 - Still unresolved after that → tell the user exactly what failed and what you need.
@@ -231,7 +231,7 @@ Offer: "Want me to fix these manually?"
 
 `css-logical-props` و `one-align-idiom` فقط می‌گویند «فیزیکی ننویس» — **نمی‌گویند
 `start` درست است یا `end`.** کدی که همه‌جا logical است می‌تواند کاملاً معکوس باشد و
-همهٔ چک‌ها سبز بمانند. مرجع مفهومی: `dev-knowledge/universal/language.md` § «دابل-فلیپ».
+همهٔ چک‌ها سبز بمانند. مرجع مفهومی: `knowledge/universal/language.md` § «دابل-فلیپ».
 
 ### دامنه — جدول انتخاب
 

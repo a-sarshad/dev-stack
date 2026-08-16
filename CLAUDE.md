@@ -1,9 +1,9 @@
-# dev-knowledge (DN) — راهنمای کار با Claude
+# dev-stack — راهنمای کار با Claude
 
-این repo دانش مشترک پروژه‌هاست. Claude این فایل رو در هر session می‌خونه
-تا بدونه ساختار DN چیه و چطور باهاش کار کنه.
+این مونوریپو engine، دانش مشترک پروژه‌ها، و skillها را با هم نگه می‌دارد.
+Claude این فایل رو در هر session می‌خونه تا بدونه ساختار چیه و چطور باهاش کار کنه.
 
-> **معماری کل سیستم + فلوی Figma→code + تصمیمات قطعی → [`BLUEPRINT.md`](BLUEPRINT.md)** (قانون اساسی).
+> **معماری کل سیستم + فلوی Figma→code + تصمیمات قطعی → [`knowledge/BLUEPRINT.md`](knowledge/BLUEPRINT.md)** (قانون اساسی).
 > هر وقت گیج شدی «این کجا بره / چه فلویی»، اول اونجا.
 
 ---
@@ -11,22 +11,26 @@
 ## ساختار پوشه‌ها
 
 ```
-dev-knowledge/
-├── skills/             ← فایل‌های .skill (automation) — source برای نصب در Cowork
-│   ├── README.md                ← راهنمای کامل همه skill‌ها (trigger/کاربرد/خروجی)
-│   ├── dev-implement.skill       ← orchestrator واحد Figma→code
-│   ├── dev-engine.skill
-│   ├── dev-init-wizard.skill
-│   ├── vitrina-project-context.skill   ← thin loader
-│   ├── airport-project-context.skill   ← thin loader
-│   ├── wf-commit.skill
-│   ├── wf-start.skill
-│   └── wf-update.skill
-├── universal/          ← دانش cross-project (همه جا صدق می‌کنه)
-└── design-systems/     ← دانش خاص هر design system
-    ├── bootstrap5/
-    └── chakra-ui-v3/
+dev-stack/
+├── packages/dev-engine/    ← CLI: check + auto-fix دترمینیستیک
+├── tools/vision-diff/      ← pixel-diff دو screenshot (Python، اختیاری)
+│
+├── knowledge/
+│   ├── universal/          ← دانش cross-project (همه جا صدق می‌کنه)
+│   ├── design-systems/     ← دانش خاص هر design system
+│   │   ├── bootstrap5/  ·  chakra-ui-v3/  ·  generic/  ·  _TEMPLATE/
+│   ├── BLUEPRINT.md
+│   └── COMMANDS.md
+│
+└── skills/
+    ├── README.md           ← راهنمای کامل همه skillها (trigger/کاربرد/خروجی)
+    ├── src/<name>/SKILL.md ← سورس — اینجا ویرایش کن
+    └── dist/<name>.skill   ← خروجی `pnpm build:skills` (در گیت نیست)
 ```
+
+> **skillها سورس متنی دارند، نه فایل باینری.** ویرایش در `skills/src/`، بعد
+> `pnpm build:skills`، بعد نصب دستی در اپ Claude. تا نصب مجدد نشود، نسخهٔ
+> قدیمی فعال است.
 
 ---
 
@@ -38,7 +42,7 @@ dev-knowledge/
 
 ### context پروژه (در repo خودِ پروژه — نه اینجا)
 - context/تصمیمات/نکات خاص هر پروژه → `Projects/<name>/.claude/context/`
-- با repo پروژه سفر می‌کنه؛ dev-knowledge فقط دانش cross-project نگه می‌داره
+- با repo پروژه سفر می‌کنه؛ knowledge/ فقط دانش cross-project نگه می‌داره
 - load: skill `<project>-context` (thin loader — محتوا رو از repo پروژه می‌خونه، embed نمی‌کنه)
 
 ### design-systems/<name>/
@@ -62,7 +66,7 @@ dev-knowledge/
 | محل | کِی لود میشه | برای چی |
 |-----|-------------|---------|
 | **CLAUDE.md پروژه** | هر پیام، خودکار | قانون اجباری + DoD (gate) |
-| **dev-knowledge/*.md** | وقتی صریح read شه | مرجع عمیق |
+| **knowledge/*.md** | وقتی صریح read شه | مرجع عمیق |
 | **Skills** | فقط trigger match | شتاب‌دهنده (نه منبع قانون) |
 
 → هر چیزی که **نباید فراموش شه** باید در CLAUDE.md پروژه باشه. این قانونه، نه سلیقه.
@@ -101,7 +105,7 @@ Claude: [loads vitrina-project-context skill] → [reads Vitrina/.claude/context
 | `figma-generate-library` | — | ساخت library در Figma |
 | `figma-code-connect` | — | اتصال کد به کامپوننت Figma |
 
-> **مهم:** قانون اجباری Figma→code (Component Resolution / DS MCP / DoD) در **CLAUDE.md هر پروژه** زندگی میکنه (always-on)، نه در skill. skill فقط شتاب‌دهنده‌ست. مرجع عمیق: `universal/figma-to-code.md`.
+> **مهم:** قانون اجباری Figma→code (Component Resolution / DS MCP / DoD) در **CLAUDE.md هر پروژه** زندگی میکنه (always-on)، نه در skill. skill فقط شتاب‌دهنده‌ست. مرجع عمیق: `knowledge/universal/figma-to-code.md`.
 > skill قدیمی `figma-page-implement` بازنشسته شد — محتوای اجباریش در `figma-to-code.md` + gate پروژه‌ها ادغام شد.
 
 ### Figma — نگهداری اتصال (فایل local در `skills/`، نه پلاگین رسمی)
@@ -117,7 +121,7 @@ Claude: [loads vitrina-project-context skill] → [reads Vitrina/.claude/context
 | `vitrina-figma-rules` | قوانین طراحی Figma برای Vitrina (code→Figma) |
 | `ds-chakra-ui` | Load دانش Chakra UI v3 |
 
-فایل‌های skill در `skills/` هستن — برای نصب/آپدیت از همانجا در Cowork استفاده کن.
+سورس skillها در `skills/src/` است. برای نصب/آپدیت: `pnpm build:skills` بعد نصب `skills/dist/*.skill` در اپ Claude.
 
 ---
 
@@ -125,8 +129,8 @@ Claude: [loads vitrina-project-context skill] → [reads Vitrina/.claude/context
 
 - **هیچ‌وقت session ID رو hardcode نکن** — از dynamic path detection استفاده کن:
   ```bash
-  DN_PATH=$(ls -d /sessions/*/mnt/dev-knowledge 2>/dev/null | head -1)
+  DN_PATH=$(ls -d /sessions/*/mnt/dev-stack/knowledge 2>/dev/null | head -1)
   ```
 - بعد از هر تغییر فایل در این repo، بدون اینکه کاربر بخواد، `wf-commit` اجرا کن
-- برای خطاهای git: `universal/git-troubleshoot.md` رو ببین
-- برای استفاده از dev-engine CLI: `universal/dev-engine.md` رو ببین
+- برای خطاهای git: `knowledge/universal/git-troubleshoot.md` رو ببین
+- برای استفاده از dev-engine CLI: `knowledge/universal/dev-engine.md` رو ببین

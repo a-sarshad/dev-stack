@@ -43,7 +43,7 @@
 - **MCP Figma fetch فقط Tier 2.** Tier 0/1 از local cache، صفر MCP call.
 - **شک بین دو tier؟ → پایین‌تر**، لازم شد escalate. سرعت اول.
 
-مرجع عمیق: `dev-knowledge/universal/scope-triage.md`
+مرجع عمیق: `knowledge/universal/scope-triage.md`
 
 ---
 
@@ -92,7 +92,7 @@ Figma tool fail شد؟
 
 اگه چکی skip شد → با ⚠️ علامت بزن، نگو ✅.
 
-<!-- مرجع عمیق: dev-knowledge/universal/figma-to-code.md -->
+<!-- مرجع عمیق: knowledge/universal/figma-to-code.md -->
 ## ▲▲▲ END COPY ▲▲▲
 
 ---

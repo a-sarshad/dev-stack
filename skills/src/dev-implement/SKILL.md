@@ -68,8 +68,8 @@ echo "start $(date +%s)" >> "$TLOG"
 ```bash
 if command -v dev-engine >/dev/null 2>&1; then
   DE="dev-engine"
-elif [ -f "$HOME/Documents/GitHub/Tools/dev-agents/packages/dev-engine/dist/cli.js" ]; then
-  DE="node $HOME/Documents/GitHub/Tools/dev-agents/packages/dev-engine/dist/cli.js"
+elif [ -f "$HOME/Documents/GitHub/dev-stack/packages/dev-engine/dist/cli.js" ]; then
+  DE="node $HOME/Documents/GitHub/dev-stack/packages/dev-engine/dist/cli.js"
 else
   DE=""
 fi
@@ -79,7 +79,7 @@ fi
 - `DE` پیدا شد → از این به بعد **همه‌جا `$DE` بزن**، نه `dev-engine` خام.
 - `DE` خالی بود → **خودت نصبش کن** (راه اصلی، یه‌بار برای همیشه):
   ```bash
-  cd "$HOME/Documents/GitHub/Tools/dev-agents/packages/dev-engine" && npm run build && npm link
+  cd "$HOME/Documents/GitHub/dev-stack/packages/dev-engine" && npm run build && npm link
   ```
   بعد از اول مرحله ۰ برو. نشد → **RULE 0 مسیر ۲** (به کاربر بگو، صبر کن).
 - ❌ «نصب نیست پس ادامه می‌دم» ممنوع.
@@ -99,7 +99,7 @@ pipeline کامل (fetch + screenshot) فقط برای surface نو از Figma �
 
 - **screenshot/visual-diff = فقط Tier 2** یا وقتی کاربر صریح خواست. Tier 0/1 → CLI verify کافیه.
 - **شک؟ → tier پایین‌تر.** وسط کار بزرگ‌تر شد → escalate به Tier 2.
-- مرجع: `dev-knowledge/universal/scope-triage.md` · gate همیشه‌فعال در `CLAUDE.md` پروژه.
+- مرجع: `knowledge/universal/scope-triage.md` · gate همیشه‌فعال در `CLAUDE.md` پروژه.
 
 > Tier 0/1 از همین STEP -1 خارج شو. ادامه‌ی STEP 0→5 پایین **فقط Tier 2**ـه.
 
@@ -181,7 +181,7 @@ border focus، bg selected اغلب فقط در component اصلی‌ان نه �
 ```
 
 **چرا لازم است** (مکانیزم دابل-فلیپ، قانون ترجمه، استثناها) →
-`dev-knowledge/universal/language.md` § «دابل-فلیپ». **منبع canonical — تکرارش نکن.**
+`knowledge/universal/language.md` § «دابل-فلیپ». **منبع canonical — تکرارش نکن.**
 
 جدول را در DoD گزارش کن: چند ردیف، کدام‌ها `end` شدند و چرا.
 

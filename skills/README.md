@@ -1,9 +1,28 @@
 # Skills — راهنمای کامل
 
 این پوشه شامل skill‌های **workflow و dev** که در این repo نگهداری می‌شن.
-هر skill یه فایل `.skill` هست که در Cowork نصب می‌شه.
 
-> **نصب:** روی فایل `.skill` کلیک کن → Save skill
+## سورس و build
+
+```
+skills/src/<name>/SKILL.md    ← سورس — اینجا ویرایش کن (در گیت هست)
+skills/dist/<name>.skill      ← خروجی build (در گیت نیست)
+```
+
+```bash
+pnpm build:skills             # src → dist
+```
+
+> **نصب:** بعد از build، در اپ Claude روی فایل `skills/dist/<name>.skill`
+> کلیک کن → **Save skill**.
+
+> **⚠ drift:** نسخهٔ نصب‌شده کپی جداست. تا وقتی build + نصب مجدد نکنی،
+> ویرایش سورس هیچ اثری ندارد و نسخهٔ قدیمی فعال می‌ماند.
+>
+> تشخیص drift برای یک skill:
+> ```bash
+> diff skills/src/<name>/SKILL.md "<مسیر نسخهٔ نصب‌شده>"
+> ```
 
 > **توجه:** بخشی از skillها خارج از این repo مدیریت می‌شن:
 > - `dev-delivery-check` ← نصب‌شده از anthropic-skills (بدون فایل در این پوشه)

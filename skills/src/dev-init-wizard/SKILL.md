@@ -75,7 +75,7 @@ description: >
 
 **بر اساس DS انتخابی، skill مناسب را load کن:**
 - Chakra UI → load skill: `ds-chakra-ui`
-- Bootstrap 5 → از template در `dev-knowledge/design-systems/bootstrap5/` استفاده کن (جزئیات در بخش خروجی)
+- Bootstrap 5 → از template در `knowledge/design-systems/bootstrap5/` استفاده کن (جزئیات در بخش خروجی)
 - اگه project-context skill موجود باشه → آن را load کن (اولویت بالاتر از DS generic skill)
 
 ---
@@ -252,7 +252,7 @@ HANDOFF.md
 #### ⭐ اجباری در CLAUDE.md هر پروژه جدید — Figma → Code gate
 
 CLAUDE.md هر پروژه باید بخش `## Figma → Code Protocol` رو داشته باشه. منبع:
-`dev-knowledge/universal/figma-to-code.md` → بلوک «COPY INTO PROJECT CLAUDE.md».
+`knowledge/universal/figma-to-code.md` → بلوک «COPY INTO PROJECT CLAUDE.md».
 
 موقع کپی این placeholderها رو با مقدار پروژه پر کن:
 - `[MCP]` → MCP server دیزاین‌سیستم (Chakra UI MCP، یا «Bootstrap docs» اگه MCP نداره)
@@ -265,7 +265,7 @@ CLAUDE.md هر پروژه باید بخش `## Figma → Code Protocol` رو دا
 
 **این قدم اجباریه هر وقت DS = Bootstrap 5 انتخاب شد.**
 
-راهنمای کامل scaffold در `dev-knowledge/design-systems/bootstrap5/scaffold.md` هست.
+راهنمای کامل scaffold در `knowledge/design-systems/bootstrap5/scaffold.md` هست.
 template فایل‌ها (`_tokens.scss`، `_overrides.scss`، `bootstrap.scss`) در همان پوشه قابل کپی هستن.
 
 خلاصه اقدامات:
@@ -377,9 +377,9 @@ feat: scaffold [project-name] project
 
 **Chakra UI:** load skill `ds-chakra-ui` ← این skill همه چیز رو داره
 
-**Bootstrap 5:** template در `dev-knowledge/design-systems/bootstrap5/` —
+**Bootstrap 5:** template در `knowledge/design-systems/bootstrap5/` —
 سه فایل `_tokens.scss`، `_overrides.scss`، `bootstrap.scss` رو به `src/styles/` کپی کن.
 
-**Universal:** `dev-knowledge/universal/project-init-wizard.md` — این wizard کامل
+**Universal:** `knowledge/universal/project-init-wizard.md` — این wizard کامل
 
 > هیچ مرجع DS-specific اینجا hardcode نشده — skill مناسب را load کن.
