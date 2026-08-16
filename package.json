@@ -9,8 +9,9 @@
   ],
   "scripts": {
     "build": "pnpm -r build && pnpm build:skills",
-    "build:skills": "bash scripts/build-skills.sh",
+    "build:skills": "pnpm check:refs && bash scripts/build-skills.sh",
+    "check:refs": "node scripts/check-refs.mjs",
     "lint": "pnpm -r lint",
-    "test": "pnpm -r test"
+    "test": "pnpm check:refs && pnpm -r test"
   }
 }

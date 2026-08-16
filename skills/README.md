@@ -10,11 +10,29 @@ skills/dist/<name>.skill      ← خروجی build (در گیت نیست)
 ```
 
 ```bash
-pnpm build:skills             # src → dist
+pnpm build:skills             # check:refs → src → dist
+pnpm check:refs               # فقط اعتبارسنجی، بدون build
 ```
 
 > **نصب:** بعد از build، در اپ Claude روی فایل `skills/dist/<name>.skill`
 > کلیک کن → **Save skill**.
+
+### اعتبارسنجی ارجاع‌ها
+
+`build:skills` قبل از zip کردن `scripts/check-refs.mjs` را اجرا می‌کند. اگر
+ارجاعی شکسته باشد **build انجام نمی‌شود** — تا skillِ خراب اصلاً نصب نشود.
+
+| چک | منبع حقیقت |
+|---|---|
+| مسیر فایل/پوشه (`knowledge/…` · `skills/…` · `packages/…`) | فایل‌سیستم |
+| لینک نسبی markdown | فایل‌سیستم |
+| نام skill داخل بک‌تیک | `skills/src/*` + `externalSkills` |
+| زیرفرمان و فلگ `dev-engine` (فقط داخل بلوک bash) | `packages/dev-engine/src/cli.ts` |
+| شناسهٔ `--module` | `packages/dev-engine/src/modules/*.ts` |
+| نام repoهای قبل از ادغام | ممنوع، مگر در allowlist |
+
+استثنا (مثال، یادداشت تاریخی، skill خارجی) → `scripts/refs-allow.json`. هر ورودی
+باید `why` داشته باشد. استثنایی که دیگر چیزی را پوشش نمی‌دهد خودش ⚠ می‌گیرد.
 
 > **⚠ drift:** نسخهٔ نصب‌شده کپی جداست. تا وقتی build + نصب مجدد نکنی،
 > ویرایش سورس هیچ اثری ندارد و نسخهٔ قدیمی فعال می‌ماند.

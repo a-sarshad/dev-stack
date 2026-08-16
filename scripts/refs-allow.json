@@ -1,0 +1,82 @@
+{
+  "_": "استثناهای scripts/check-refs.mjs. هر ورودی «چرا» دارد — بدون آن، allowlist سطل زباله می‌شود و چک بی‌اثر.",
+  "_externalSkills": "skillهایی که وجود دارند ولی سورسشان در این repo نیست (figma plugin / anthropic-skills). مرجع: skills/README.md بخش «خارج از این repo».",
+  "externalSkills": [
+    "ds-chakra-ui",
+    "dev-delivery-check",
+    "figma-use",
+    "figma-implement-design",
+    "figma-generate-design",
+    "figma-generate-library",
+    "figma-code-connect"
+  ],
+  "_retiredSkills": "عمداً حذف شده‌اند. فقط اشارهٔ تاریخی مجاز است — اگر جایی به عنوان skillِ زنده معرفی شدند، دستی بگیرش.",
+  "retiredSkills": [
+    "figma-page-implement",
+    "wf-commit-dn",
+    "wf-commit-project",
+    "wf-session-start"
+  ],
+  "_notSkills": "توکن‌هایی که شکل نام skill دارند ولی skill نیستند (زیرفرمان CLI، نام repo، دایرکتیو کد).",
+  "notSkills": [
+    "dev-stack",
+    "dev-knowledge",
+    "dev-agents",
+    "dev-engine-ignore",
+    "dev-engine-disable",
+    "dev-engine-enable",
+    "figma-sync",
+    "figma-resolve",
+    "figma-to-code",
+    "ds-component-usage",
+    "ds-list"
+  ],
+  "_extraFlags": "فلگ‌هایی که commander خودکار می‌سازد یا در cli.ts با شکل دیگری تعریف شده‌اند.",
+  "extraFlags": [
+    "--version",
+    "--help"
+  ],
+  "_allow": "استثنای نقطه‌ای: { in: مسیر فایل، ref: توکن، why: دلیل }. کلید (فایل، توکن) است نه شماره خط — پس با ویرایش فایل نمی‌شکند.",
+  "allow": [
+    {
+      "in": "README.md",
+      "ref": "dev-agents",
+      "why": "توضیح خودِ ادغام — «از ادغام dev-agents + dev-knowledge ساخته شد»"
+    },
+    {
+      "in": "README.md",
+      "ref": "dev-knowledge",
+      "why": "توضیح خودِ ادغام"
+    },
+    {
+      "in": "HANDOFF.md",
+      "ref": "dev-agents",
+      "why": "یادداشت مهاجرت + کار باقی‌مانده (آرشیو repo قدیمی روی گیت‌هاب)"
+    },
+    {
+      "in": "HANDOFF.md",
+      "ref": "dev-knowledge",
+      "why": "یادداشت مهاجرت + fallback قدیمی در paths.ts"
+    },
+    {
+      "in": "knowledge/BLUEPRINT.md",
+      "ref": "dev-agents",
+      "why": "§1 تاریخچهٔ ادغام و جدول مقصدِ مهاجرت"
+    },
+    {
+      "in": "knowledge/BLUEPRINT.md",
+      "ref": "dev-knowledge",
+      "why": "§1 و جدول «از کجا به کجا» — ستون مبدأ عمداً نام قدیمی است"
+    },
+    {
+      "in": "skills/src/dev-init-wizard/SKILL.md",
+      "ref": "dev-knowledge",
+      "why": "هشدار صریح «پوشهٔ projects/ دیگر وجود ندارد؛ آنجا چیزی نساز»"
+    },
+    {
+      "in": "skills/src/wf-commit/SKILL.md",
+      "ref": "skills/src/dev-review/SKILL.md",
+      "why": "نمونهٔ commit message برای یک skill فرضی — مسیر واقعی نیست"
+    }
+  ]
+}

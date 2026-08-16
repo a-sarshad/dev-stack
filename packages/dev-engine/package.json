@@ -11,7 +11,8 @@
     "dev": "tsc --watch",
     "start": "node dist/cli.js",
     "lint": "eslint src --ext .ts",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit && echo '⚠ unit test ندارد — فقط typecheck اجرا شد'"
   },
   "keywords": ["rtl", "ltr", "persian", "farsi", "lint", "fix", "chakra", "consistency"],
   "author": "Ali <asarshad@gmail.com>",

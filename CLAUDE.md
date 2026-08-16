@@ -32,6 +32,11 @@ dev-stack/
 > `pnpm build:skills`، بعد نصب دستی در اپ Claude. تا نصب مجدد نشود، نسخهٔ
 > قدیمی فعال است.
 
+> **ارجاع مرده = خطای build.** `build:skills` اول `pnpm check:refs` را می‌زند:
+> مسیرها، لینک‌ها، نام skillها و سطح فرمان `dev-engine` را برابر فایل‌سیستم و
+> `cli.ts` اعتبارسنجی می‌کند. استثناها در `scripts/refs-allow.json`.
+> جزئیات: [skills/README.md](skills/README.md).
+
 ---
 
 ## قوانین scope
