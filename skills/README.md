@@ -93,7 +93,7 @@ pnpm build:skills             # src → dist
 
 **فایل:** `wf-commit.skill`
 
-**کاربرد:** برای **هر git repo** — Vitrina، Airport، dev-knowledge، یا هر پروژه جدیدی — یه commit message آماده می‌کنه. مسیر رو خودش از context/CLAUDE.md/package.json تشخیص می‌ده. هیچ‌وقت git commit نمی‌زنه — فقط دستور آماده برای copy-paste در Terminal می‌ده.
+**کاربرد:** برای **هر git repo** — Vitrina، Airport، dev-stack، یا هر پروژه جدیدی — یه commit message آماده می‌کنه. مسیر رو خودش از context/CLAUDE.md/package.json تشخیص می‌ده. هیچ‌وقت git commit نمی‌زنه — فقط دستور آماده برای copy-paste در Terminal می‌ده.
 
 **چه موقع فعال می‌شه:**
 - **خودکار** — بعد از هر عملیات روی فایل‌های هر پروژه

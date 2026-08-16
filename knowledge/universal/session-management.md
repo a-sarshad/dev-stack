@@ -16,7 +16,7 @@
 ```
 ۱. git history     رایگان — همیشه fresh — منبع حقیقت
 ۲. CLAUDE.md       کوچک — قوانین ثابت پروژه
-۳. dev-knowledge   on-demand — دانش cross-project
+۳. knowledge/      on-demand — دانش cross-project
 ۴. HANDOFF.md      snapshot — وضعیت فعلی
 ۵. مکالمه کامل   گران‌ترین — باید از اینجا فرار کنیم
 ```

@@ -2,7 +2,7 @@
 name: wf-commit
 description: >
   آماده‌سازی commit message برای هر git repo — پروژه‌های فعلی (Vitrina، Airport)،
-  dev-knowledge، یا هر repo جدیدی.
+  dev-stack، یا هر repo جدیدی.
   این skill را بلافاصله اجرا کن هر وقت کاربر گفت:
   "commit کن", "push کن", "commit message بساز", "save کن", "sync کن",
   "بزن رو git", "تغییرات رو ذخیره کن", "commit and push",
@@ -52,31 +52,25 @@ git -C "$PROJECT_PATH" status --short
 
 ## مرحله ۳ — بررسی docs قبل از commit
 
-### برای پروژه‌های کد (Vitrina، Airport، یا هر React/web project)
+**جدول «کدام سند را کِی آپدیت کن» در skill `wf-update` است — منبع canonical.**
+همان‌جا را اعمال کن؛ اینجا تکرارش نکن (دو نسخه drift می‌کنند — دقیقاً همان اتفاقی
+که قبلاً افتاد).
 
-| اگه این اتفاق افتاده... | این فایل باید آپدیت بشه |
-|------------------------|------------------------|
-| کامپوننت یا feature جدید اضافه شد | `README.md` (اگه public API داره) |
-| env var جدید اضافه شد | `README.md` → بخش setup/env |
-| ساختار پوشه تغییر کرد | `README.md` |
-| تصمیم معماری جدید | `CLAUDE.md` |
-| باگ جدید یا fix تأیید شد | `CLAUDE.md` |
-
-### برای dev-knowledge (DN)
-
-| اگه این اتفاق افتاده... | این فایل باید آپدیت بشه |
-|------------------------|------------------------|
-| skill جدید اضافه/حذف/rename شد | `CLAUDE.md` (جدول skills) + `README.md` + `skills/README.md` |
-| فولدر جدید در root | `CLAUDE.md` (ساختار) + `README.md` |
-| پروژه جدید به `projects/` | `README.md` + `CLAUDE.md` |
-| DS جدید به `design-systems/` | `README.md` |
-| فایل جدید به `universal/` | `README.md` |
-
-**تشخیص DN:** اگه مسیر شامل `dev-knowledge` بود یا `CLAUDE.md` داشت با `skills/` و `projects/` و `design-systems/`.
-
-اگه یکی از شرط‌ها صدق می‌کنه و فایل مربوطه هنوز آپدیت نشده:
+اگه یکی از شرط‌های آن جدول صدق می‌کنه و فایل مربوطه هنوز آپدیت نشده:
 1. اول اون فایل رو آپدیت کن
 2. بعد commit message رو بساز (شامل همه تغییرات)
+
+**استثنای مخصوص `dev-stack` خودش** (فقط وقتی repo همین مونوریپوست):
+
+| اگه این اتفاق افتاده... | این فایل باید آپدیت بشه |
+|------------------------|------------------------|
+| skill اضافه/حذف/rename شد | `CLAUDE.md` (جدول skills) + `skills/README.md` |
+| فولدر جدید در ریشه | `README.md` + `CLAUDE.md` |
+| DS جدید به `knowledge/design-systems/` | `README.md` |
+| فایل جدید به `knowledge/universal/` | `README.md` |
+
+> ⚠️ **skill عوض کردی؟** فقط commit کافی نیست — `pnpm build:skills` بزن و به کاربر
+> بگو کدام `.skill` را دوباره نصب کند. بدون نصب مجدد، نسخهٔ قدیمی فعال می‌ماند.
 
 ---
 
@@ -108,9 +102,9 @@ feat(ui): implement Dashboard page from Figma
 ```
 
 ```
-feat: add figma-page-implement skill
+feat(skills): add dev-review skill
 
-- skills/figma-page-implement.skill: pipeline کامل Figma → React
+- skills/src/dev-review/SKILL.md: سورس skill جدید
 - CLAUDE.md: skill جدید به جدول اضافه شد
 - skills/README.md: مستندات آپدیت شد
 ```
@@ -131,8 +125,10 @@ git push
 ```
 
 **نکته مسیر:** مسیر sandbox (`/sessions/*/mnt/...`) رو نده — مسیر واقعی Mac رو بده:
-- `/sessions/nifty-brave-curie/mnt/dev-knowledge` → `~/Documents/GitHub/Projects/dev-knowledge`
-- `/sessions/nifty-brave-curie/mnt/vitrina` → مسیر واقعی رو از CLAUDE.md یا کاربر بگیر
+- `/sessions/*/mnt/dev-stack` → `~/Documents/GitHub/dev-stack`
+- `/sessions/*/mnt/<project>` → `~/Documents/GitHub/Projects/<Project>`
+
+اگه مطمئن نیستی، مسیر رو از `CLAUDE.md` پروژه یا از کاربر بگیر — حدس نزن.
 
 ---
 

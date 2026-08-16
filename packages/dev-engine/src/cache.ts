@@ -13,7 +13,7 @@ function readJSON(path: string): FigmaResolveCache | null {
   }
 }
 
-// لایه DS: dev-knowledge/design-systems/<ds>/figma-resolve.json (shared)
+// لایه DS: knowledge/design-systems/<ds>/figma-resolve.json (shared)
 export function dsCachePath(config: ProjectConfig): string | null {
   const dn = findDevKnowledge(config.dev_knowledge_path)
   if (!dn) return null

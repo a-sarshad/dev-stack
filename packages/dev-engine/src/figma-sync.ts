@@ -80,7 +80,7 @@ export function runFigmaSync(projectRoot: string, config: ProjectConfig, opts: {
   console.log(chalk.bold(`\n🔄 figma-sync status — ${projectRoot}\n`))
 
   const dsPath = dsCachePath(config)
-  console.log(`  DS layer:    ${merged._layers.ds ? chalk.green('✓ ' + dsPath) : chalk.gray('✗ ' + (dsPath ?? 'dev-knowledge پیدا نشد'))}`)
+  console.log(`  DS layer:    ${merged._layers.ds ? chalk.green('✓ ' + dsPath) : chalk.gray('✗ ' + (dsPath ?? 'knowledge/ پیدا نشد'))}`)
   console.log(`  Local layer: ${merged._layers.local ? chalk.green('✓ ' + localPath) : chalk.gray('✗ none — dev-engine figma-sync --init')}`)
   console.log(
     `  merged: ${chalk.cyan(Object.keys(merged.components ?? {}).length + ' components')}` +

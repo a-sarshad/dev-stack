@@ -20,28 +20,14 @@ Run dev-engine on the project with user-selected options.
 
 ## Step 1 — Resolve the binary (never stop here)
 
-`dev-engine` is often **not** on PATH — it lives in a local workspace and may not be
-linked. Walk this ladder; only the last rung involves the user.
-
 ```bash
-if command -v dev-engine >/dev/null 2>&1; then
-  DE="dev-engine"
-elif [ -f "$HOME/Documents/GitHub/dev-stack/packages/dev-engine/dist/cli.js" ]; then
-  DE="node $HOME/Documents/GitHub/dev-stack/packages/dev-engine/dist/cli.js"
-else
-  DE=""
-fi
-[ -n "$DE" ] && $DE --version || echo "UNRESOLVED"
+DE=$(command -v dev-engine || echo "node $HOME/Documents/GitHub/dev-stack/packages/dev-engine/dist/cli.js")
+$DE --version || (cd "$HOME/Documents/GitHub/dev-stack/packages/dev-engine" && npm run build && npm link)
 ```
 
-- Resolved → use `$DE` **everywhere below**, never a bare `dev-engine`.
-- `UNRESOLVED` → **build and link it yourself** (one-time, no user needed):
-  ```bash
-  cd "$HOME/Documents/GitHub/dev-stack/packages/dev-engine" && npm run build && npm link
-  ```
-  Then re-run the ladder.
-- Still unresolved after that → tell the user exactly what failed and what you need.
-  **Do not proceed to check code and do not report anything as verified.**
+Use `$DE` **everywhere below**, never a bare `dev-engine`. If the build+link also
+fails, tell the user exactly what failed. **Do not check code and do not report
+anything as verified.**
 
 > ❌ Never "it isn't installed, so I'll skip the check and continue."
 > A skipped check must surface as ⚠️, never as a silent pass.
@@ -69,41 +55,23 @@ If `.dev-engine.json` is NOT at `PROJECT_ROOT` but exists elsewhere (monorepo), 
 
 If `.dev-engine.json` does NOT exist in `PROJECT_ROOT`:
 
-**Option A — Auto-detect (default, silent):**
-
-Detect from codebase and create — do NOT ask the user:
-
-**Detect design system** — grep `package.json` dependencies:
-- `@chakra-ui/react` + version `^3` → `chakra-v3`
-- `@chakra-ui/react` + version `^2` → `chakra-v2`
-- `@mui/material` → `mui`
-- `antd` → `antd`
-- `@mantine/core` → `mantine`
-- none matched → `generic`
-
-**Detect direction** — check `index.html`, `app/layout.tsx`, or `main.tsx`/`App.tsx`:
-- contains `dir="rtl"` or `direction: rtl` → `rtl`
-- else → `ltr`
-
-**Detect locale**:
-- direction=rtl + Persian strings → `fa-IR`
-- direction=rtl + Arabic → `ar-SA`
-- else → `en-US`
-
-**Detect calendar**:
-- `fa-IR` → `jalali` | `ar-SA` → `hijri` | else → `gregorian`
-
-**Detect icon library** — grep `package.json`:
-- `lucide-react` → `lucide` | `@heroicons/react` → `heroicons` | `react-icons` → `fa` | else → `generic`
-
-Write `.dev-engine.json` to `PROJECT_ROOT`. Tell user one line: `Created .dev-engine.json (ds: X, direction: Y)`
-
-**Option B — Interactive (if user wants to customize):**
-
 ```bash
-$DE init
+$DE init "$PROJECT_ROOT" --auto --yes --no-scaffold
 ```
-Use this if user says "می‌خوام تنظیمات رو خودم بذارم" or "dev-engine init".
+
+`--auto` derives ds / direction / locale / calendar / icon_lib from the codebase
+(`package.json` deps, `dir="rtl"` in the entry file, script of the strings) and
+prints one evidence line per field. Relay those lines to the user, unchanged.
+
+> Do **not** re-derive any of this yourself. It is a fixed rule set, so it lives in
+> `init.ts` — deterministic, free, identical every run. BLUEPRINT §2.
+
+If the user wants to set values by hand ("می‌خوام تنظیمات رو خودم بذارم") drop
+`--yes` for the interactive prompts, or pass explicit flags (`--ds`, `--direction`, …)
+which always beat detection.
+
+> `--auto` reads `dir="rtl"` from the entry file, so a **bilingual** project shows up
+> as `rtl`. If the project really serves both, set `--direction both` explicitly.
 
 ---
 

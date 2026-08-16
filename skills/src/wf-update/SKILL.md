@@ -77,7 +77,7 @@ HANDOFF.md رو بنویس/آپدیت کن — **کوتاه و فقط چیزها
 - هدف: زیر ۱۵ خط
 - stack، DS، constraints، تصمیم‌های معماری → **در CLAUDE.md هستن، تکرار نکن**
 - «الان» از git commits استخراج کن، نه از حافظه مکالمه
-- git history رو کپی نکن — wf-session-start خودش git log می‌زنه
+- git history رو کپی نکن — skill `wf-start` خودش git log می‌زنه
 - اگه HANDOFF.md وجود نداشت → بسازش
 
 ---
@@ -86,10 +86,14 @@ HANDOFF.md رو بنویس/آپدیت کن — **کوتاه و فقط چیزها
 
 بعد از HANDOFF، این جدول رو چک کن — آیا تغییرات این session نیاز به آپدیت دارن:
 
+> **این جدول منبع canonical است.** skill `wf-commit` هم به همین ارجاع می‌دهد —
+> کپی‌اش نکن، وگرنه دو نسخه drift می‌کنند.
+
 | اگه این اتفاق افتاده... | این فایل باید آپدیت بشه |
 |------------------------|------------------------|
 | باگ جدید project-specific کشف شد | `CLAUDE.md` → بخش **Project-Specific Bugs** |
-| باگ DS-level کشف شد | `knowledge/design-systems/<ds>/known-bugs.md` |
+| باگ DS-level کشف شد | `dev-stack/knowledge/design-systems/<ds>/known-bugs.md` |
+| سورس یک skill عوض شد | `dev-stack/skills/src/<name>/SKILL.md` → بعدش `pnpm build:skills` + **نصب مجدد** |
 | قانون یا pattern جدید DS | `CLAUDE.md` پروژه |
 | تصمیم معماری گرفته شد | `CLAUDE.md` → بخش **Architectural Decisions** + pointer در HANDOFF |
 | library یا tool جدید به stack | `CLAUDE.md` + `README.md` |
@@ -145,4 +149,4 @@ find src/app -name "page.tsx" | sed 's|src/app||; s|/page.tsx||; s|^$|/|' | sort
 > «CLAUDE.md / README.md هم آپدیت شد.»
 
 اگه uncommitted changes داشت:
-> «⚠️ [N] فایل تغییر کرده — برای commit از `wf-commit-project` استفاده کن.»
+> «⚠️ [N] فایل تغییر کرده — برای commit از skill `wf-commit` استفاده کن.»

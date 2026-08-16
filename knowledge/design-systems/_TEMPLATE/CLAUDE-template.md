@@ -19,7 +19,7 @@
 | کامپوننت‌های {{DS}} | `design-systems/{{DS_FOLDER}}/components.md` |
 | جهت در {{DS}} | `design-systems/{{DS_FOLDER}}/rtl.md` |
 
-→ **محتوای مخصوص همین پروژه — داخل repo، نه dev-knowledge:**
+→ **محتوای مخصوص همین پروژه — داخل repo، نه knowledge/ مشترک:**
 
 | موضوع | فایل |
 |-------|------|

@@ -72,7 +72,7 @@ export interface RunOptions {
 }
 
 // ── Figma → code resolution cache (BLUEPRINT §6) ──────────────────────────────
-// دو لایه: DS (shared، در dev-knowledge) + Local (در repo پروژه). merge با Local-first.
+// دو لایه: DS (shared، در knowledge/) + Local (در repo پروژه). merge با Local-first.
 export interface FigmaResolveCache {
   components?: Record<string, string>   // Figma component name → code import (e.g. "Button": "@chakra-ui/react#Button")
   tokens?: Record<string, string>       // Figma var/token → code token (e.g. "color/primary/500": "colors.primary.500")

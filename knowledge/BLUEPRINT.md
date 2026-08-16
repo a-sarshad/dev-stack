@@ -49,7 +49,7 @@ check دترمینیستیک (قابل اجرا)؟      → packages/dev-engine 
 | لایه | محل | کِی لود می‌شه | برای چی | ریسک فراموشی |
 |------|-----|---------------|---------|--------------|
 | **RULE** | `{project}/CLAUDE.md` | هر پیام، خودکار | gate اجباری + DoD | صفر |
-| **ENGINE** | `dev-agents` (dev-engine) | وقتی CLI صدا زده شه | check + auto-fix | صفر (fail-hard) |
+| **ENGINE** | `packages/dev-engine` | وقتی CLI صدا زده شه | check + auto-fix | صفر (fail-hard) |
 | **REFERENCE** | `knowledge/*.md` | وقتی صریح read شه | دانش عمیق | بالا — فقط on-demand |
 | **ACCELERATOR** | `skills/*.skill` | فقط trigger match | orchestration فلو | متوسط — اگه trigger نخوره |
 
@@ -113,7 +113,7 @@ USER: "این frame رو implement کن: [Figma URL]"
 و MCP خونده می‌شه — نه hardcode در flow. همین pipeline برای Bootstrap/Chakra/هر DS کار می‌کنه.
 
 **تقسیم کار CLI vs Claude:**
-- **CLI (dev-agents):** preflight، token-sync، dod، build-git، visual-diff — هر چیز دترمینیستیک
+- **CLI (packages/dev-engine):** preflight، token-sync، dod، build-git، visual-diff — هر چیز دترمینیستیک
 - **Claude:** فقط STEP 1-3 (read context، Figma fetch، implement)
 - **skill `dev-implement`:** orchestrator — step‌ها رو به ترتیب صدا می‌زنه، نمی‌پره
 
@@ -129,7 +129,7 @@ screenshot/visual-diff = opt-in، نه default. خونه‌ی canonical: `univer
 یه فکت/قانون/فایل جدید داری؟
 │
 ├─ قابل اجرا با grep/script هست؟ (check دترمینیستیک)
-│   └─ بله → dev-agents: dev-engine module یا subcommand
+│   └─ بله → packages/dev-engine: module یا subcommand
 │
 ├─ روی همه پروژه‌ها صدق می‌کنه؟
 │   ├─ بله، DS-agnostic → knowledge/universal/
@@ -152,7 +152,7 @@ screenshot/visual-diff = opt-in، نه default. خونه‌ی canonical: `univer
 
 نتیجه:
 - **source اسکیل** → مرکزی در `skills/` می‌مونه (یک‌جا مدیریت/نصب)
-- **محتوای project-specific** → از dev-knowledge منتقل می‌شه به repo خود پروژه:
+- **محتوای project-specific** → از knowledge/ منتقل می‌شه به repo خود پروژه:
   `{project}/.claude/context/`
 - **skill project-context** → یه loader نازک می‌شه که محتوا رو از repo پروژه read می‌کنه،
   نه اینکه خودش محتوا نگه داره (پایان duplication)
@@ -311,14 +311,14 @@ Projects/<X>/                               ← قانون + context خودِ پ
 - [ ] قانونی که نباید فراموش شه، در CLAUDE.md پروژه‌ست؟ (نه فقط skill)
 - [ ] check قابل‌اجرا، CLI شده؟ (نه دستی توسط Claude)
 - [ ] فکت فقط یک خونه داره؟ (نه duplicate بین لایه‌ها)
-- [ ] context پروژه‌ی خاص، در repo همون پروژه‌ست؟ (نه dev-knowledge)
+- [ ] context پروژه‌ی خاص، در repo همون پروژه‌ست؟ (نه knowledge/ مشترک)
 - [ ] فلوی Figma→code از `dev-implement` می‌گذره؟ (نه ad-hoc)
 
 ---
 
 ## ۱۰. استاندارد package manager — **pnpm** (تصمیم قطعی)
 
-> updated: 2026-06-05 — انگیزه: mixed بودن pm (Vitrina/dev-agents=pnpm، Airport=npm)
+> updated: 2026-06-05 — انگیزه: mixed بودن pm (Vitrina/dev-stack=pnpm، Airport=npm)
 > باعث یه باگ شد (dev-engine فرض pnpm سراسری کرد و node_modules npmـی Airport رو آلود).
 
 - **همه‌ی پروژه‌های نو + فعلی → pnpm.** در `dev-init-wizard` bake شده (سؤال نمی‌شه).

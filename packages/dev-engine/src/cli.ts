@@ -98,6 +98,7 @@ program
   .command('init [dir]')
   .description('create .dev-engine.json + scaffold CLAUDE.md و .claude/ (تعاملی یا با --yes)')
   .option('-y, --yes', 'non-interactive: از flagها/پیش‌فرض‌ها استفاده کن، سؤال نپرس', false)
+  .option('--auto', 'پیش‌فرض‌ها را از کدبیس تشخیص بده (ds/direction/locale/calendar/icons)', false)
   .option('--direction <dir>', 'rtl | ltr | both')
   .option('--locale <locale>', 'مثلاً fa-IR')
   .option('--calendar <cal>', 'jalali | hijri | gregorian')
@@ -184,11 +185,11 @@ program
     process.exit(ok ? 0 : 1)
   })
 
-// ── ds-list — design systemهای موجود در dev-knowledge ─────────────────────────
+// ── ds-list — design systemهای موجود در knowledge/ ─────────────────────────
 program
   .command('ds-list')
   .description('لیست design systemهای ثبت‌شده (design-systems/*/ds.json) با contract و targets')
-  .option('--config <path>', 'explicit path to dev-knowledge')
+  .option('--config <path>', 'explicit path to knowledge/')
   .option('--json', 'output as JSON', false)
   .action((opts: { config?: string; json: boolean }) => {
     const registry = loadDsRegistry(opts.config)
@@ -197,7 +198,7 @@ program
       return
     }
     const dn = findDevKnowledge(opts.config)
-    console.log(chalk.bold(`\n🎨 design systems — ${dn ?? 'dev-knowledge پیدا نشد'}\n`))
+    console.log(chalk.bold(`\n🎨 design systems — ${dn ?? 'knowledge/ پیدا نشد'}\n`))
     if (registry.length === 0) {
       console.log(chalk.yellow('  هیچ ds.json پیدا نشد.'))
       console.log(chalk.gray('  یه DS جدید: پوشه‌ی design-systems/_TEMPLATE/ رو کپی کن و ds.json رو پر کن.\n'))

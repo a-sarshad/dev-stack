@@ -1,15 +1,125 @@
 import { createInterface } from 'readline'
 import { writeFileSync, readFileSync, existsSync, mkdirSync, copyFileSync, chmodSync } from 'fs'
 import { resolve, basename, dirname } from 'path'
-import { findDevKnowledge, findDs, dsFolder } from './paths.js'
+import { findDevKnowledge, findDs, dsFolder, loadDsRegistry } from './paths.js'
 
-const DS_OPTIONS = ['chakra-v3', 'chakra-v2', 'mui', 'antd', 'mantine', 'generic']
+// fallback وقتی رجیستری در دسترس نیست (knowledge پیدا نشد). منبع اصلی
+// شناسه‌های DS خودِ رجیستری است — vgl. dsOptions() پایین. قبلاً این لیست ثابت
+// تنها منبع بود و با رجیستری drift کرده بود: `bootstrap5` در رجیستری هست ولی
+// اینجا نبود، پس validate() آن را به 'generic' تنزل می‌داد.
+const DS_FALLBACK = ['chakra-v3', 'chakra-v2', 'mui', 'antd', 'mantine', 'bootstrap5', 'generic']
 const ICON_OPTIONS = ['lucide', 'heroicons', 'fa', 'mdi', 'generic']
 const DIR_OPTIONS = ['rtl', 'ltr', 'both']
 const CAL_OPTIONS = ['jalali', 'hijri', 'gregorian']
 
+function dsOptions(configPath?: string): string[] {
+  const ids = loadDsRegistry(configPath).flatMap(m => [m.id, ...(m.aliases ?? [])])
+  return ids.length ? Array.from(new Set([...ids, 'generic'])) : DS_FALLBACK
+}
+
 function validate(value: string, options: string[], fallback: string): string {
   return options.includes(value) ? value : fallback
+}
+
+// ── تشخیص خودکار از روی کدبیس ───────────────────────────────────────────────
+// این منطق قبلاً به‌صورت نثر در skill «dev-engine» بود و هر بار توسط مدل اجرا
+// می‌شد — با هزینهٔ token و بدون تکرارپذیری. قاعده‌اش ثابت است، پس جایش کد است.
+// BLUEPRINT §2: «هر چیز دترمینیستیک = dev-engine (CLI، صفر token)».
+
+export interface DetectedDefaults {
+  ds: string
+  direction: string
+  locale: string
+  calendar: string
+  icon_lib: string
+  evidence: string[]
+}
+
+/** dependencies + devDependencies پروژه، یا شیء خالی اگر package.json نبود/خراب بود. */
+function readDeps(targetDir: string): Record<string, string> {
+  const p = resolve(targetDir, 'package.json')
+  if (!existsSync(p)) return {}
+  try {
+    const pkg = JSON.parse(readFileSync(p, 'utf8')) as {
+      dependencies?: Record<string, string>
+      devDependencies?: Record<string, string>
+    }
+    return { ...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {}) }
+  } catch {
+    return {}
+  }
+}
+
+/** فایل‌های ورودی رایج که `dir` روی ریشهٔ سند در آن‌ها ست می‌شود. */
+const ENTRY_FILES = [
+  'index.html', 'public/index.html',
+  'src/main.tsx', 'src/main.ts', 'src/App.tsx',
+  'app/layout.tsx', 'src/app/layout.tsx',
+]
+
+function readEntryFiles(targetDir: string): string {
+  return ENTRY_FILES
+    .map(rel => resolve(targetDir, rel))
+    .filter(existsSync)
+    .map(p => { try { return readFileSync(p, 'utf8') } catch { return '' } })
+    .join('\n')
+}
+
+export function detectProjectDefaults(targetDir: string, configPath?: string): DetectedDefaults {
+  const evidence: string[] = []
+  const deps = readDeps(targetDir)
+
+  // ── design system — از dependency
+  let ds = 'generic'
+  const chakra = deps['@chakra-ui/react']
+  if (chakra) {
+    ds = /\b2\./.test(chakra) || chakra.startsWith('^2') ? 'chakra-v2' : 'chakra-v3'
+    evidence.push(`ds=${ds} ← @chakra-ui/react@${chakra}`)
+  } else if (deps['@mui/material']) {
+    ds = 'mui'; evidence.push('ds=mui ← @mui/material')
+  } else if (deps['antd']) {
+    ds = 'antd'; evidence.push('ds=antd ← antd')
+  } else if (deps['@mantine/core']) {
+    ds = 'mantine'; evidence.push('ds=mantine ← @mantine/core')
+  } else if (deps['bootstrap']) {
+    ds = 'bootstrap5'; evidence.push('ds=bootstrap5 ← bootstrap')
+  } else {
+    evidence.push('ds=generic ← هیچ کتابخانهٔ شناخته‌شده‌ای در package.json نبود')
+  }
+  ds = validate(ds, dsOptions(configPath), 'generic')
+
+  // ── direction — از فایل ورودی
+  const entry = readEntryFiles(targetDir)
+  const rtlMarker = /dir\s*=\s*["'{]?\s*["']?rtl|direction\s*:\s*["']rtl["']/i.test(entry)
+  const direction = rtlMarker ? 'rtl' : 'ltr'
+  evidence.push(rtlMarker
+    ? 'direction=rtl ← نشانهٔ dir="rtl" در فایل ورودی'
+    : 'direction=ltr ← نشانهٔ rtl پیدا نشد')
+
+  // ── locale — از الفبای متن فایل ورودی
+  // پ چ ژ گ فقط فارسی‌اند؛ بقیهٔ بازهٔ عربی مشترک است.
+  let locale = 'en-US'
+  if (direction === 'rtl') {
+    if (/[پچژگ]/.test(entry)) { locale = 'fa-IR'; evidence.push('locale=fa-IR ← حروف اختصاصی فارسی') }
+    else if (/[؀-ۿ]/.test(entry)) { locale = 'ar-SA'; evidence.push('locale=ar-SA ← الفبای عربی بدون حروف فارسی') }
+    else { locale = 'fa-IR'; evidence.push('locale=fa-IR ← پیش‌فرض RTL (متنی برای تشخیص نبود)') }
+  } else {
+    evidence.push('locale=en-US ← پروژه LTR')
+  }
+
+  // ── calendar — تابع locale
+  const calendar = locale === 'fa-IR' ? 'jalali' : locale === 'ar-SA' ? 'hijri' : 'gregorian'
+  evidence.push(`calendar=${calendar} ← از locale`)
+
+  // ── icon library — از dependency
+  let icon_lib = 'generic'
+  if (deps['lucide-react']) icon_lib = 'lucide'
+  else if (deps['@heroicons/react']) icon_lib = 'heroicons'
+  else if (deps['react-icons']) icon_lib = 'fa'
+  else if (deps['@mdi/js'] || deps['@mdi/react']) icon_lib = 'mdi'
+  evidence.push(`icon_lib=${icon_lib} ← package.json`)
+
+  return { ds, direction, locale, calendar, icon_lib, evidence }
 }
 
 // ── scaffold ────────────────────────────────────────────────────────────────
@@ -68,7 +178,7 @@ function scaffoldClaudeMd(targetDir: string, vars: Vars, dk: string | null, repo
     return
   }
   if (!dk) {
-    report.warned.push('CLAUDE.md — dev-knowledge پیدا نشد، قالبی برای ساخت نبود')
+    report.warned.push('CLAUDE.md — knowledge/ پیدا نشد، قالبی برای ساخت نبود')
     return
   }
 
@@ -91,7 +201,7 @@ function scaffoldClaudeMd(targetDir: string, vars: Vars, dk: string | null, repo
   report.created.push(`CLAUDE.md  (${sources.join(' + ')})`)
 }
 
-/** هوک rtl_gate را از نسخهٔ canonical در dev-knowledge کپی می‌کند. */
+/** هوک rtl_gate را از نسخهٔ canonical در knowledge/ کپی می‌کند. */
 function scaffoldHook(targetDir: string, dk: string | null, report: ScaffoldReport): boolean {
   const dest = resolve(targetDir, '.claude/hooks/rtl_gate.py')
   if (existsSync(dest)) {
@@ -99,7 +209,7 @@ function scaffoldHook(targetDir: string, dk: string | null, report: ScaffoldRepo
     return true
   }
   if (!dk) {
-    report.warned.push('.claude/hooks/rtl_gate.py — dev-knowledge پیدا نشد')
+    report.warned.push('.claude/hooks/rtl_gate.py — knowledge/ پیدا نشد')
     return false
   }
   const src = resolve(dk, 'universal/hooks/rtl_gate.py')
@@ -163,7 +273,7 @@ function contextStubs(vars: Vars): Array<{ rel: string; body: string }> {
 
 باگ‌هایی که در این پروژه کشف شدند و **مخصوص همین پروژه**اند.
 برای باگ‌های سطح design system → \`design-systems/${vars.DS_FOLDER}/known-bugs.md\`
-در dev-knowledge.
+در knowledge/.
 
 ---
 
@@ -266,7 +376,7 @@ function buildVars(
     CALENDAR: cfg.calendar ?? 'gregorian',
     START_SIDE: direction === 'ltr' ? 'چپ' : 'راست',
     END_SIDE: direction === 'ltr' ? 'راست' : 'چپ',
-    DK_PATH: dk ?? '<dev-knowledge>',
+    DK_PATH: dk ?? '<knowledge>',
     TYPECHECK_CMD: opts.typecheck ?? 'npx tsc --noEmit',
   }
 }
@@ -303,6 +413,7 @@ async function scaffoldFromExistingConfig(
 
 export interface InitOptions {
   yes?: boolean
+  auto?: boolean       // پیش‌فرض‌ها را از کدبیس تشخیص بده، نه از ثابت‌ها
   direction?: string
   locale?: string
   calendar?: string
@@ -346,20 +457,31 @@ export async function runInit(targetDir: string, opts: InitOptions = {}): Promis
 
   console.log('\n🛠  dev-engine init\n')
 
-  const directionRaw = await ask('Direction (rtl/ltr/both)', 'rtl', opts.direction)
+  // --auto: پیش‌فرض هر سوال از روی کدبیس حساب می‌شود، نه از یک ثابت. flag صریح
+  // کاربر همچنان برنده است (ask() اول به flag نگاه می‌کند).
+  const detected = opts.auto ? detectProjectDefaults(targetDir) : null
+  if (detected) {
+    console.log('  تشخیص خودکار:')
+    for (const line of detected.evidence) console.log(`    · ${line}`)
+    console.log('')
+  }
+
+  const dsList = dsOptions()
+
+  const directionRaw = await ask('Direction (rtl/ltr/both)', detected?.direction ?? 'rtl', opts.direction)
   const direction = validate(directionRaw, DIR_OPTIONS, 'rtl')
 
-  const defaultLocale = direction === 'ltr' ? 'en-US' : 'fa-IR'
+  const defaultLocale = detected?.locale ?? (direction === 'ltr' ? 'en-US' : 'fa-IR')
   const locale = await ask('Locale', defaultLocale, opts.locale)
 
-  const defaultCal = direction === 'ltr' ? 'gregorian' : 'jalali'
+  const defaultCal = detected?.calendar ?? (direction === 'ltr' ? 'gregorian' : 'jalali')
   const calendarRaw = await ask('Calendar (jalali/hijri/gregorian)', defaultCal, opts.calendar)
   const calendar = validate(calendarRaw, CAL_OPTIONS, defaultCal)
 
-  const dsRaw = await ask(`Design system (${DS_OPTIONS.join('/')})`, 'generic', opts.ds)
-  const ds = validate(dsRaw, DS_OPTIONS, 'generic')
+  const dsRaw = await ask(`Design system (${dsList.join('/')})`, detected?.ds ?? 'generic', opts.ds)
+  const ds = validate(dsRaw, dsList, 'generic')
 
-  const iconRaw = await ask(`Icon library (${ICON_OPTIONS.join('/')})`, 'lucide', opts.icons)
+  const iconRaw = await ask(`Icon library (${ICON_OPTIONS.join('/')})`, detected?.icon_lib ?? 'lucide', opts.icons)
   const icon_lib = validate(iconRaw, ICON_OPTIONS, 'lucide')
 
   const projectName = await ask('Project name', basename(resolve(targetDir)), opts.name)

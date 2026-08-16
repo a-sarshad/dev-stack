@@ -3,7 +3,7 @@ name: dev-implement
 description: "Orchestrator واحد برای پیاده‌سازی طرح Figma به کد — کل pipeline رو step-by-step enforce می‌کنه (preflight → context → Figma fetch → implement → verify → commit) تا چیزی فراموش نشه. Trigger وقتی کاربر می‌خواد یه frame/طرح/کامپوننت Figma رو implement کنه: «implement کن»، «این طرح/frame رو کد کن»، «figma to code»، «implement design/frame/component»، «پیاده‌سازی کن»، «این رو بساز [+ Figma URL]». از dev-engine CLI برای check و cache resolution استفاده می‌کنه (صفر token اضافه)."
 ---
 
-<!-- dev-implement | orchestrator | BLUEPRINT §3 | updated 2026-08-02b -->
+<!-- dev-implement | orchestrator | BLUEPRINT §3 | updated 2026-08-16 -->
 
 # dev-implement — Figma → Code Pipeline
 
@@ -46,16 +46,7 @@ while [ "$ROOT" != "/" ]; do
 done
 [ "$ROOT" = "/" ] && ROOT="$PWD"
 echo "project root: $ROOT"
-
-# زمان‌سنجی pipeline (اجباری، سبک) — سوخت جدول STEP 5
-TLOG="/tmp/dev-implement-timing-$$.log"
-: > "$TLOG"
-echo "start $(date +%s)" >> "$TLOG"
 ```
-
-> **⏱️ `$TLOG` تا آخر pipeline زنده می‌مونه.** قبل از ورود به هر STEP یه خط
-> `echo "STEPn $(date +%s)" >> "$TLOG"` بزن (پایین هر STEP مشخص شده). این wall-clock
-> واقعیه، نه تخمین — هزینه‌ش یک `date` extra در هر مرز STEP، صفر token.
 
 > **⚠️ چرا repo root و نه `src/`:** آرگومان `path` هم‌زمان root اسکن فایل و root
 > حل‌کردن config/cache است (`.dev-engine.json`، `.claude/context/figma-resolve.json`).
@@ -63,26 +54,15 @@ echo "start $(date +%s)" >> "$TLOG"
 > خروجی **بی‌هیچ خطایی «۰ issue»** می‌شه — یعنی «هیچی چک نشد»، نه «چک شد و تمیز بود».
 > **همیشه `dev-engine "$ROOT"`.** برای محدود کردن دامنه از `--changed` استفاده کن، نه از مسیر زیرشاخه.
 
-### ب) باینری dev-engine — نردبان resolve (هرگز اینجا متوقف نشو)
+### ب) باینری dev-engine — هرگز اینجا متوقف نشو
 
 ```bash
-if command -v dev-engine >/dev/null 2>&1; then
-  DE="dev-engine"
-elif [ -f "$HOME/Documents/GitHub/dev-stack/packages/dev-engine/dist/cli.js" ]; then
-  DE="node $HOME/Documents/GitHub/dev-stack/packages/dev-engine/dist/cli.js"
-else
-  DE=""
-fi
-[ -n "$DE" ] && $DE --version
+DE=$(command -v dev-engine || echo "node $HOME/Documents/GitHub/dev-stack/packages/dev-engine/dist/cli.js")
+$DE --version || (cd "$HOME/Documents/GitHub/dev-stack/packages/dev-engine" && npm run build && npm link)
 ```
 
-- `DE` پیدا شد → از این به بعد **همه‌جا `$DE` بزن**، نه `dev-engine` خام.
-- `DE` خالی بود → **خودت نصبش کن** (راه اصلی، یه‌بار برای همیشه):
-  ```bash
-  cd "$HOME/Documents/GitHub/dev-stack/packages/dev-engine" && npm run build && npm link
-  ```
-  بعد از اول مرحله ۰ برو. نشد → **RULE 0 مسیر ۲** (به کاربر بگو، صبر کن).
-- ❌ «نصب نیست پس ادامه می‌دم» ممنوع.
+از این به بعد **همه‌جا `$DE` بزن**، نه `dev-engine` خام. اگه build+link هم شکست →
+**RULE 0 مسیر ۲** (به کاربر بگو، صبر کن). ❌ «نصب نیست پس ادامه می‌دم» ممنوع.
 
 ---
 
@@ -117,7 +97,6 @@ pipeline کامل (fetch + screenshot) فقط برای surface نو از Figma �
 ## STEP 0 — preflight (CLI)
 
 ```bash
-echo "STEP0-preflight $(date +%s)" >> "$TLOG"
 $DE doctor "$ROOT"
 ```
 - **✗ hard-fail** (config/DS نصب نیست) → **RULE 0**. کد نزن.
@@ -130,7 +109,6 @@ $DE doctor "$ROOT"
 ## STEP 1 — context load (local، نه MCP)
 
 ```bash
-echo "STEP1-context $(date +%s)" >> "$TLOG"
 [ -f "$ROOT/.claude/context/figma-resolve.json" ] || $DE figma-sync "$ROOT" --scan
 cat "$ROOT/.claude/context/project-context.md" 2>/dev/null
 ```
@@ -141,10 +119,6 @@ cat "$ROOT/.claude/context/project-context.md" 2>/dev/null
 ---
 
 ## STEP 2 — Figma fetch (هدفمند، نه scatter)
-
-```bash
-echo "STEP2-figma $(date +%s)" >> "$TLOG"
-```
 
 فقط **frame مورد نظر** رو بگیر:
 - `get_design_context` / `get_screenshot` / `get_variable_defs` — فقط همون node.
@@ -209,10 +183,6 @@ $DE layout-derive "$ROOT" --metadata /tmp/meta.xml --node 2659:82005
 
 ## STEP 3 — implement
 
-```bash
-echo "STEP3-implement $(date +%s)" >> "$TLOG"
-```
-
 درخت Figma رو از بالا بگرد. هر node:
 
 ```
@@ -238,7 +208,6 @@ composite موجود رو از اجزاش rebuild نکن — کلش import کن.
 ## STEP 4 — verify (CLI-first، loop تا تطابق یا سقف)
 
 ```bash
-echo "STEP4-verify $(date +%s)" >> "$TLOG"
 $DE "$ROOT" --changed --fix    # code checks + auto-fix + build-git
 ```
 
@@ -279,51 +248,17 @@ screenshot طرح  ←→  screenshot preview  →  اندازه‌گیری DOM 
   هیچ ابزار متنی‌ای نمی‌گیرد.
 
 روش دقیق و اندازه‌ها → `CLAUDE.md` پروژه § «تطابق با طرح فیگما».
-مکانیزم دابل-فلیپ → `universal/language.md`. **منبع canonical، تکرارش نکن.**
+مکانیزم دابل-فلیپ → `knowledge/universal/language.md`. **منبع canonical، تکرارش نکن.**
 
 ---
 
 ## STEP 5 — DoD + commit
 
-```bash
-echo "STEP5-dod $(date +%s)" >> "$TLOG"
-echo "end $(date +%s)" >> "$TLOG"
-```
-
 ۱. **Definition of Done** رو point-by-point گزارش بده (از `CLAUDE.md` پروژه):
    - چک skip‌شده = **⚠️ نه ✅**. صادق باش.
-   - اضافه بر DoD پروژه، این دو رو هم گزارش کن:
+   - اضافه بر DoD پروژه، این سه رو هم گزارش کن:
      `dev-engine اجرا شد؟ (نسخه/مسیر)` · `مقایسهٔ preview انجام شد؟ چند المان سنجیده شد؟`
      · `جدول ترجمه: چند ردیف؟ کدام‌ها end شدند و چرا؟`
-
-### جدول زمان‌سنجی (اجباری، انتهای DoD)
-
-از `$TLOG` (خط‌های `<label> <epoch>`، پشت‌سرهم) delta بین خط‌های متوالی رو حساب کن —
-یه‌بار awk کافیه:
-
-```bash
-awk 'NR>1{printf "%s → %s: %d s\n", prevlabel, $1, $2-prevts} {prevlabel=$1; prevts=$2}' "$TLOG"
-```
-
-نتیجه رو به جدول markdown با برچسب فارسیِ خوانا تبدیل کن (نه اسم خام STEPn)، رند به
-دقیقه، به‌علاوه ردیف «کل»:
-
-| بخش | مدت |
-|-----|------|
-| Preflight + context (STEP 0-1) | X دقیقه |
-| Figma fetch + جدول ترجمه (STEP 2) | X دقیقه |
-| Implement (STEP 3) | X دقیقه |
-| Verify loop (STEP 4) | X دقیقه |
-| DoD + commit (STEP 5) | X دقیقه |
-| **کل** | **X دقیقه** |
-
-قوانین گزارش:
-- **Tier 0/1** (STEP 2/4b رد شدن) → فقط ردیف‌های واقعاً طی‌شده رو بذار؛ ردیف خالی/صفر نساز.
-- این عدد **wall-clock واقعی session**ه، نه CPU time — اگه کاربر وسط STEP مکث کرد
-  (سوال پرسیدی، منتظر جواب موندی) اون مکث داخل همون STEP حساب می‌شه؛ طبیعیه، چون هدف
-  «کجای پروسه بیشتر طول کشید» است نه benchmark محض.
-- اگه یه STEP به‌خاطر تلاش‌های ناموفق/rollback (مثل یه چرخهٔ `--set` که بعداً حذفش کردی)
-  طولانی شد، تو ردیف خودش بگو چرا — همون‌جا که در DoD معمولی چک‌های ⚠️ رو صادقانه می‌نویسی.
 
 ۲. skill `wf-commit` → دستور commit آماده (هرگز از sandbox git write).
 

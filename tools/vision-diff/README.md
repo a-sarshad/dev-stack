@@ -8,7 +8,7 @@ you're not eyeballing every element on every check.
 Not a `dev-engine` module — it needs no AST, only two screenshots — so it
 lives here rather than in `packages/dev-engine/src/modules/`. Standalone
 script, no build step: `python3 tools/vision-diff/vision_diff.py ...` from
-the `dev-agents` repo root, or symlink/alias it like any other script.
+the `dev-stack` repo root, or symlink/alias it like any other script.
 
 ## Where this sits in the pipeline
 

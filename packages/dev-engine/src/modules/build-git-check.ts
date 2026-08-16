@@ -1,7 +1,6 @@
 import { execSync } from 'child_process'
 import { existsSync } from 'fs'
 import { resolve } from 'path'
-import type { CheckModule, CheckResult, ProjectConfig } from '../types.js'
 
 // Pick the package manager from the project's lockfile, not from what happens
 // to be installed globally — otherwise a globally-installed pnpm runs
@@ -74,15 +73,4 @@ export function runHandoffCheck(projectRoot: string): { stale: boolean; commitsB
   } catch {
     return { stale: false, commitsBehind: 0 }
   }
-}
-
-// These run as standalone checks (not file-by-file), called from engine separately
-export const buildGitModule: CheckModule = {
-  id: 'build-git',
-  name: 'Build & Git',
-  description: 'Checks build success and git cleanliness',
-  supportedDirections: ['rtl', 'ltr', 'both'],
-
-  // not used file-by-file — engine calls runBuildCheck/runGitCheck directly
-  check(): [] { return [] },
 }

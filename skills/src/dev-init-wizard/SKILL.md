@@ -9,7 +9,7 @@ description: >
   Do NOT wait to be asked — run this wizard automatically whenever a new project is requested.
 ---
 
-<!-- version: 3 | updated: 2026-05-22 | changelog: Bootstrap SCSS theming scaffold -->
+<!-- version: 4 | updated: 2026-08-16 | changelog: context در repo پروژه (نه projects/)، شماره‌گذاری سوال‌ها اصلاح شد، dev-engine init --auto -->
 
 # Project Init Wizard
 
@@ -193,12 +193,12 @@ export const layout = {
 ## فاز ۶ — زبان و جهت
 
 ```
-۱۶. زبان‌های پروژه؟
+۲۰. زبان‌های پروژه؟
     - فقط فارسی (RTL)
     - فقط انگلیسی (LTR)
     - دوزبانه فارسی + انگلیسی
 
-۱۷. Language Switcher در UI لازمه؟ (فقط اگه دوزبانه)
+۲۱. Language Switcher در UI لازمه؟ (فقط اگه دوزبانه)
 ```
 
 ---
@@ -206,10 +206,10 @@ export const layout = {
 ## فاز ۷ — معماری کد [فنی — همه پیشنهاد Claude دارن]
 
 ```
-۱۸. API-ready؟  ← پیشنهاد Claude: بله
-۱۹. TypeScript types برای backend؟  ← پیشنهاد Claude: بله
-۲۰. State Management؟  ← پیشنهاد Claude: Zustand
-۲۱. Data Fetching؟  ← پیشنهاد Claude: TanStack Query
+۲۲. API-ready؟  ← پیشنهاد Claude: بله
+۲۳. TypeScript types برای backend؟  ← پیشنهاد Claude: بله
+۲۴. State Management؟  ← پیشنهاد Claude: Zustand
+۲۵. Data Fetching؟  ← پیشنهاد Claude: TanStack Query
 ```
 
 ---
@@ -217,9 +217,9 @@ export const layout = {
 ## فاز ۸ — کیفیت کد [فنی — پیشنهاد Claude]
 
 ```
-۲۲. ESLint + Prettier؟  ← پیشنهاد Claude: بله
-۲۳. Git Hooks با Husky؟  ← پیشنهاد Claude تیمی: بله
-۲۴. Testing Setup؟  ← پیشنهاد Claude: خیر برای شروع
+۲۶. ESLint + Prettier؟  ← پیشنهاد Claude: بله
+۲۷. Git Hooks با Husky؟  ← پیشنهاد Claude تیمی: بله
+۲۸. Testing Setup؟  ← پیشنهاد Claude: خیر برای شروع
 ```
 
 ---
@@ -227,8 +227,8 @@ export const layout = {
 ## فاز ۹ — Git
 
 ```
-۲۵. Git Repository URL؟ (اختیاری)
-۲۶. Branch Strategy؟  ← پیشنهاد Claude: main / develop
+۲۹. Git Repository URL؟ (اختیاری)
+۳۰. Branch Strategy؟  ← پیشنهاد Claude: main / develop
 ```
 
 ---
@@ -318,26 +318,37 @@ src/types/api.ts              ← backend types
 src/contexts/ColorModeContext.tsx  ← Dark Mode
 ```
 
-### project-context skill — در dev-knowledge
+### context پروژه — **داخل خودِ repo پروژه**، نه در dev-stack
 
 ```
-dev-knowledge/projects/[name]/[name]-project-context.md
+[project-root]/.claude/context/project-context.md
 ```
 
-**نام‌گذاری:** `[project-name]-project-context.md` — مثال: `airport-project-context.md`
-این فایل بعداً به عنوان skill نصب میشه تا مستقل از مسیر فایل باشه.
+> **این عوض شده.** قبلاً محتوای context در `dev-knowledge/projects/<X>/` بود.
+> حالا با repo پروژه سفر می‌کند (BLUEPRINT §۵) — پس اگر پروژه clone شود context
+> هم می‌آید. **پوشهٔ `projects/` دیگر وجود ندارد؛ آنجا چیزی نساز.**
 
 محتوای این فایل:
 ```markdown
----
-name: [project-name]-project-context
-description: "Use for ALL tasks related to [Project]. Load automatically."
----
 ## Stack: [framework] + [DS] + [languages]
 ## Brand Tokens: [رنگ‌ها و فونت‌های این پروژه]
 ## Layout: [breakpoints، grid، sidebar]
 ## Notes: [نکات خاص این پروژه]
 ```
+
+### skill مربوطه — thin loader در dev-stack
+
+```
+dev-stack/skills/src/[name]-project-context/SKILL.md
+```
+
+فقط **loader** است: محتوا را embed نمی‌کند، از repo پروژه می‌خواند (وگرنه دو نسخه
+drift می‌کنند). الگو را از `vitrina-project-context` بردار.
+
+```bash
+cd ~/Documents/GitHub/dev-stack && pnpm build:skills   # → skills/dist/[name]-project-context.skill
+```
+بعد در اپ Claude نصبش کن.
 
 ---
 
@@ -349,7 +360,8 @@ description: "Use for ALL tasks related to [Project]. Load automatically."
 - [ ] direction هیچ‌جا hardcode نشده (اگه multilang)
 - [ ] `CLAUDE.md` ساخته شد
 - [ ] `CLAUDE.md` بخش `## Figma → Code Protocol` (gate) رو داره — با MCP/breakpoint پروژه پر شده
-- [ ] `[name]-project-context.md` در dev-knowledge ساخته شد
+- [ ] `.claude/context/project-context.md` در repo پروژه ساخته شد
+- [ ] thin-loader skill `[name]-project-context` در dev-stack/skills/src/ ساخته و build شد
 - [ ] Bootstrap: `src/styles/bootstrap.scss` ساخته شد و import در main.tsx آپدیت شد
 - [ ] git commit message آماده شد
 
@@ -368,7 +380,8 @@ feat: scaffold [project-name] project
 - src/types/api.ts: backend types            (اگه types)
 - src/i18n/LocaleContext.tsx: multilang      (اگه دوزبانه)
 - CLAUDE.md + HANDOFF.md
-- dev-knowledge/projects/[name]/[name]-project-context.md
+- [project]/.claude/context/project-context.md
+- dev-stack/skills/src/[name]-project-context/SKILL.md (thin loader)
 ```
 
 ---

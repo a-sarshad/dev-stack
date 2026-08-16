@@ -19,7 +19,7 @@ Status: OPT-IN ONLY. Not called by rtl_gate.py, dev-engine, or any other
     automatic step — nothing in this repo invokes this file for you. Run it
     yourself, on purpose, when you want a second opinion. Kept here rather
     than deleted specifically so this capability isn't rebuilt from scratch
-    next time it seems useful (see dev-agents/HANDOFF.md for the model
+    next time it seems useful (see dev-stack HANDOFF.md for the model
     comparison that picked the default below).
 
 Privacy note: this SENDS the flagged crop images to a third-party API
@@ -33,7 +33,7 @@ Setup:
 
     A `.env` file next to this script (OPENROUTER_API_KEY=sk-or-...) also
     works and is picked up automatically — gitignored repo-wide (`.env` is
-    in dev-agents/.gitignore), never commit it, never store a key in any
+    in the repo .gitignore), never commit it, never store a key in any
     tracked file.
 
 Default model is a free vision-capable one; override with --model or
@@ -62,7 +62,7 @@ from pathlib import Path
 
 # Picked after testing 5 models on 5 synthetic cases (icon-flip, resize-noise
 # false-positive check, nested-vs-flat structure, missing small icons, button
-# order swap) — see dev-agents/HANDOFF.md for the full table. gpt-5.6-luna and
+# order swap) — see dev-stack HANDOFF.md for the full table. gpt-5.6-luna and
 # gemma-4-31b-it:free were the only two that caught "missing element"; luna
 # was picked over gemma for not hitting upstream rate-limits during testing.
 DEFAULT_MODEL = "openai/gpt-5.6-luna"

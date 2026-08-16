@@ -40,9 +40,9 @@ export function runDoctor(projectRoot: string, config: ProjectConfig): boolean {
   const cfgOk = existsSync(resolve(projectRoot, '.dev-engine.json'))
   checks.push({ label: '.dev-engine.json', ok: cfgOk, detail: cfgOk ? '' : 'run: dev-engine init' })
 
-  // 2. dev-knowledge پیدا می‌شه؟ (warn) — همه‌ی چک‌های DS پایین به این وابسته‌ان
+  // 2. knowledge/ پیدا می‌شه؟ (warn) — همه‌ی چک‌های DS پایین به این وابسته‌ان
   const dn = findDevKnowledge(config.dev_knowledge_path)
-  checks.push({ label: 'dev-knowledge', ok: !!dn, warn: !dn, detail: dn ?? 'set DN_PATH یا config.dev_knowledge_path' })
+  checks.push({ label: 'knowledge', ok: !!dn, warn: !dn, detail: dn ?? 'set DN_PATH یا config.dev_knowledge_path' })
 
   // 3. رجیستری DS — مقدار config.ds واقعاً به یه پوشه‌ی design-systems/ می‌خوره؟
   //    این چک برای همون حالتیه که قبلاً بی‌صدا می‌گذشت: ds اشتباه → لایه‌ی DS
@@ -52,7 +52,7 @@ export function runDoctor(projectRoot: string, config: ProjectConfig): boolean {
   const isGeneric = config.ds === 'generic'
 
   if (registry.length === 0) {
-    // رجیستری خالی (dev-knowledge نیست یا هنوز ds.json نداره) — degrade به warn،
+    // رجیستری خالی (knowledge/ نیست یا هنوز ds.json نداره) — degrade به warn،
     // نه hard fail. نبودِ مانیفست نباید پروژه‌ی سالم رو زمین بزنه.
     checks.push({
       label: `DS registry (${config.ds})`,

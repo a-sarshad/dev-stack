@@ -4,8 +4,8 @@ import { homedir } from 'os'
 import { fileURLToPath } from 'url'
 import { globSync } from 'glob'
 
-// config DS id → نام پوشه در dev-knowledge/design-systems/ — fallback وقتی هیچ
-// ds.json منطبقی در registry نیست (مثلاً dev-knowledge هنوز mount نشده)
+// config DS id → نام پوشه در knowledge/design-systems/ — fallback وقتی هیچ
+// ds.json منطبقی در registry نیست (مثلاً knowledge/ هنوز در دسترس نیست)
 const DS_FOLDER: Record<string, string> = {
   'chakra-v3': 'chakra-ui-v3',
   'chakra-v2': 'chakra-ui-v3',
@@ -64,7 +64,7 @@ export function findDevKnowledge(configPath?: string): string | null {
   return candidates.find(p => existsSync(p)) ?? null
 }
 
-// ── DS registry: data-driven، از dev-knowledge/design-systems/<folder>/ds.json ─
+// ── DS registry: data-driven، از knowledge/design-systems/<folder>/ds.json ─
 export interface DsManifest {
   id: string
   aliases?: string[]
@@ -75,7 +75,7 @@ export interface DsManifest {
   dir: string        // absolute path to the DS folder
 }
 
-// memoize بر اساس مسیر resolve‌شدهٔ dev-knowledge — دیسک فقط یک‌بار خونده می‌شه
+// memoize بر اساس مسیر resolve‌شدهٔ knowledge/ — دیسک فقط یک‌بار خونده می‌شه
 const dsRegistryCache = new Map<string, DsManifest[]>()
 
 export function loadDsRegistry(configPath?: string): DsManifest[] {
