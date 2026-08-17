@@ -30,7 +30,8 @@ function walk(dir, out = []) {
   return out
 }
 const docs = [
-  ...['README.md', 'CLAUDE.md', 'HANDOFF.md'].map(f => join(ROOT, f)).filter(existsSync),
+  // هر md در ریشه — نه سه نام ثابت، وگرنه سند جدید بی‌صدا از چک جا می‌ماند
+  ...readdirSync(ROOT).filter(f => f.endsWith('.md')).map(f => join(ROOT, f)),
   ...walk(join(ROOT, 'skills')),
   ...walk(join(ROOT, 'knowledge')),
 ]
