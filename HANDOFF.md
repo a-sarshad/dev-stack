@@ -1,5 +1,5 @@
 # dev-stack — Handoff
-> 2026-08-16
+> 2026-08-17
 
 ## الان
 
@@ -35,8 +35,12 @@
   اینکه چند روز با `dev-stack` کار شد و مطمئن شدیم چیزی جا نمانده.
 - حذف پوشهٔ محلی `Documents/GitHub/Tools/` — همان شرط بالا.
   پشتیبان: `~/Documents/backup-Tools-2026-08-16.tar.gz`
-- **`config/` برای api-keyها** — تصمیم گرفته شد بعد از مهاجرت اضافه شود.
-  طرح: `registry.md` (متادیتا، در گیت) + `secrets.local.json` (gitignore).
+- **OpenRouter — متوقف شد، مسیر عوض شد.** طرح CLI (`orx` + `config/registry.md`)
+  کنار گذاشته شد؛ هیچ فایلی ساخته نشد. تصمیم ۲۰۲۶-۰۸-۱۷: اول از طریق
+  **Claude Desktop developer mode (MCP)** امتحان شود.
+  دو نکته که اگر برگشتیم به CLI باید بدانیم: (۱) `orx` فقط وقتی صرفه دارد که
+  ورودی حجیم و خروجی کوتاه باشد — برای ساخت/تغییر کد گران‌تر از انجام مستقیم
+  است. (۲) سقف خرج روی کلید OpenRouter شرط شروع است، چون repo عمومی است.
 - تصمیم Tailwind: `4a-financial` و `azita-jafari` یا `tailwind-v4` بگیرند یا
   out-of-pipeline اعلام شوند.
 - `knowledge/design-systems/bootstrap5/_tokens.scss` رنگ برند واقعی در لایهٔ
