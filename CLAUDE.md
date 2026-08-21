@@ -34,9 +34,17 @@ Claude این فایل رو در هر session می‌خونه تا بدونه س
 - اگه یه نکته project-specific یا DS-specific داره، اینجا نذار
 
 ### context پروژه (در repo خودِ پروژه — نه اینجا)
-- context/تصمیمات/نکات خاص هر پروژه → `Projects/<name>/.claude/context/`
-- با repo پروژه سفر می‌کنه؛ knowledge/ فقط دانش cross-project نگه می‌داره
+
+| چه چیزی | کجا |
+|---|---|
+| قانون always-on (gate، DoD، معماری، توکن) | `Projects/<name>/CLAUDE.md` |
+| تصمیم بصری (رنگ، چیدمان، responsive، a11y، motion، لحن) | `Projects/<name>/DESIGN.md` — **ریشه**، نه `.claude/` |
+| باگ project-specific، قالب صفحه، cache فیگما | `Projects/<name>/.claude/context/` |
+| وضعیت و کار معوق | `Projects/<name>/HANDOFF.md` |
+
+- با repo پروژه سفر می‌کنه؛ `knowledge/` فقط دانش cross-project نگه می‌داره
 - load: skill `<project>-context` (thin loader — محتوا رو از repo پروژه می‌خونه، embed نمی‌کنه)
+- مرز `CLAUDE.md ↔ DESIGN.md` (کدام قانون کجا می‌ماند) → `knowledge/BLUEPRINT.md` §۴
 
 ### design-systems/<name>/
 - راهنما، token، و نکات خاص اون DS
