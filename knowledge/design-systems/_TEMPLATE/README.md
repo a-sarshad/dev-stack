@@ -26,17 +26,21 @@
 | `known-bugs.md` | باگ‌ها/gotchaهای شناخته‌شده‌ی این نسخه از DS |
 | `rtl.md` | قوانین RTL مخصوص این DS (اگه DS جهت‌آگاه نیست، بنویس «ندارد» + دلیل) |
 
+> `{{TOKENS_PATH}}` از روی DS حساب می‌شود (`tokensPath()` در `packages/dev-engine/src/init.ts`).
+> DS نو اضافه کردی؟ یک `case` آنجا هم اضافه کن، وگرنه `TODO` می‌دهد.
+
 ## فایل اختیاری
 
 | فایل | برای چی |
 |------|---------|
 | `CLAUDE-template.md` | قالب CLAUDE.md پروژه — `dev-engine init` این را برمی‌دارد، placeholderها را جایگزین می‌کند و در ریشهٔ پروژهٔ جدید می‌نویسد. اگر DS نسخهٔ خودش را نداشته باشد، همین `_TEMPLATE/CLAUDE-template.md` استفاده می‌شود. |
+| `DESIGN-template.md` | قالب DESIGN.md پروژه — تصمیم‌های **بصری** (لایهٔ REFERENCE، شرطی). `dev-engine init` قالب پایه را با مکمل DS الحاق می‌کند. ⚠️ مکمل DS نباید frontmatter داشته باشد — فقط قالب پایه YAML دارد، وگرنه parser دو بلوک `---` می‌بیند. |
 
 ### placeholderهای قابل جایگزینی
 
 `{{PROJECT_NAME}}` · `{{DS}}` · `{{DS_FOLDER}}` · `{{DIRECTION}}` · `{{LANG}}` ·
 `{{LOCALE}}` · `{{CALENDAR}}` · `{{START_SIDE}}` · `{{END_SIDE}}` · `{{DK_PATH}}` ·
-`{{TYPECHECK_CMD}}`
+`{{TYPECHECK_CMD}}` · `{{TOKENS_PATH}}` · `{{DATE}}`
 
 > `{{START_SIDE}}`/`{{END_SIDE}}` از روی `direction` حساب می‌شوند
 > (rtl → راست/چپ · ltr → چپ/راست) تا متن قالب در هر دو جهت درست بخواند.

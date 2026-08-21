@@ -21,7 +21,7 @@ echo "Airport root: $ROOT"
 ## مرحله ۲ — خواندن context
 
 ```bash
-cat "$ROOT/.claude/context/project-context.md"   # stack، brand tokens، RTL/LTR، layout
+cat "$ROOT/DESIGN.md"   # stack، brand tokens، RTL/LTR، layout
 cat "$ROOT/.claude/context/known-bugs.md"         # باگ‌های project-specific
 ```
 
@@ -29,3 +29,5 @@ cat "$ROOT/.claude/context/known-bugs.md"         # باگ‌های project-spec
 
 قوانین اجباری Airport (Figma gate، DoD، RTL/LTR، Bootstrap setup) در **`CLAUDE.md` خود پروژه**
 هستن — always-on، خودکار لود. این loader فقط context تفصیلی design-side رو میاره.
+
+`DESIGN.md` در **ریشهٔ** پروژه‌ست (نه `.claude/context/`) — قرارداد رسمی فرمت.

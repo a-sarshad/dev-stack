@@ -3,7 +3,7 @@
 > **این فایل چیه:** نقطه‌ی مرجع واحد برای کل سیستم. هر وقت گیج شدی
 > «این فایل کجا بره؟»، «این قانون کجا زندگی کنه؟»، «فلوی Figma→code دقیقاً چیه؟»
 > — جواب اینجاست. این سند مقصد (target) رو تعریف می‌کنه، نه لزوماً وضع فعلی رو.
-> updated: 2026-06-04
+> updated: 2026-08-21
 
 ---
 
@@ -50,7 +50,7 @@ check دترمینیستیک (قابل اجرا)؟      → packages/dev-engine 
 |------|-----|---------------|---------|--------------|
 | **RULE** | `{project}/CLAUDE.md` | هر پیام، خودکار | gate اجباری + DoD | صفر |
 | **ENGINE** | `packages/dev-engine` | وقتی CLI صدا زده شه | check + auto-fix | صفر (fail-hard) |
-| **REFERENCE** | `knowledge/*.md` | وقتی صریح read شه | دانش عمیق | بالا — فقط on-demand |
+| **REFERENCE** | `knowledge/*.md` · `{project}/DESIGN.md` | وقتی صریح read شه | دانش عمیق · تصمیم بصری | بالا — فقط on-demand |
 | **ACCELERATOR** | `skills/*.skill` | فقط trigger match | orchestration فلو | متوسط — اگه trigger نخوره |
 
 > **duplication بین لایه‌ها = منبع گیجی.** هر فکت فقط **یک خونه** داره.
@@ -82,7 +82,7 @@ USER: "این frame رو implement کن: [Figma URL]"
              ▼
 ┌─ STEP 1 — CONTEXT LOAD (Claude reads LOCAL، نه MCP) ──────┐
 │ reads: figma-resolve.json (Local + DS، merge شده)         │
-│ reads: {project}/.claude/context/project-context.md       │
+│ reads: {project}/DESIGN.md (تصمیم بصری — فقط task های UI)  │
 │  → token/component map از local cache؛ صفر MCP call       │
 └────────────┬───────────────────────────────────────────────┘
              ▼
@@ -137,11 +137,30 @@ screenshot/visual-diff = opt-in، نه default. خونه‌ی canonical: `univer
 │
 ├─ فقط یک پروژه؟
 │   ├─ قانون اجباری (نباید فراموش شه) → {project}/CLAUDE.md
-│   └─ context/reference          → {project}/.claude/context/
+│   ├─ تصمیم بصری؟ (رنگ کجا، چیدمان چطور،
+│   │   حالت کامپوننت، a11y، motion، icon، لحن)
+│   │   └─ بله → {project}/DESIGN.md
+│   └─ بقیهٔ context/reference     → {project}/.claude/context/
 │
 └─ شتاب‌دهنده‌ی فلو؟
     └─ skill (source در skills، نصب global در Cowork)
 ```
+
+### مرز CLAUDE.md ↔ DESIGN.md
+
+| | CLAUDE.md | DESIGN.md |
+|---|---|---|
+| لایه | RULE — هر پیام لود می‌شود | REFERENCE — شرطی، فقط taskهای UI |
+| جنس | «چطور کار کن» — gate، پروتکل، DoD، تصمیم معماری | «چه شکلی باشد» — تصمیم بصری |
+| ریسک فراموشی | صفر | بالا |
+| **مقدار** توکن/breakpoint | ✅ canonical | ⛔ هرگز — فقط ارجاع |
+
+**تست انتقال:** قانونی که `dev-engine` چکش می‌کند، یا در همهٔ taskها لازم است، یا gate/DoD
+است → در CLAUDE.md می‌ماند. بردنش به DESIGN.md یعنی سقوط «ریسک فراموشی» از صفر به بالا.
+
+> ⚠️ **دام مقدار دو-خانه‌ای:** هر عددی که هم در کد و هم در یک md دوم بنشیند drift می‌کند.
+> سابقهٔ واقعی: توکن‌های Vitrina یک‌بار به یک فایل context دوم رفتند و `focusRing`/`border`
+> واگرا شدند. به همین دلیل `DESIGN.md` با کلید `omitted:` اعلام می‌کند که توکن ندارد.
 
 ---
 
@@ -270,10 +289,13 @@ dev-stack/skills/src/                       ← سورس اسکیل‌ها (مت
                                                build → skills/dist/*.skill
 
 Projects/<X>/                               ← قانون + context خودِ پروژه
-├── CLAUDE.md                               ← فقط قانون اجباری (gate + DoD)
+├── CLAUDE.md                               ← فقط قانون اجباری (gate + DoD) — RULE
+├── DESIGN.md                               ← تصمیم‌های بصری — REFERENCE، شرطی
+│                                              (ریشه، نه .claude/ — قرارداد فرمت
+│                                               + مسیر پیش‌فرض `design.md lint`)
 ├── .dev-engine.json
 └── .claude/context/
-    ├── project-context.md                  ← منتقل‌شده از dev-knowledge/projects/<X>/
+    ├── page-templates.md                   ← قالب‌های صفحهٔ ساخته‌شده روی grid DESIGN.md
     ├── known-bugs.md                       ← منتقل‌شده از dev-knowledge/projects/<X>/
     └── figma-resolve.json    (generated)   ← لایه Local: Figma→code map
                                                (merge با لایه DS، Local-first)

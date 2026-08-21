@@ -125,6 +125,16 @@ export function runDoctor(projectRoot: string, config: ProjectConfig): boolean {
     }
   }
 
+  // 6.5 DESIGN.md موجود است؟ (warn — نبودنش کار را متوقف نمی‌کند ولی
+  // یعنی تصمیم‌های بصری خانه ندارند و در CLAUDE.md یا هیچ‌جا پخش می‌شوند)
+  const hasDesign = existsSync(resolve(projectRoot, 'DESIGN.md'))
+  checks.push({
+    label: 'DESIGN.md',
+    ok: hasDesign,
+    warn: !hasDesign,
+    detail: hasDesign ? '' : 'تصمیم‌های بصری خانه ندارند — run: dev-engine init (فایل‌های موجود دست‌نخورده می‌مانند)',
+  })
+
   // 7. figma_source تنظیم شده؟ (warn — اول پروژه باید پرسیده شه)
   const hasSource = !!config.figma_source
   checks.push({

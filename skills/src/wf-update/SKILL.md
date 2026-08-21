@@ -102,6 +102,12 @@ HANDOFF.md رو بنویس/آپدیت کن — **کوتاه و فقط چیزها
 | env var یا دستور setup جدید | `README.md` |
 | breaking change در DS یا library | `CLAUDE.md` |
 | convention جدید برای component‌ها | `CLAUDE.md` |
+| الگوی بصری reusable نو تأیید شد | `DESIGN.md` → §Components |
+| نقش/مرز یک رنگ عوض شد (نه مقدارش) | `DESIGN.md` → §Colors |
+| قاعدهٔ layout یا رفتار responsive عوض شد | `DESIGN.md` → §Layout & Responsiveness |
+| تصمیم motion / iconography / a11y گرفته شد | `DESIGN.md` → بخش متناظر |
+| قاعدهٔ لحن یا متن محصول | `DESIGN.md` → §Product Content |
+| **مقدار** توکن عوض شد | کد (`tokens.ts`) + `CLAUDE.md` §Token Reference — **نه** `DESIGN.md` |
 
 اگه یکی از شرط‌ها صدق می‌کنه → بدون اینکه کاربر بگه، اون فایل رو هم آپدیت کن.
 
@@ -116,7 +122,9 @@ find src/app -name "page.tsx" | sed 's|src/app||; s|/page.tsx||; s|^$|/|' | sort
 
 خروجی = لیستِ کاملِ routeها. هر route که در جدول نیست → اضافه کن. هر route در جدول که دیگه فایل نداره → حذف کن. توضیحِ صفحه رو نگه‌دار/بنویس.
 
-اگه CLAUDE.md یا README.md در پروژه وجود ندارن → نساز (پروژه‌های بدون این فایل‌ها هم باید support بشن).
+اگه CLAUDE.md / README.md / DESIGN.md در پروژه وجود ندارن → نساز (پروژه‌های بدون این فایل‌ها هم باید support بشن).
+
+⛔ **در `DESIGN.md` هیچ‌وقت مقدار hex/spacing/breakpoint ننویس** — فقط ارجاع. مقدار دو-خانه‌ای drift می‌کند.
 
 ### ثبت تصمیم معماری در CLAUDE.md
 

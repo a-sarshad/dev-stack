@@ -79,7 +79,7 @@ dev-stack/
 ### مثال:
 ```
 User: روی Vitrina کار می‌کنم
-Claude: [loads vitrina-project-context skill] → [reads Vitrina/.claude/context/project-context.md]
+Claude: [loads vitrina-project-context skill] → [reads Vitrina/DESIGN.md + .claude/context/*]
 ```
 
 ---
