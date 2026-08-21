@@ -21,7 +21,7 @@ echo "Vitrina root: $ROOT"
 ## مرحله ۲ — خواندن context
 
 ```bash
-cat "$ROOT/.claude/context/project-context.md"   # tokens، breakpoints، feature flags، grid، layout
+cat "$ROOT/DESIGN.md"                             # تصمیم‌های بصری — grid، layout، responsive، a11y، motion، icon، لحن
 cat "$ROOT/.claude/context/known-bugs.md"         # باگ‌های project-specific
 cat "$ROOT/.claude/context/page-templates.md"     # الگوهای صفحه
 ```
@@ -30,3 +30,5 @@ cat "$ROOT/.claude/context/page-templates.md"     # الگوهای صفحه
 
 قوانین اجباری Vitrina (Figma gate، DoD، RTL، tokens) در **`CLAUDE.md` خود پروژه**
 هستن — always-on، خودکار لود. این loader فقط context تفصیلی design-side رو میاره.
+
+`DESIGN.md` در **ریشهٔ** پروژه‌ست (نه `.claude/context/`) — قرارداد رسمی فرمت.

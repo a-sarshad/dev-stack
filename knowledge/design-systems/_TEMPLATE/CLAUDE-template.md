@@ -24,7 +24,7 @@
 | موضوع | فایل |
 |-------|------|
 | باگ‌های project-specific | `.claude/context/known-bugs.md` |
-| Context طراحی (grid، variables، layout) | `.claude/context/project-context.md` |
+| **تصمیم‌های بصری** (grid، layout، responsive، a11y، motion، icon، لحن) | **`DESIGN.md`** (ریشهٔ پروژه) |
 
 ---
 
@@ -170,13 +170,28 @@ LTR است، پس کپی verbatim ترتیبش = layout آینه‌ای.
 
 - TODO: قواعد always-on این پروژه (کامپوننت‌های اجباری، الگوهای ممنوع، …)
 
-## Layout
+## UI و طراحی — کجا را بخوان
 
-- TODO: ساختار layout، sidebar/navbar، breakpointها
+هر task که **UI، styling، layout، responsive، a11y یا motion** را عوض می‌کند:
+
+1. اول `DESIGN.md` (ریشهٔ پروژه) را بخوان — منبع حقیقتِ تصمیم‌های بصری.
+2. کامپوننت موجود را قبل از ساخت نو جست‌وجو کن.
+3. توکن استفاده کن؛ رنگ/spacing/radius نو اختراع نکن.
+4. تعارض `DESIGN.md` با کد → **کد برنده است**؛ تعارض را گزارش کن و `DESIGN.md` را اصلاح کن.
+5. الگوی reusable نو تأیید شد → `DESIGN.md` را آپدیت کن.
+
+> import مستقیم `@DESIGN.md` استفاده نشده: لود همیشگی، context هر task غیر-UI را
+> بی‌دلیل پر می‌کند. شرطی بخوان. (استثنا: پروژهٔ تماماً frontend با DESIGN.md کوتاه.)
+
+## Layout shell
+
+- TODO: مسیر فایل layout اصلی، navbar/sidebar
+- قواعد **بصری** این پوسته (اندازه، grid، رفتار responsive) → `DESIGN.md` §Layout
 
 ## Token Reference
 
 > مقادیر استاندارد {{DS}} → `design-systems/{{DS_FOLDER}}/tokens.md`.
 > فقط توکن‌های **مخصوص این پروژه** را اینجا inline کن.
+> ⚠️ این جدول canonical است — در `DESIGN.md` تکرارش نکن (مقدار دو-خانه‌ای drift می‌کند).
 
-- TODO: brand tokens
+- TODO: brand tokens · منبع در کد: `{{TOKENS_PATH}}`

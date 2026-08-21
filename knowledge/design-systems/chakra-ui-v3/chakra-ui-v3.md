@@ -20,7 +20,8 @@
 | ۱۳ | [Setup پروژه جدید](#۱۳-setup--پروژه-جدید) |
 
 این فایل محتوای کامل skill Chakra UI است — برای همه پروژه‌ها (RTL، LTR، دوزبانه).
-رنگ brand هر پروژه از `<project>/.claude/context/project-context.md` می‌آید — اینجا hardcode نیست.
+رنگ brand هر پروژه از `<project>/src/theme/tokens.ts` (canonical) + جدول `CLAUDE.md` §Token Reference می‌آید — اینجا hardcode نیست.
+نقش و **مرز** هر رنگ (کجا استفاده شود، کجا نه) → `<project>/DESIGN.md` §Colors.
 
 ---
 

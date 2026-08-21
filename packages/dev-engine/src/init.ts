@@ -145,6 +145,10 @@ interface Vars {
   END_SIDE: string
   DK_PATH: string
   TYPECHECK_CMD: string
+  /** مسیر فایل توکن در کد — خانهٔ canonical مقادیر. DESIGN.md فقط به این ارجاع می‌دهد. */
+  TOKENS_PATH: string
+  /** تاریخ ساخت، برای خط version قالب‌ها. */
+  DATE: string
 }
 
 function substitute(text: string, vars: Vars): string {
@@ -199,6 +203,46 @@ function scaffoldClaudeMd(targetDir: string, vars: Vars, dk: string | null, repo
 
   writeFileSync(path, substitute(parts.join('\n'), vars))
   report.created.push(`CLAUDE.md  (${sources.join(' + ')})`)
+}
+
+/**
+ * DESIGN.md را **ترکیبی** می‌سازد — دقیقاً همان الگوی CLAUDE.md:
+ * قالب پایهٔ `_TEMPLATE` (ساختار DS-agnostic) + مکمل DS (واژگان prop/level).
+ *
+ * چرا فایل جدا و نه بخشی از CLAUDE.md: CLAUDE.md هر پیام لود می‌شود (لایهٔ RULE)؛
+ * تصمیم‌های بصری فقط در taskهای UI لازم‌اند (لایهٔ REFERENCE). ادغام یعنی هزینهٔ
+ * context در هر task backend هم پرداخت شود.
+ *
+ * ⚠️ مکمل DS نباید frontmatter داشته باشد — فقط قالب پایه YAML دارد.
+ */
+function scaffoldDesignMd(targetDir: string, vars: Vars, dk: string | null, report: ScaffoldReport): void {
+  const path = resolve(targetDir, 'DESIGN.md')
+  if (existsSync(path)) {
+    report.skipped.push('DESIGN.md')
+    return
+  }
+  if (!dk) {
+    report.warned.push('DESIGN.md — knowledge/ پیدا نشد، قالبی برای ساخت نبود')
+    return
+  }
+
+  const basePath = resolve(dk, 'design-systems/_TEMPLATE/DESIGN-template.md')
+  if (!existsSync(basePath)) {
+    report.warned.push(`DESIGN.md — قالب پایه پیدا نشد (${basePath})`)
+    return
+  }
+
+  const parts = [readFileSync(basePath, 'utf8')]
+  const sources = ['_TEMPLATE']
+
+  const dsPath = resolve(dk, 'design-systems', vars.DS_FOLDER, 'DESIGN-template.md')
+  if (existsSync(dsPath)) {
+    parts.push(readFileSync(dsPath, 'utf8'))
+    sources.push(vars.DS_FOLDER)
+  }
+
+  writeFileSync(path, substitute(parts.join('\n'), vars))
+  report.created.push(`DESIGN.md  (${sources.join(' + ')})`)
 }
 
 /** هوک rtl_gate را از نسخهٔ canonical در knowledge/ کپی می‌کند. */
@@ -293,47 +337,6 @@ function contextStubs(vars: Vars): Array<{ rel: string; body: string }> {
 *هنوز موردی ثبت نشده.*
 `,
     },
-    {
-      rel: '.claude/context/project-context.md',
-      body: `# ${vars.PROJECT_NAME} — Project Context
-
-> توکن‌ها/breakpointهای canonical → \`CLAUDE.md\`. اینجا فقط context سمتِ طراحی.
-
----
-
-## معرفی پروژه
-
-| فیلد | مقدار |
-|------|-------|
-| نام | ${vars.PROJECT_NAME} |
-| نوع | TODO |
-| Framework | TODO |
-| Design System | ${vars.DS} |
-| زبان | ${vars.LANG} — ${vars.DIRECTION} |
-| تقویم | ${vars.CALENDAR} |
-| Locale | ${vars.LOCALE} |
-
-## Grid System
-
-TODO: ستون‌ها / gutter / margin
-
-## Layout در هر breakpoint
-
-TODO: عرض navbar / main / sidebar در هر breakpoint هدف
-
-## Layout
-
-| فایل | مسیر | کاربرد |
-|------|------|--------|
-| TODO | TODO | layout اصلی |
-
-## کارهای معوق (TODO)
-
-| کار | جزئیات | وضعیت |
-|-----|---------|--------|
-| — | — | — |
-`,
-    },
   ]
 }
 
@@ -341,6 +344,7 @@ function runScaffold(targetDir: string, vars: Vars, dk: string | null): Scaffold
   const report: ScaffoldReport = { created: [], skipped: [], warned: [] }
 
   scaffoldClaudeMd(targetDir, vars, dk, report)
+  scaffoldDesignMd(targetDir, vars, dk, report)
 
   // settings فقط وقتی معنی دارد که خودِ هوک هم سر جایش باشد — وگرنه هر turn
   // یک «فایل پیدا نشد» می‌دهد و کاربر یاد می‌گیرد نادیده‌اش بگیرد.
@@ -355,6 +359,21 @@ function runScaffold(targetDir: string, vars: Vars, dk: string | null): Scaffold
   }
 
   return report
+}
+
+/**
+ * مسیر متعارف فایل توکن به‌ازای هر DS. اگر DS ناشناخته بود، TODO می‌دهد تا
+ * قالب یک مسیرِ غلطِ باورپذیر تحویل ندهد (بدتر از خالی‌بودن است).
+ */
+function tokensPath(ds: string): string {
+  switch (dsFolder(ds)) {
+    case 'chakra-ui-v3':
+      return 'src/theme/tokens.ts'
+    case 'bootstrap5':
+      return 'src/styles/_tokens.scss'
+    default:
+      return 'TODO — مسیر فایل توکن'
+  }
 }
 
 function buildVars(
@@ -378,6 +397,8 @@ function buildVars(
     END_SIDE: direction === 'ltr' ? 'راست' : 'چپ',
     DK_PATH: dk ?? '<knowledge>',
     TYPECHECK_CMD: opts.typecheck ?? 'npx tsc --noEmit',
+    TOKENS_PATH: tokensPath(ds),
+    DATE: new Date().toISOString().slice(0, 10),
   }
 }
 

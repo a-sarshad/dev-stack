@@ -110,9 +110,12 @@ $DE doctor "$ROOT"
 
 ```bash
 [ -f "$ROOT/.claude/context/figma-resolve.json" ] || $DE figma-sync "$ROOT" --scan
-cat "$ROOT/.claude/context/project-context.md" 2>/dev/null
+cat "$ROOT/DESIGN.md" 2>/dev/null                  # تصمیم‌های بصری: grid، layout، responsive، a11y، motion، icon
 ```
-+ skill `<project>-context` رو load کن (tokens، breakpoints، feature flags).
++ skill `<project>-context` رو load کن (باگ‌های پروژه، قالب‌های صفحه).
+
+> `DESIGN.md` منبع حقیقتِ **تصمیم بصری** است. مقدار توکن و breakpoint از `CLAUDE.md`
+> و کد می‌آید — `DESIGN.md` فقط به آن‌ها ارجاع می‌دهد، مقدار inline ندارد.
 
 → token/component map از cache local میاد. **MCP برای این صدا نزن.**
 
@@ -190,7 +193,7 @@ $DE layout-derive "$ROOT" --metadata /tmp/meta.xml --node 2659:82005
      hit  → import کن (Local یا DS — هر چی cache گفت)، STOP descend
      miss → DS MCP بپرس (props) → آخر Build از primitives DS
 ۲. token:    از figma-resolve / tokens.ts. صفر hardcode رنگ/spacing/font.
-۳. responsive: breakpoints از project-context (mobile/desktop/wide).
+۳. responsive: **رفتار** هر بازه از `DESIGN.md` §Layout & Responsiveness · مقدار breakpoint از `CLAUDE.md`.
 ۴. RTL:      **از جدول ترجمه (STEP 2) بخون — دوباره تصمیم نگیر.**
              هر مقدار جهت‌دار باید ردیف متناظر در جدول داشته باشه؛ نداشت →
              برگرد جدول رو کامل کن، از ذهنت پرش نکن.

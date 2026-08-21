@@ -22,6 +22,8 @@ dev-stack/
 │   │   └── hooks/rtl_gate.py     ← نسخهٔ canonical هوک Stop
 │   ├── design-systems/   ← دانش خاص هر DS
 │   │   ├── _TEMPLATE/    ← قالب ساخت DS جدید
+│   │   │   ├── CLAUDE-template.md   ← بذر CLAUDE.md پروژه (قانون always-on)
+│   │   │   └── DESIGN-template.md   ← بذر DESIGN.md پروژه (تصمیم بصری)
 │   │   ├── chakra-ui-v3/
 │   │   ├── bootstrap5/
 │   │   └── generic/
@@ -33,7 +35,16 @@ dev-stack/
     └── dist/<name>.skill      ← خروجی build (gitignore شده)
 ```
 
-context هر پروژه اینجا **نیست** → `Projects/<X>/.claude/context/`
+> این درخت **canonical** است — `CLAUDE.md` تکرارش نمی‌کند، فقط به اینجا ارجاع می‌دهد.
+
+context هر پروژه اینجا **نیست**:
+
+| چه چیزی | کجای repo پروژه |
+|---|---|
+| قانون always-on (gate، DoD، معماری، توکن) | `CLAUDE.md` |
+| تصمیم بصری (رنگ، چیدمان، responsive، a11y، motion، لحن) | `DESIGN.md` — **ریشه** |
+| باگ project-specific، قالب صفحه، cache فیگما | `.claude/context/` |
+| وضعیت و کار معوق | `HANDOFF.md` |
 
 ---
 

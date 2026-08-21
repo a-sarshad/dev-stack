@@ -10,27 +10,15 @@ Claude این فایل رو در هر session می‌خونه تا بدونه س
 
 ## ساختار پوشه‌ها
 
-```
-dev-stack/
-├── packages/dev-engine/    ← CLI: check + auto-fix دترمینیستیک
-├── tools/vision-diff/      ← pixel-diff دو screenshot (Python، اختیاری)
-│
-├── knowledge/
-│   ├── universal/          ← دانش cross-project (همه جا صدق می‌کنه)
-│   ├── design-systems/     ← دانش خاص هر design system
-│   │   ├── bootstrap5/  ·  chakra-ui-v3/  ·  generic/  ·  _TEMPLATE/
-│   ├── BLUEPRINT.md
-│   └── COMMANDS.md
-│
-└── skills/
-    ├── README.md           ← راهنمای کامل همه skillها (trigger/کاربرد/خروجی)
-    ├── src/<name>/SKILL.md ← سورس — اینجا ویرایش کن
-    └── dist/<name>.skill   ← خروجی `pnpm build:skills` (در گیت نیست)
-```
+→ درخت کامل + دستورهای build در [`README.md`](README.md). اینجا تکرار نمی‌شود.
 
-> **skillها سورس متنی دارند، نه فایل باینری.** ویرایش در `skills/src/`، بعد
-> `pnpm build:skills`، بعد نصب دستی در اپ Claude. تا نصب مجدد نشود، نسخهٔ
-> قدیمی فعال است.
+سه چیزی که موقع **ویرایش** باید بدانی:
+
+- سورس skill = `skills/src/<name>/SKILL.md` (متن، نه باینری). `skills/dist/*.skill`
+  خروجی build است و در گیت نیست — هرگز آنجا ویرایش نکن.
+- بعد از هر ویرایش: `pnpm build:skills` **و** نصب مجدد در اپ Claude. تا نصب مجدد
+  نشود، نسخهٔ قدیمی فعال است.
+- راهنمای trigger و خروجی هر skill: [`skills/README.md`](skills/README.md)
 
 > **ارجاع مرده = خطای build.** `build:skills` اول `pnpm check:refs` را می‌زند:
 > مسیرها، لینک‌ها، نام skillها و سطح فرمان `dev-engine` را برابر فایل‌سیستم و
@@ -79,7 +67,7 @@ dev-stack/
 ### مثال:
 ```
 User: روی Vitrina کار می‌کنم
-Claude: [loads vitrina-project-context skill] → [reads Vitrina/.claude/context/project-context.md]
+Claude: [loads vitrina-project-context skill] → [reads Vitrina/DESIGN.md + .claude/context/*]
 ```
 
 ---

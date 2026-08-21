@@ -9,7 +9,7 @@ description: >
   Do NOT wait to be asked — run this wizard automatically whenever a new project is requested.
 ---
 
-<!-- version: 4 | updated: 2026-08-16 | changelog: context در repo پروژه (نه projects/)، شماره‌گذاری سوال‌ها اصلاح شد، dev-engine init --auto -->
+<!-- version: 5 | updated: 2026-08-16 | changelog: context در repo پروژه (نه projects/)، شماره‌گذاری سوال‌ها اصلاح شد، dev-engine init --auto -->
 
 # Project Init Wizard
 
@@ -246,8 +246,29 @@ src/providers/
   AppProviders.tsx
 
 CLAUDE.md       ← از DS skill مربوطه template بگیر + بلوک GATE زیر (اجباری)
+DESIGN.md       ← `dev-engine init` می‌سازدش؛ کار تو پرکردن TODOهاست (پایین ↓)
 HANDOFF.md
 ```
+
+#### ⭐ اجباری — DESIGN.md
+
+`dev-engine init` قالب پایه (`_TEMPLATE/DESIGN-template.md`) را با مکمل DS الحاق می‌کند
+و در **ریشهٔ** پروژه می‌نویسد. دستی نساز. TODOهایش را با جواب‌های wizard پر کن:
+
+| TODO | از فاز |
+|---|---|
+| §Overview — جهت طراحی (حس + تصمیم‌های قابل‌مشاهده) | ۱ + ۴ |
+| §Colors — نقش و **مرز** هر رنگ (کجا نه) | ۴ |
+| §Typography | ۴ + ۶ |
+| §Layout & Responsiveness — grid + **رفتار** هر breakpoint | ۵ |
+| §Shapes · §Elevation | ۴ |
+| §Iconography — کتابخانه، اندازه‌های مجاز | ۲/۳ |
+| §Product Content — لحن، عدد، تاریخ | ۶ |
+
+⛔ **هیچ hex / spacing / breakpoint در DESIGN.md ننویس** — canonical در `tokens.ts` و
+`CLAUDE.md §Token Reference`. کلید `omitted:` در frontmatter همین را به linter می‌گوید.
+
+اعتبارسنجی آخر کار: `npx @google/design.md lint DESIGN.md`
 
 #### ⭐ اجباری در CLAUDE.md هر پروژه جدید — Figma → Code gate
 
@@ -321,20 +342,16 @@ src/contexts/ColorModeContext.tsx  ← Dark Mode
 ### context پروژه — **داخل خودِ repo پروژه**، نه در dev-stack
 
 ```
-[project-root]/.claude/context/project-context.md
+[project-root]/DESIGN.md                    ← تصمیم‌های بصری (ریشه)
+[project-root]/.claude/context/known-bugs.md
 ```
 
 > **این عوض شده.** قبلاً محتوای context در `dev-knowledge/projects/<X>/` بود.
 > حالا با repo پروژه سفر می‌کند (BLUEPRINT §۵) — پس اگر پروژه clone شود context
 > هم می‌آید. **پوشهٔ `projects/` دیگر وجود ندارد؛ آنجا چیزی نساز.**
-
-محتوای این فایل:
-```markdown
-## Stack: [framework] + [DS] + [languages]
-## Brand Tokens: [رنگ‌ها و فونت‌های این پروژه]
-## Layout: [breakpoints، grid، sidebar]
-## Notes: [نکات خاص این پروژه]
-```
+>
+> **`project-context.md` منسوخ شد** (1405/05/30): سه جنس محتوا را قاطی کرده بود.
+> تصمیم بصری → `DESIGN.md` · stack و مسیر فایل → `CLAUDE.md` · کار معوق → `HANDOFF.md`.
 
 ### skill مربوطه — thin loader در dev-stack
 
@@ -360,7 +377,8 @@ cd ~/Documents/GitHub/dev-stack && pnpm build:skills   # → skills/dist/[name]-
 - [ ] direction هیچ‌جا hardcode نشده (اگه multilang)
 - [ ] `CLAUDE.md` ساخته شد
 - [ ] `CLAUDE.md` بخش `## Figma → Code Protocol` (gate) رو داره — با MCP/breakpoint پروژه پر شده
-- [ ] `.claude/context/project-context.md` در repo پروژه ساخته شد
+- [ ] `DESIGN.md` در ریشهٔ پروژه ساخته شد و TODOهایش پر شد
+- [ ] `npx @google/design.md lint DESIGN.md` بدون error · هیچ hex/spacing/breakpoint inline نیست
 - [ ] thin-loader skill `[name]-project-context` در dev-stack/skills/src/ ساخته و build شد
 - [ ] Bootstrap: `src/styles/bootstrap.scss` ساخته شد و import در main.tsx آپدیت شد
 - [ ] git commit message آماده شد
@@ -379,8 +397,8 @@ feat: scaffold [project-name] project
 - src/services/api.ts: API layer             (اگه API-ready)
 - src/types/api.ts: backend types            (اگه types)
 - src/i18n/LocaleContext.tsx: multilang      (اگه دوزبانه)
-- CLAUDE.md + HANDOFF.md
-- [project]/.claude/context/project-context.md
+- CLAUDE.md + DESIGN.md + HANDOFF.md
+- [project]/.claude/context/known-bugs.md
 - dev-stack/skills/src/[name]-project-context/SKILL.md (thin loader)
 ```
 

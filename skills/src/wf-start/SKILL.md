@@ -34,7 +34,7 @@ git -C <project_path> status --short
 ```
 
 و `HANDOFF.md` رو بخون. همین — نه بیشتر.
-project-context.md، tokens.md، و هیچ فایل دیگه‌ای رو نخون.
+DESIGN.md، tokens.md، و هیچ فایل دیگه‌ای رو نخون — DESIGN.md فقط وقتی task واقعاً UI باشه.
 
 ---
 
@@ -55,6 +55,7 @@ project-context.md، tokens.md، و هیچ فایل دیگه‌ای رو نخو�
 ```
 
 DS و زبان رو از CLAUDE.md در context بخون — tool call نزن.
+(`DESIGN.md` رو اینجا نخون — فقط وقتی task واقعاً UI باشه.)
 اگه uncommitted changes داشت: `⚠️ [N] فایل uncommitted`
 وقتی HANDOFF نیست، هیچ محتوای جایگزینی اضافه نکن — فقط git info.
 

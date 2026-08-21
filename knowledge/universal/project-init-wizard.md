@@ -467,9 +467,27 @@ CLAUDE.md          ← بر اساس CLAUDE-template عمومی، بخش DS رو
 
 **مشترک (همه DS):**
 ```
+DESIGN.md          ← `dev-engine init` می‌سازدش (_TEMPLATE/DESIGN-template.md + مکمل DS)
 HANDOFF.md         ← از universal/session-management.md الگو بگیر
 README.md          ← template در فاز ۱۱ همین فایل — هر {Qx} را با جواب wizard جایگزین کن
 ```
+
+> **⚠️ DESIGN.md را دستی نساز** — `dev-engine init` خودش الحاق قالب پایه + مکمل DS را
+> انجام می‌دهد و placeholderها را پر می‌کند. کار تو **پرکردن TODOهای آن** با جواب‌های wizard است:
+>
+> | TODO در DESIGN.md | از کدام فاز |
+> |---|---|
+> | §Overview — جهت طراحی | فاز ۱ (هویت) + فاز ۴ (brand) |
+> | §Colors — نقش و مرز هر رنگ | فاز ۴ |
+> | §Typography — فونت | فاز ۴ + فاز ۶ |
+> | §Layout & Responsiveness — grid و رفتار هر breakpoint | فاز ۵ |
+> | §Shapes · §Elevation | فاز ۴ |
+> | §Iconography — کتابخانه و اندازه‌ها | فاز ۲/۳ |
+> | §Product Content — لحن، عدد، تاریخ | فاز ۶ |
+>
+> ⛔ **هیچ مقدار hex / spacing / breakpoint در DESIGN.md ننویس.** آن‌ها در `tokens.ts` و
+> `CLAUDE.md §Token Reference` هستند؛ DESIGN.md فقط ارجاع می‌دهد. کلید `omitted:` در
+> frontmatter همین را به linter اعلام می‌کند.
 
 **شرطی:**
 ```
@@ -547,10 +565,15 @@ VITE_API_TIMEOUT=10000
 ### گام ۴ — context پروژه (در repo خودِ پروژه)
 
 ```
+<project-root>/DESIGN.md              ← تصمیم‌های بصری (ریشه، نه .claude/)
 <project-root>/.claude/context/
-  project-context.md  ← brand tokens، stack، layout این پروژه
+  known-bugs.md                       ← باگ‌های project-specific
+  page-templates.md                   ← اختیاری، وقتی قالب صفحه تثبیت شد
 ```
 + thin-loader skill `<project>-context.skill` در skills/ (فقط loader — محتوا رو از repo پروژه می‌خونه، embed نمی‌کنه)
+
+> `project-context.md` **منسوخ شد** (1405/05/30): محتوایش سه‌تکه بود و هر تکه خانهٔ بهتری
+> داشت — تصمیم بصری → `DESIGN.md` · مسیر فایل و stack → `CLAUDE.md` · کار معوق → `HANDOFF.md`.
 
 ### گام ۵ — Git
 
@@ -573,10 +596,12 @@ git push -u origin main
 - [ ] `pnpm dev` بدون خطا اجرا می‌شه
 - [ ] همه رنگ‌ها از `tokens.ts` می‌آن — هیچ hex مستقیم در component نیست
 - [ ] layout constants در `tokens.ts` موجودن (navbar.h، sidebar.w، content.maxW)
-- [ ] `CLAUDE.md` و `HANDOFF.md` ساخته شدن
-- [ ] بخش Layout در `CLAUDE.md` با مقادیر واقعی پر شده
+- [ ] `CLAUDE.md`، `DESIGN.md` و `HANDOFF.md` ساخته شدن
 - [ ] `README.md` با اطلاعات واقعی پر شده
-- [ ] `project-context.md` در `<project>/.claude/context/` ساخته شد + thin-loader skill
+- [ ] TODOهای `DESIGN.md` با جواب‌های wizard پر شدن (نه رها شده)
+- [ ] `npx @google/design.md lint DESIGN.md` بدون error
+- [ ] هیچ hex/spacing/breakpoint در `DESIGN.md` inline نیست
+- [ ] thin-loader skill `<project>-context` ساخته شد
 - [ ] git commit انجام شد
 
 ---
@@ -593,8 +618,8 @@ feat: scaffold [project-name] project
 - src/services/api.ts: API service layer        (اگه API-ready)
 - src/types/api.ts: backend TypeScript types    (اگه types لازمه)
 - src/i18n/LocaleContext.tsx: multilang setup   (اگه دوزبانه)
-- CLAUDE.md + HANDOFF.md + README.md
-- <project>/.claude/context/project-context.md
+- CLAUDE.md + DESIGN.md + HANDOFF.md + README.md
+- <project>/.claude/context/known-bugs.md
 ```
 
 ---
@@ -697,9 +722,9 @@ src/types/
 
 ## مستندات بیشتر
 
-- `CLAUDE.md` — راهنمای کار با Claude
+- `CLAUDE.md` — قانون همیشه-لازم و راهنمای کار با Claude
+- `DESIGN.md` — تصمیم‌های بصری (رنگ، چیدمان، responsive، a11y، motion، لحن)
 - `HANDOFF.md` — وضعیت فعلی و قدم بعدی
-- `.claude/context/project-context.md` — tokens و معماری
 ```
 
 ---
