@@ -95,7 +95,11 @@ Claude: [loads vitrina-project-context skill] → [reads Vitrina/DESIGN.md + .cl
 | `dev-implement` ⭐ | **نقطه‌ی ورود واحد Figma→code** — کل pipeline رو orchestrate می‌کنه (preflight→fetch→impl→verify→commit). از dev-engine CLI استفاده می‌کنه |
 | `dev-init-wizard` | ساخت پروژه جدید با scaffold کامل (gate Figma→Code رو در CLAUDE.md پروژه bake میکنه) |
 | `dev-engine` | اجرای dev-engine — بررسی و auto-fix کد (token/hardcode هم همین‌جاست — جایگزین dev-token-review) |
-| `dev-delivery-check` ⚙️ | بررسی خودکار checklist قبل از تحویل/merge/deploy — **external** (anthropic-skills، فایل در skills/ نیست) |
+
+> skill قدیمی `dev-delivery-check` بازنشسته شد (`73b0517`) — checklist تحویلش در
+> `dev-engine` (که آن موقع `projfix` نام داشت) و گیت **Definition of Done** در
+> `CLAUDE.md` هر پروژه ادغام شد. ⚠️ یک‌بار به‌غلط به‌عنوان skill «external» احیا شد
+> (`720531a`)؛ دوباره اضافه‌اش نکن.
 
 ### Figma (رسمی — figma plugin، نصب‌شده)
 | Skill | جهت | کاربرد |

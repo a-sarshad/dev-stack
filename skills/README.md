@@ -43,7 +43,6 @@ pnpm check:refs               # فقط اعتبارسنجی، بدون build
 > ```
 
 > **توجه:** بخشی از skillها خارج از این repo مدیریت می‌شن:
-> - `dev-delivery-check` ← نصب‌شده از anthropic-skills (بدون فایل در این پوشه)
 > - Figma skills (`figma-implement-design`، `figma-use`، ...) ← از figma plugin رسمی
 > - `ds-chakra-ui` ← از anthropic-skills
 >

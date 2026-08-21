@@ -3,7 +3,6 @@
   "_externalSkills": "skillهایی که وجود دارند ولی سورسشان در این repo نیست (figma plugin / anthropic-skills). مرجع: skills/README.md بخش «خارج از این repo».",
   "externalSkills": [
     "ds-chakra-ui",
-    "dev-delivery-check",
     "figma-use",
     "figma-implement-design",
     "figma-generate-design",
@@ -15,7 +14,8 @@
     "figma-page-implement",
     "wf-commit-dn",
     "wf-commit-project",
-    "wf-session-start"
+    "wf-session-start",
+    "dev-delivery-check"
   ],
   "_notSkills": "توکن‌هایی که شکل نام skill دارند ولی skill نیستند (زیرفرمان CLI، نام repo، دایرکتیو کد).",
   "notSkills": [
