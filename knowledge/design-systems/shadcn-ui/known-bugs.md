@@ -52,6 +52,24 @@ physical→logical تبدیل می‌کنه **به‌جز**:
 از `Sidebar` استفاده می‌کنه (خیلی رایجه، dashboard-01 هم همینه) و RTL لازمه،
 **این رو فراموش نکن** — auto-transform این یکی رو رد می‌کنه.
 
+### `dashboard-01`/`data-table` بلاک از API جدید TanStack Table v9 استفاده می‌کنه، نه v8 کلاسیک
+اگه `pnpm add @tanstack/react-table` بزنی، امروز (۲۰۲۶) نسخه‌ی نصب‌شده v9.x
+هست — API متفاوته از الگوهای v8 که در خیلی از tutorialها/مثال‌های قدیمی‌تره:
+- `useReactTable` + `getCoreRowModel()`/`getSortedRowModel()` (v8) به‌جای
+  `useTable` + `tableFeatures({...})` + `createSortedRowModel()` (v9) رفته.
+- `flexRender(component, props)` تابع (v8) شده `<FlexRender cell={cell} />`
+  کامپوننت JSX (v9).
+- **هر feature باید صریح در `tableFeatures({...})` رجیستر بشه، حتی وقتی
+  فقط یه متد جانبی‌ش رو لازم داری.** تجربه‌ی واقعی: فقط `rowSortingFeature`
+  رجیستر شد (برای sort ستون‌ها) ولی `row.getVisibleCells()` با خطای
+  TS2339 شکست — چون `columnVisibilityFeature` هم باید رجیستر بشه تا
+  `getVisibleCells` روی نوع `Row` تعریف بشه، حتی بدون هیچ UI برای toggle
+  کردن visibility. اگه از `FlexRender`/`getVisibleCells` استفاده می‌کنی،
+  `columnVisibilityFeature` رو همیشه اضافه کن.
+- منبع درست API: مثال زنده‌ی خودِ `dashboard-01/components/data-table.tsx`
+  از `get_item_examples_from_registries` (MCP) یا `npx shadcn@latest view
+  @shadcn/dashboard-01` — نه حافظه/tutorial قدیمی.
+
 ## 🟡 Gotchas
 
 - `--defaults`/`-d` روی `init` معنی preset پیش‌فرض رو داره؛ این preset **خودش
