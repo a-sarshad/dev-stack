@@ -66,8 +66,9 @@ description: >
 ۷. Design System؟
    - Chakra UI v3
    - Bootstrap 5
+   - shadcn/ui
    - Tailwind CSS
-   - MUI / shadcn / Other / Custom
+   - MUI / Other / Custom
 
 ۸. Figma file داری؟
    بله → لینک: ___  |  خیر  |  بعداً می‌فرستم
@@ -76,7 +77,24 @@ description: >
 **بر اساس DS انتخابی، skill مناسب را load کن:**
 - Chakra UI → load skill: `ds-chakra-ui`
 - Bootstrap 5 → از template در `knowledge/design-systems/bootstrap5/` استفاده کن (جزئیات در بخش خروجی)
+- shadcn/ui → از template در `knowledge/design-systems/shadcn-ui/` استفاده کن — **حتماً `scaffold.md` رو بخون قبل از هر دستور CLI** (جزئیات در بخش خروجی + فاز ۳b زیر)
 - اگه project-context skill موجود باشه → آن را load کن (اولویت بالاتر از DS generic skill)
+
+### فاز ۳b — shadcn/ui: سه تصمیم اضافه (فقط اگه DS = shadcn/ui)
+
+قبل از `init`، این‌ها رو از کاربر بپرس (پیش‌فرض‌های CLI بین نسخه‌ها عوض
+می‌شن — حدس نزن، `npx shadcn@latest preset resolve` رو موقع اجرا چک کن):
+
+```
+۸b. Primitive library؟
+    - Base UI (`base`)   ← پیش‌فرض فعلی CLI (چک کن، ممکنه عوض شده باشه)
+    - Radix UI (`radix`) ← اگه پروژه‌ای community registry radix-specific لازم داره
+
+۸c. صفحه‌ای که می‌سازی، pattern رایجه؟ (dashboard/login/pricing/settings)
+    بله → قبل از implement، `npx shadcn@latest search -q "..." -t block` را چک کن —
+           بلاک آماده (مثل dashboard-01) دستی‌ساختن رو زائد می‌کنه.
+    خیر → مستقیم برو کامپوننت‌های تکی.
+```
 
 ---
 
@@ -276,7 +294,7 @@ CLAUDE.md هر پروژه باید بخش `## Figma → Code Protocol` رو دا
 `knowledge/universal/figma-to-code.md` → بلوک «COPY INTO PROJECT CLAUDE.md».
 
 موقع کپی این placeholderها رو با مقدار پروژه پر کن:
-- `[MCP]` → MCP server دیزاین‌سیستم (Chakra UI MCP، یا «Bootstrap docs» اگه MCP نداره)
+- `[MCP]` → MCP server دیزاین‌سیستم (Chakra UI MCP، `mcp__shadcn__*` برای shadcn/ui، یا «Bootstrap docs» اگه MCP نداره)
 - breakpointها → مقادیر واقعی پروژه (از فاز ۵)
 - زبان gate → فارسی یا انگلیسی، هماهنگ با بقیه CLAUDE.md
 
@@ -293,6 +311,21 @@ template فایل‌ها (`_tokens.scss`، `_overrides.scss`، `bootstrap.scss`)
 1. `sass` به devDependencies اضافه کن
 2. سه فایل از template به `src/styles/` کپی کن، `_tokens.scss` رو با brand color پر کن
 3. import در `main.tsx` را از `bootstrap.min.css` به `./styles/bootstrap.scss` تغییر بده
+
+### shadcn/ui — Scaffold
+
+**این قدم اجباریه هر وقت DS = shadcn/ui انتخاب شد.**
+
+راهنمای کامل و **دستورهای CLI واقعی** در `knowledge/design-systems/shadcn-ui/scaffold.md`
+هست — قبل از اجرای هر `shadcn init`/`add`، همون فایل رو بخون (پیش‌فرض‌های
+CLI بین نسخه‌ها عوض می‌شن، این فایل تاریخ آخرین تأیید رو داره).
+
+خلاصه اقدامات:
+1. پروژه نو؟ یه دستور کل scaffold رو انجام می‌ده: `shadcn init -t vite --name <app> -b <base> -p <preset>` (Vite دستی + Tailwind دستی نزن، زائده)
+2. اگه صفحه pattern رایجه (فاز ۳b) → قبل از implement `shadcn search -t block` چک شد
+3. **اجباری، بدون استثنا:** `pnpm dlx skills add shadcn/ui` — AI skill رسمی نصب و commit بشه
+4. اگه چارت داره → `--chart-1..5` دستی بررسی شد (پیش‌فرض baseColorها achromatic تولید می‌کنن — `shadcn-ui/known-bugs.md`)
+5. اگه RTL/دوزبانه (فاز ۶ = فارسی/عربی) → `--rtl` موقع init، و یادت باشه `Sidebar`/`Calendar`/`Pagination` با `migrate rtl` auto نمی‌شن (`shadcn-ui/rtl.md`)
 
 ---
 
@@ -410,6 +443,11 @@ feat: scaffold [project-name] project
 
 **Bootstrap 5:** template در `knowledge/design-systems/bootstrap5/` —
 سه فایل `_tokens.scss`، `_overrides.scss`، `bootstrap.scss` رو به `src/styles/` کپی کن.
+
+**shadcn/ui:** template در `knowledge/design-systems/shadcn-ui/` — دستورهای
+CLI واقعی در `scaffold.md` (نه از حافظه بساز، shadcn سریع عوض می‌شه)، بعلاوه
+نصب اجباری AI skill رسمی (`pnpm dlx skills add shadcn/ui`) که خودش زنده و
+خودبه‌روزرسانه.
 
 **Universal:** `knowledge/universal/project-init-wizard.md` — این wizard کامل
 

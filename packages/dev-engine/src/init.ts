@@ -371,6 +371,8 @@ function tokensPath(ds: string): string {
       return 'src/theme/tokens.ts'
     case 'bootstrap5':
       return 'src/styles/_tokens.scss'
+    case 'shadcn-ui':
+      return 'src/index.css' // Next.js: app/globals.css — دستی چک/عوض کن
     default:
       return 'TODO — مسیر فایل توکن'
   }

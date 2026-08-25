@@ -1,0 +1,7 @@
+{
+  "id": "shadcn-ui",
+  "aliases": ["shadcn"],
+  "package": "shadcn",
+  "targets": "^4",
+  "contract": 1
+}
