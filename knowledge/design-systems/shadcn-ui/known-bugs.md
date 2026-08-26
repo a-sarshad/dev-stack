@@ -72,6 +72,17 @@ physical→logical تبدیل می‌کنه **به‌جز**:
 
 ## 🟡 Gotchas
 
+- رجیستری `@shadcn` هیچ کامپوننت رسمی «multi-select» نداره (چک شد با
+  `search_items_in_registries`/`npx shadcn search`). برای فیلد چندانتخابی
+  با chip باید خودت از ترکیب `Popover` + `Command` + `Badge` بسازیش —
+  الگوی رایج، ولی جایی در رجیستری copy-paste نمی‌شه. مشابهش برای
+  free-text tag input (Enter برای افزودن) هم رجیستری نداره.
+- `npx shadcn add select popover command calendar switch label` (یا هر
+  ترکیبی که `command` رو شامل بشه) به‌خاطر dependency داخلی
+  `CommandDialog` روی `Dialog`، فایل‌های اضافه‌ای هم می‌سازه که مستقیم
+  نخواستی (`dialog.tsx`, `textarea.tsx`, `input-group.tsx` در یه تجربه‌ی
+  واقعی). بی‌ضررن (اگه import نشن tree-shake می‌شن) ولی توی commit دیده
+  می‌شن — تعجب نکن.
 - `--defaults`/`-d` روی `init` معنی preset پیش‌فرض رو داره؛ این preset **خودش
   بین نسخه‌های CLI عوض می‌شه** (طی همین چند ماه از `nova` به `base-nova`
   تغییر کرد). همیشه preset فعلی رو با `npx shadcn@latest preset resolve`
