@@ -89,6 +89,31 @@ CLI، بلکه خودت نوشته باشی) — مثل `group-data-[state=open]
 از داکیومنت خودِ primitive تو `node_modules/@base-ui/react/docs/react/components/<name>.md`
 چک کنی، حدس نزن (هر primitive ممکنه attribute متفاوتی داشته باشه).
 
+### migration radix→base: `DropdownMenuItem onSelect` بی‌صدا از کار می‌افته — نه warning، نه error
+`Menu.Item` تو Radix یه prop اختصاصی به اسم `onSelect` داشت (event فعال‌سازی
+آیتم). `Menu.Item` تو Base UI اصلاً همچین prop ای نداره — بجاش `onClick` +
+`closeOnClick` داره (طبق `menus.md:83` خودِ skill). مشکل: React's own
+`DOMAttributes` type یه `onSelect` عمومی دیگه هم داره (event انتخاب متن
+داخل المنت، بی‌ربط به "این آیتم منو انتخاب شد") که رو تقریباً همه‌ی
+HTML props اعمال می‌شه. پس `onSelect={...}` رو `MenuPrimitive.Item.Props`
+**type-check می‌شه** (چون به اون onSelect عمومی resolve می‌کنه) ولی
+Base UI's Menu.Item هیچ‌وقت صداش نمی‌زنه — نه build خطا می‌ده، نه runtime
+warning، فقط callback هیچ‌وقت اجرا نمی‌شه.
+
+تجربه‌ی واقعی (۲۰۲۶-۰۸-۲۶، Sample Dashboard): تم تاریک/روشن پروژه کاملاً از
+کار افتاده بود بعد از migration — `mode-toggle.tsx` از
+`<DropdownMenuItem onSelect={() => setTheme(...)}>` استفاده می‌کرد. کاربر
+گزارش داد "dark mode کار نمی‌کنه"؛ `pnpm build` قبلش سبز بود و در گزارش
+migration هم "clean" ثبت شده بود — چون این خطا از نوعی نیست که تایپ‌اسکریپت
+بگیره.
+
+**فیکس:** `onSelect` → `onClick`.
+**درس:** leftover sweep بعد از migration نباید فقط به `pnpm build` قرمز
+تکیه کنه — برای `DropdownMenuItem`/`ContextMenuItem`/`MenubarItem` (هر چیزی
+که از `Menu.Item` بیس‌ ی‌می‌گیره) صریحاً `grep -rn "onSelect="` روی کد اپ
+(نه `ui/`) بزن، چون این یکی type-check رو رد می‌کنه و فقط رفتار خودش رو
+می‌شکنه.
+
 ## 🟡 Gotchas
 
 - رجیستری `@shadcn` هیچ کامپوننت رسمی «multi-select» نداره (چک شد با
