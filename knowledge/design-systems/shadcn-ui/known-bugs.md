@@ -70,6 +70,25 @@ physical→logical تبدیل می‌کنه **به‌جز**:
   از `get_item_examples_from_registries` (MCP) یا `npx shadcn@latest view
   @shadcn/dashboard-01` — نه حافظه/tutorial قدیمی.
 
+## 🔴 Bugs / رفتار تأییدشده (ادامه)
+
+### migration radix→base: کلاس Tailwind دستی روی state پرایمیتیو، build رو سبز نگه می‌داره ولی رفتار می‌شکنه
+اگه یه کلاس Tailwind دستی برای state یه primitive نوشته باشی (نه از خروجی
+CLI، بلکه خودت نوشته باشی) — مثل `group-data-[state=open]/collapsible:rotate-90`
+برای چرخوندن آیکون شورون — بعد از `shadcn add <x> --overwrite` به base-nova،
+**TypeScript این رو نمی‌گیره** چون فقط یه رشتهٔ className‌ه، نه prop تایپ‌شده.
+ولی دیگه کار نمی‌کنه، چون Base UI روی خیلی از primitiveها به‌جای
+`data-state="open"` (Radix) از یه attribute حضوری جدا استفاده می‌کنه —
+مثلاً Collapsible Trigger: `data-panel-open` (نه `data-open`، نه `data-state`).
+تجربه‌ی واقعی (۲۰۲۶-۰۸-۲۶، Sample Dashboard): چک با
+`node_modules/@base-ui/react/docs/react/components/collapsible.md` تأیید کرد
+اسم درست attribute و کلاس رسمی خودشون برای دقیقاً همین usecase (چرخوندن
+آیکون) `group-data-panel-open:rotate-90` هست.
+**فیکس:** بعد از هر migration، `grep -rn "data-\[state="` روی کد اپ (نه
+`ui/`، اونا رو CLI درست می‌کنه) بزن — هر match یعنی باید attribute واقعی رو
+از داکیومنت خودِ primitive تو `node_modules/@base-ui/react/docs/react/components/<name>.md`
+چک کنی، حدس نزن (هر primitive ممکنه attribute متفاوتی داشته باشه).
+
 ## 🟡 Gotchas
 
 - رجیستری `@shadcn` هیچ کامپوننت رسمی «multi-select» نداره (چک شد با
