@@ -28,7 +28,16 @@ root docs فقط. CLAUDE.md ۱۴۱→۱۰۵ خط:
 - جدول reliability ۳-ردیفی (subset ناقص BLUEPRINT §۲) → حذف؛ اصل طلایی + pointer به §۲.
 - جدول ۴-ردیفی context → یک نسخهٔ canonical در **BLUEPRINT §۴** اضافه شد؛ CLAUDE.md و README به آن ارجاع.
 - فلوی build/check:refs → منبع یگانه `skills/README.md`.
-دامنهٔ عمقی (binary-block ×۳، geometry-sort، «۰ violation» ×۵، جدول tier در figma-to-code) **انجام نشد** — نیاز به rebuild/reinstall skill.
+
+**دامنهٔ عمقی — ۲ و ۴ انجام شد:**
+- **۴:** `figma-to-code.md` بلوک «COPY INTO PROJECT CLAUDE.md» (قالب موازیِ مرده،
+  از ۲۰۲۶-۰۵ آپدیت نشده) حذف شد. `_TEMPLATE/CLAUDE-template.md` تنها منبع gate است.
+  فایل ۳۰۷→~۱۸۰ خط. TOC + intro بازنویسی، «gate بالا»ها → «CLAUDE.md پروژه».
+- **۲:** بخش «RTL DOM Order» در `figma-to-code.md` (~۴۸ خط الگوریتم + دابل-فلیپ) →
+  ~۱۸ خط الزام DoD + pointer به `language.md § دابل-فلیپ`. بلاک `❌/❌/✅` در
+  `dev-implement/SKILL.md` → ۴ خط + pointer.
+- **۱ و ۳ عمداً انجام نشد** (تکرار defensible، skill باید self-contained بماند).
+- ⚠️ **reinstall لازم:** فقط `skills/dist/dev-implement.skill` (بقیه دست‌نخورده).
 
 ## بعدی
 - **batch D (معوق — نیاز branch + تصمیم معماری):** یکی‌سازی wizard —

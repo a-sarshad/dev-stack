@@ -1,110 +1,28 @@
-# Figma → Code — پیاده‌سازی دیزاین
+# Figma → Code — مرجع عمیق پیاده‌سازی دیزاین
 > universal — مستقل از design system
 > کاربرد: وقتی دیزاین آماده‌ست و می‌خوای کدش کنی — نه برای شروع پروژه جدید
-> updated: 2026-05-23 | منبع واحد حقیقت برای Figma→code (skill `figma-page-implement` بازنشسته شد، محتوا اینجا ادغام شد)
+> updated: 2026-08-28 | این فایل لایهٔ **REFERENCE** است؛ gate جای دیگری زندگی می‌کند ↓
 
-## Table of Contents
-- [ساختار فایل](#این-فایل-دو-بخش-داره)
-- [GATE — کپی در CLAUDE.md](#-copy-into-project-claudemd-)
-  - Figma Access Gate
-  - Figma → Code Protocol (Component Resolution / DS Second / DoD)
-- [مرجع عمیق](#فازهای-کار)
-  - [فازهای کار](#فازهای-کار)
-  - [نگاشت Auto Layout](#نگاشت-figma-auto-layout-به-css)
-  - [RTL DOM Order](#rtl-dom-order)
-  - [Verification](#verification--قبل-از-تحویل-همه-اجباری)
-  - [Pitfalls رایج](#pitfalls-رایج)
+## GATE کجاست — این فایل دیگر بلوک کپی ندارد
 
----
+قانون اجباری Figma→code (**Scope Triage · Figma Access Gate · Component Resolution ·
+Token rules · DoD**) canonical در **`design-systems/_TEMPLATE/CLAUDE-template.md`**
+(+ مکمل DS) است. `dev-engine init` از همان‌جا در `CLAUDE.md` هر پروژه bake می‌کند —
+always-on، هر پیام لود می‌شود.
 
-## این فایل دو بخش داره
-
-1. **GATE (بلوک قابل‌کپی)** — بخش بعدی. این رو در `## Figma → Code Protocol` هر پروژه‌ی CLAUDE.md کپی کن. کوتاهه، همیشه‌فعاله، هیچ‌وقت فراموش نمیشه.
-2. **مرجع عمیق** — بقیه فایل. وقتی جزئیات لازم شد read کن.
-
-> **چرا gate در CLAUDE.md؟** CLAUDE.md هر پیام خودکار لود میشه. قانون اونجا = همیشه در context. skill ممکنه trigger نشه یا اصلاً نصب نباشه — به skill برای قانون اجباری تکیه نکن.
+| لازم داری | برو |
+|-----------|-----|
+| مفاهیم جهت — دابل-فلیپ، جدول ترجمه، DOM order بازگشتی | **`universal/language.md`** (canonical) |
+| سطح‌بندی tier (کِی pipeline کامل) | **`universal/scope-triage.md`** (canonical) |
+| فازهای کار، نگاشت Auto Layout، pitfalls، verification | همین فایل، پایین |
 
 ---
-
-## ▼▼▼ COPY INTO PROJECT CLAUDE.md ▼▼▼
-<!-- نسخه‌ی DS-agnostic. موقع کپی، `[DS]`، `[MCP]` و `[TYPECHECK]` رو با مقدار پروژه پر کن. -->
-
-## Scope Triage (اجباری — اول هر تغییر، قبل از Figma→Code)
-
-هر task → اول tier رو تعیین کن. tier تعیین می‌کنه چقدر pipeline لازمه:
-
-| Tier | چیه | کار | screenshot؟ |
-|------|-----|-----|------------|
-| **0 — trivial** | متن/label، rename، comment، config | فقط Edit | ❌ |
-| **1 — code/style** | prop، token، spacing، bugfix، refactor، ریسپانسیو روی component موجود — **بدون surface نو از Figma** | Edit + `[TYPECHECK]` | ❌ |
-| **2 — Figma→code نو** | frame/page/component نو از Figma، یا pixel-match با spec | کل Protocol پایین | ✅ |
-
-- **screenshot = opt-in.** default نزن. فقط **Tier 2** یا وقتی کاربر صریح گفت «compare / pixel / screenshot».
-- **MCP Figma fetch فقط Tier 2.** Tier 0/1 از local cache، صفر MCP call.
-- **شک بین دو tier؟ → پایین‌تر**، لازم شد escalate. سرعت اول.
-
-مرجع عمیق: `knowledge/universal/scope-triage.md`
-
----
-
-## Figma Access Gate (اجباری — بالاتر از همه)
-
-**اگه Figma tool خطا داد یا data برنگشت → STOP. هیچ کدی نزن.**
-
-```
-Figma tool fail شد؟
-  → اول مشکل دسترسی رو حل کن (tool دیگه امتحان کن، از کاربر link/node-id دوباره بخواه)
-  → هرگز با حدس/ذهن خودت ادامه نده
-  → هرگز محتوا (text، label، color، layout) از خودت نساز
-  → اگه بعد از تلاش باز هم نشد → به کاربر بگو و منتظر بمون
-
-مجاز نیست:
-  ✗ ادامه دادن بدون Figma data
-  ✗ حدس زدن TitleBar text / button label / component variant
-  ✗ ساختن layout از پیش‌فرض‌های ذهنی
-  ✗ گفتن «data نگرفتم ولی ادامه می‌دم»
-```
-
----
-
-## Figma → Code Protocol (اجباری — فقط Tier 2)
-
-هر task که از Figma به کد تبدیل میشه — حتی «اصلاح کن» / «مقایسه کن» / «ریسپانسیو کن» — این gate رو رد نکن.
-
-**Component Resolution (به ترتیب، اجباری):**
-```
-1. Local first → src/components/ رو grep کن. موجوده؟ import کن (نساز).
-2. DS second   → از [MCP] design-system بگیر. هیچ‌وقت کامپوننت DS رو از HTML خام rebuild نکن.
-3. Build last  → فقط اگه هیچ‌کدوم نبود، با primitives DS بساز (Box/Flex/Text). صفر hardcode.
-```
-
-**MCP servers این پروژه:**
-- `[MCP]` — کامپوننت/مثال/props دیزاین‌سیستم (مثلاً Chakra UI MCP)
-- Figma MCP — `get_design_context` / `get_screenshot` / `get_variable_defs`
-
-**Definition of Done — آخر هر task point-by-point گزارش بده:**
-- [ ] Component Resolution رعایت شد (Local→DS MCP→Build) — کدوم مسیر؟
-- [ ] صفر hardcode (رنگ/spacing/font) — همه token
-- [ ] logical CSS props (`insetInlineEnd` نه `right`)
-- [ ] RTL DOM order — با evidence per-row (نه checkbox خالی): `container → اولین child → راست‌ترین در Figma`
-- [ ] responsive روی breakpointهای پروژه چک شد
-- [ ] type-check / build سبز
-
-اگه چکی skip شد → با ⚠️ علامت بزن، نگو ✅.
-
-<!-- مرجع عمیق: knowledge/universal/figma-to-code.md -->
-## ▲▲▲ END COPY ▲▲▲
-
----
----
-
-# مرجع عمیق
 
 ## فازهای کار
 
 **فاز ۱ — Context**
 قبل از شروع، اینا رو داشته باش:
-- CLAUDE.md پروژه (stack، RTL rules، known bugs، gate بالا)
+- CLAUDE.md پروژه (stack، RTL rules، known bugs، gate)
 - لیست کامپوننت‌های local در `src/components/`
 - ساختار layout templates پروژه
 
@@ -118,7 +36,7 @@ Figma tool fail شد؟
 
 **فاز ۳ — Component Resolution (اجباری)**
 
-قبل از نوشتن هر کد، برای هر کامپوننت ترتیب gate بالا رو دنبال کن:
+قبل از نوشتن هر کد، برای هر کامپوننت ترتیب gate پروژه رو دنبال کن:
 
 ```
 1. Local first  → src/components/ پروژه رو بگرد
@@ -213,56 +131,31 @@ get_design_context output بخش "Component descriptions" داشت؟
 
 ## RTL DOM Order
 
-در RTL، اولین child = rightmost. قانون CSS/HTML خالص، مستقل از DS:
+> مکانیزم کامل (دابل-فلیپ، چرا preview به‌تنهایی کافی نیست، جدول ترجمهٔ اجباری قبل از کد)
+> → **`universal/language.md` § «دابل-فلیپ»**. اینجا فقط الزام‌های تحویل.
 
-```html
-<!-- Figma: [Start(راست)] [Middle] [End(چپ)] -->
-<div style="display:flex">
-  <div>Start — rightmost</div>
-  <div style="flex:1">Middle</div>
-  <div>End — leftmost</div>
-</div>
-```
+- اولین فرزند DOM هر container افقی = راست‌ترین المان بصری. **بازگشتی** — هر container
+  تودرتو جدا (نه فقط ردیف بیرونی).
+- ترتیب را از **هندسه** دربیار، نه از خروجی `get_design_context` (LTR-canvas → کپی
+  verbatim = layout آینه‌ای؛ ۱۴۰۴: سه نقطهٔ آینه‌ای در یک تحویل). ابزار:
+  `dev-engine layout-derive` مختصات خام را به ترتیب DOM ترجمه می‌کند.
+- تیک «RTL DOM order» در DoD بدون evidence قبول نیست — برای هر ردیف افقی یک خط:
+  `container → اولین DOM child → راست‌ترین المان در Figma`.
+- **استثنا:** کامپوننت DS که خودش `dir` ست می‌کند (Table، Select، Menu، Steps،
+  Pagination…) — داخلش reorder نکن.
 
-### ⚠️ ترتیب فرزندها از هندسه دربیار، نه از خروجی کد Figma
+**Button + icon:** آیکن پیش‌فرض **اول DOM** (leading) = سمت start. یک DOM برای هر دو
+جهت؛ `dir` خودش flip می‌کند — per-direction عوض نکن. استثنا: کاربر صریح trailing
+بخواهد، یا آیکن هر دو طرف متن. ماژول `dom-order` → `button-icon-after-text` flag می‌کند.
 
-خروجی `get_design_context` فرزندها رو به ترتیب **چپ→راست** (LTR canvas) لیست می‌کنه.
-کپی verbatim این ترتیب در app با `dir=rtl` = layout **آینه‌ای**. این شایع‌ترین
-الگوی باگ تکراری Figma→code در پروژه‌های RTL هست (۱۴۰۴: سه نقطه آینه‌ای در یک
-تحویل — هر سه کپی verbatim ترتیب Figma بودن).
-
-**الگوریتم اجباری برای هر container افقی (Box/Flex/Grid ساده):**
-1. مختصات x فرزندها از `get_metadata` (bounding box) یا screenshot
-2. sort بر اساس x **نزولی** → راست‌ترین = اولین child در JSX
-3. خروجی کد Figma فقط مرجع style/token — ساختار ردیف افقی از آن کپی نشه
-
-**استثنا:** کامپوننت‌های DS که خودشون dir ست می‌کنن (در Chakra: Table، Pagination،
-Steps، Select، Menu...) — داخلشون reorder نکن. همین «بعضی جاها بدون reverse درست
-به‌نظر می‌رسه» منبع گیج‌شدن و کپی verbatim هست.
-
-**در DoD:** تیک «RTL DOM order» بدون evidence قبول نیست — برای هر ردیف افقی یک خط:
-`container → اولین DOM child → راست‌ترین المان در Figma`
-
-### Button + icon — default: icon اول DOM (leading) — هر دو جهت
-
-آیکن دکمه پیش‌فرض **اول DOM** = سمت start. RTL → راستِ متن · LTR → چپِ متن.
-**یک DOM برای هر دو جهت** (icon-first)؛ `dir` خودش flip می‌کند — ترتیب را per-direction عوض نکن.
-استثنا (تنها دو حالت): کاربر صریح trailing بخواهد، یا آیکن **هر دو طرف** متن باشد.
-> دام رایج: کد Figma اغلب `text` بعد `icon` لیست می‌کند (LTR canvas) — کپی verbatim = آیکن سمت غلط.
-> dev-engine `dom-order` → `button-icon-after-text` این را flag می‌کند (Latin+فارسی، multi-line، arrow-fn).
-
-### رنگ سطح‌ها — توکن semantic نه palette خام
-
-برای bg/border/fg کارت/پنل/سطح، متغیر semantic فیگما (`bg/teal`، `teal/muted`) را به توکن
-**semantic** پروژه map کن (`brand.bg`، `brand.muted`، `bg.subtle`…) — نه به palette خام (`teal.50`) با hex-match.
-palette خام در dark mode adapt نمی‌کند. gate hardcode این را نمی‌گیرد (palette هم token است)؛
-dev-engine `token-replacer` → `raw-palette-on-theme-prop` flag می‌کند.
-
-→ مفاهیم کامل‌تر: `universal/language.md`
+**رنگ سطح‌ها:** متغیر semantic فیگما (`bg/teal`، `teal/muted`) → توکن **semantic**
+پروژه (`brand.bg`، `bg.subtle`…)، نه palette خام (`teal.50`) با hex-match. palette خام
+در dark adapt نمی‌کند و gate hardcode نمی‌گیردش؛ ماژول `token-replacer` →
+`raw-palette-on-theme-prop` flag می‌کند.
 
 ---
 
-## Verification — قبل از تحویل (همه اجباری)
+## Verification — قبل از تحویل
 
 ```bash
 # ۱. صفر hardcode
@@ -281,7 +174,7 @@ pnpm type-check 2>&1 | tail -20   # یا: npx tsc --noEmit
 
 **visual (فقط اگه کاربر preview خواست):** screenshot کد را با screenshot Figma (فاز ۲) مقایسه کن — layout/typography/رنگ/spacing/shadow/radius.
 
-چک‌لیست نهایی = Definition of Done در بلوک GATE بالا. point-by-point گزارش بده.
+چک‌لیست نهایی = Definition of Done در `CLAUDE.md` پروژه. point-by-point گزارش بده.
 
 ---
 
@@ -303,4 +196,4 @@ pnpm type-check 2>&1 | tail -20   # یا: npx tsc --noEmit
 ## skill مرتبط
 
 برای pipeline قدم‌به‌قدم Figma→code، از skill رسمی `figma-implement-design` استفاده کن.
-gate بالا (در CLAUDE.md) تضمین صحت میده — skill فقط شتاب‌دهنده‌ست، نه منبع قانون.
+gate در `CLAUDE.md` پروژه تضمین صحت می‌دهد — skill فقط شتاب‌دهنده‌ست، نه منبع قانون.
