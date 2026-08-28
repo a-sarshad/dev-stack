@@ -15,7 +15,7 @@
 | ۸ | [Logical Props](#۸-logical-props--قانون-مطلق) |
 | ۹ | [Portal Components](#۹-portal-components-در-rtl) |
 | ۱۰ | [Sidebar Patterns](#۱۰-sidebar-patterns) |
-| ۱۱ | [Known Bugs — خلاصه](#۱۱-known-bugs--خلاصه) → [فایل کامل](known-bugs.md) |
+| ۱۱ | [Known Bugs — خلاصه](#۱۱-known-bugs--خلاصه) → [فایل کامل](known-bugs.md) · [per-component](components/README.md) |
 | ۱۲ | [Chakra Docs URLs](#۱۲-chakra-docs--web_fetch-urls) |
 | ۱۳ | [Setup پروژه جدید](#۱۳-setup--پروژه-جدید) |
 
@@ -445,7 +445,7 @@ textAlign="end"  // ❌ در RTL = LEFT → ✅ textAlign="start"
 // Avatar+asChild: ❌ <Avatar.Root asChild><button> → ✅ <Box as="button"><Avatar.Root>
 ```
 
-> لیست کامل با مثال‌های کد → `known-bugs.md`
+> لیست کامل cross-component → `known-bugs.md` · باگ یک کامپوننت خاص → `components/<name>.md`
 
 ---
 
@@ -532,5 +532,6 @@ createRoot(document.getElementById('root')!).render(
 | فایل | کاربرد |
 |------|--------|
 | `tokens.md` | جداول کامل همه توکن‌ها (lookup) |
-| `known-bugs.md` | لیست زنده باگ‌ها با مثال کد |
+| `known-bugs.md` | باگ‌های cross-component با مثال کد (توکن، RTL کلی، styling system) |
+| `components/<name>.md` | باگ **یک کامپوننت مشخص** — فهرست: `components/README.md` |
 | `CLAUDE-template.md` | template برای CLAUDE.md پروژه‌های جدید |

@@ -21,7 +21,7 @@
 
 ## Chakra v3 — تله‌های شناخته‌شده
 
-> فهرست کامل: `design-systems/{{DS_FOLDER}}/known-bugs.md`. اینجا فقط پرتکرارها:
+> فهرست کامل باگ cross-component: `design-systems/{{DS_FOLDER}}/known-bugs.md`. باگ یک کامپوننت مشخص: `design-systems/{{DS_FOLDER}}/components/<name>.md`. اینجا فقط پرتکرارها:
 
 - `lineHeight` عددی (`lineHeight="8"`) → **BROKEN** — به CSS بدونِ واحد resolve می‌شود
   (۸ برابر font-size). همیشه ratio string: `lineHeight="1.333"`.

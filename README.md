@@ -27,6 +27,7 @@ dev-stack/
 │   │   ├── shadcn-ui/
 │   │   │   └── components/          ← تله‌ی هر کامپوننت (اختیاری، وقتی known-bugs بزرگ شد)
 │   │   ├── chakra-ui-v3/
+│   │   │   └── components/          ← تله‌ی هر کامپوننت
 │   │   ├── bootstrap5/
 │   │   └── generic/
 │   ├── BLUEPRINT.md      ← قانون اساسی: معماری، فلو، تصمیمات
