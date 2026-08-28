@@ -30,6 +30,7 @@ pnpm check:refs               # فقط اعتبارسنجی، بدون build
 | زیرفرمان و فلگ `dev-engine` (فقط داخل بلوک bash) | `packages/dev-engine/src/cli.ts` |
 | شناسهٔ `--module` | `packages/dev-engine/src/modules/*.ts` |
 | نام repoهای قبل از ادغام | ممنوع، مگر در allowlist |
+| قرارداد اسکلت DS (`ds.json` معتبر + `figma-resolve.json`) | `knowledge/design-systems/README.md` §۱ |
 
 استثنا (مثال، یادداشت تاریخی، skill خارجی) → `scripts/refs-allow.json`. هر ورودی
 باید `why` داشته باشد. استثنایی که دیگر چیزی را پوشش نمی‌دهد خودش ⚠ می‌گیرد.

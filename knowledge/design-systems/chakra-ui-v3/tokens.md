@@ -123,6 +123,12 @@ none | sm(2px) | md(4px) | lg(6px) | xl(8px) | 2xl(12px) | 3xl(16px) | full(9999
 xs | sm | md | lg | xl | 2xl | inner | none
 ```
 
+## Component Size
+```
+xs | sm | md | lg | xl
+```
+`md` = 40px ارتفاع کنترل (Button/Input/Select). پیش‌فرضِ عملیِ این DS مگر طراحی سایز دیگری بخواهد.
+
 ## Breakpoints
 ```
 sm(480px) | md(768px) | lg(992px) | xl(1280px) | 2xl(1536px)

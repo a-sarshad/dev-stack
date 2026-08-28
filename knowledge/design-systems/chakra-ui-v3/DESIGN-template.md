@@ -38,6 +38,20 @@
 `transition="background 0.15s"` (shorthand) یا `transitionProperty` + `transitionDuration`.
 مقادیر واقعی پروژه را در §Motion بالا بنویس.
 
+### تایپوگرافی — default پیشنهادی (در §Typography بالا نهایی کن)
+
+نقطهٔ شروع، نه قانون DS. اگر طراحی چیز دیگری می‌گوید همان‌جا override کن.
+
+| موقعیت | Size | Weight |
+|--------|------|--------|
+| body / فرم | `sm` (14px) | `normal` (400) |
+| label / caption | `xs` (12px) | `medium` (500) |
+| عنوان بخش | `md` (16px) | `semibold` (600) |
+| عنوان صفحه | `xl` (20px) | `semibold` (600) |
+| عنوان بزرگ | `2xl` (24px) | `bold` (700) |
+
+مقادیر خام scale (همهٔ size/weight tokenها) → `design-systems/{{DS_FOLDER}}/tokens.md §Typography`.
+
 ### تلهٔ تایپوگرافی
 
 `lineHeight` عددی BROKEN است — `lineHeight="8"` یعنی unitless `line-height:8` = ۸× font-size.
