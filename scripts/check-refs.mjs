@@ -153,6 +153,35 @@ for (const abs of docs) {
   })
 }
 
+// ── ۷. قرارداد اسکلت DS ───────────────────────────────────────────────────────
+// design-systems/README.md §۱: هر پوشه‌ی DS واقعی باید `ds.json` معتبر (id ≠
+// REPLACE-ME) داشته باشد + `figma-resolve.json` مگر `package: null`. قبلاً هیچ
+// enforcement‌ای نبود و ۲ از ۴ DS نقض می‌کردند.
+const dsRoot = join(ROOT, 'knowledge/design-systems')
+for (const e of readdirSync(dsRoot, { withFileTypes: true })) {
+  if (!e.isDirectory() || e.name.startsWith('_')) continue
+  const dir = join(dsRoot, e.name)
+  const rel = relative(ROOT, dir)
+  const dsJsonPath = join(dir, 'ds.json')
+  if (!existsSync(dsJsonPath)) {
+    err(`${rel}/ds.json`, 1, 'ds-contract', 'وجود ندارد — هر پوشه‌ی DS باید ds.json داشته باشد')
+    continue
+  }
+  let ds
+  try {
+    ds = JSON.parse(readFileSync(dsJsonPath, 'utf8'))
+  } catch (parseErr) {
+    err(`${rel}/ds.json`, 1, 'ds-contract', `JSON نامعتبر — ${parseErr.message}`)
+    continue
+  }
+  if (typeof ds.id !== 'string' || ds.id.includes('REPLACE-ME')) {
+    err(`${rel}/ds.json`, 1, 'ds-contract', `"id" هنوز «${ds.id}» است — DS ناتمام (کپی از _TEMPLATE پر نشده)`)
+  }
+  if (ds.package !== null && !existsSync(join(dir, 'figma-resolve.json'))) {
+    err(`${rel}/figma-resolve.json`, 1, 'ds-contract', 'وجود ندارد — اجباری مگر ds.json فیلد "package": null داشته باشد (seed خالی هم قبول است)')
+  }
+}
+
 // ── allowlist کهنه ────────────────────────────────────────────────────────────
 // استثنایی که دیگر به کار نمی‌آید یعنی متن اصلاح شده و استثنا فراموش شده —
 // همان drift‌ای که این اسکریپت قرار است جلویش را بگیرد، یک لایه بالاتر.

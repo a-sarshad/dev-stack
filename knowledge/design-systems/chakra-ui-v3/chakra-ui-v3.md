@@ -1,6 +1,10 @@
 # Chakra UI v3 — Skill Reference
-> جایگزین: rtl.md + multilang.md + unified-skill-content.md
-> updated: 2026-05-18
+> updated: 2026-08-28
+> نقش این فایل: overview + قوانین RTL/direction این DS. این DS فایل جداگانه‌ی
+> `rtl.md` ندارد — §۶-۹ همین‌جا canonical است. جدول کامل توکن → `tokens.md` ·
+> باگ‌ها → `known-bugs.md` + `components/`.
+> ⚠️ §۴ (Typography) و §۵ (Spacing) از ۱۴۰۵/۰۲ مقابل Chakra v3 واقعی verify
+> نشده‌اند — قبل از تکیه، مقدار را از `node_modules` یا CLI چک کن.
 
 ## Table of Contents
 | # | بخش |

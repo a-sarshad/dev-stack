@@ -1,7 +1,7 @@
 {
-  "_note": "لایه DS (shared) — Figma component/token name → Chakra v3 code. seed اولیه؛ با MCP گسترش بده. لایه Local پروژه روی این override می‌کنه.",
+  "_note": "لایه DS (shared) — Figma component/token name → Chakra v3 code. hand-seed؛ با MCP گسترش بده. لایه Local پروژه روی این override می‌کنه.",
   "_source": "seed",
-  "_synced": "2026-06-04",
+  "_synced": "2026-08-28",
   "components": {
     "Button": "@chakra-ui/react#Button",
     "IconButton": "@chakra-ui/react#IconButton",
@@ -10,7 +10,8 @@
     "Checkbox": "@chakra-ui/react#Checkbox",
     "Switch": "@chakra-ui/react#Switch",
     "Radio": "@chakra-ui/react#RadioGroup",
-    "Select": "@chakra-ui/react#NativeSelect",
+    "Select": "@chakra-ui/react#Select",
+    "NativeSelect": "@chakra-ui/react#NativeSelect",
     "Badge": "@chakra-ui/react#Badge",
     "Tag": "@chakra-ui/react#Tag",
     "Avatar": "@chakra-ui/react#Avatar",
@@ -43,12 +44,7 @@
     "Portal": "@chakra-ui/react#Portal",
     "CloseButton": "@chakra-ui/react#CloseButton",
     "Icon": "@chakra-ui/react#Icon",
-    "NativeSelect": "@chakra-ui/react#NativeSelect",
-    "EmptyState": "@chakra-ui/react#EmptyState",
-    "VStack": "@chakra-ui/react#VStack",
-    "HStack": "@chakra-ui/react#HStack",
-    "Field": "@chakra-ui/react#Field",
-    "CloseButton": "@chakra-ui/react#CloseButton"
+    "EmptyState": "@chakra-ui/react#EmptyState"
   },
   "tokens": {},
   "variables": {}

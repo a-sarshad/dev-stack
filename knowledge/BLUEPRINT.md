@@ -311,16 +311,17 @@ Projects/<X>/                               ← قانون + context خودِ پ
 | 2 | skill project-context | محتوای کامل | loader نازک (read از پروژه) | REFACTOR |
 | 3 | `dod-check` پیشنهادی | — | حذف (dev-engine پوشش می‌ده) | DROP |
 | 4 | ۶ script پیشنهادی | فایل‌های جدا | subcommand‌های dev-engine (`doctor`/`figma-sync`/`visual-diff`) | MERGE → dev-agents |
-| 7 | cache توکن/کامپوننت | (نبود) | `figma-resolve.json` دو-لایه (DS+Local، بخش ۶) | BUILD |
 | 5 | figma-impl-checklist + impl-session | دو skill | یک skill `dev-implement` | MERGE |
 | 6 | duplication قانون token بین لایه‌ها | چند جا | یک خونه (dev-engine + یک خط gate) | DEDUPE |
+| 7 | cache توکن/کامپوننت | (نبود) | `figma-resolve.json` دو-لایه (DS+Local، بخش ۶) | BUILD |
 
 **ترتیب اجرا (وقتی شروع کردیم):**
 1. rename projfix → dev-engine ✓ (انجام شد)
 2. اول این BLUEPRINT تثبیت ✓
 3. مهاجرت context پروژه‌ها (#1، #2) ✓ — محتوا → `Projects/<X>/.claude/context/`، skillها thin-loader شدن، `projects/` حذف شد
 4. extend dev-engine + cache دو-لایه (#4، #7):
-   - `doctor` (preflight) ✓ · `resolve` (Figma name→code، صفر MCP) ✓ · `figma-sync --scan/--init/status` ✓ · cache merge Local-first ✓ · seed DS chakra ✓
+   - **مکانیزم ready:** `doctor` (preflight) ✓ · `resolve` (Figma name→code، صفر MCP) ✓ · `figma-sync --scan/--init/status` ✓ · cache merge Local-first ✓
+   - **وضعیت seedها (مکانیزم ≠ داده):** `chakra-ui-v3` → hand-seed، ~۴۰ کامپوننت، هنوز از MCP sync نشده · `shadcn-ui`/`bootstrap5` → `figma-resolve.json` هست ولی **خالی** (`components: {}`) · `generic` → N/A (`package: null`). یعنی اولین Figma→code واقعی روی هر DS، seedش را پر می‌کند.
    - `visual-diff` (نیاز browser dep) — defer · `figma-sync` REST pull (Enterprise-gated) — scaffold فقط
 5. ساخت skill `dev-implement` (#5) ✓ — orchestrator واحد، pipeline §3 رو step-by-step enforce می‌کنه
 6. حذف/dedupe باقی‌مونده (#3، #6) ✓ — Vitrina: tokens/breakpoints duplicate از context cut شد (canonical → CLAUDE.md، drift بسته شد) · Airport: از قبل split ایده‌آل داشت · dod-check هیچ‌وقت ساخته نشد (DROP بی‌مورد)
