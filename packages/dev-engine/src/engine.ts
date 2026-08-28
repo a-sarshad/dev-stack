@@ -35,7 +35,7 @@ const BASE_MODULES: CheckModule[] = [
 function getModules(projectRoot: string, config: ProjectConfig, selectedIds?: string[]): CheckModule[] {
   const ALL_MODULES = [
     ...BASE_MODULES,
-    createTokenReplacerModule(projectRoot),
+    createTokenReplacerModule(projectRoot, config.ds),
     directionAuditModule,
   ]
   return ALL_MODULES.filter(m => {

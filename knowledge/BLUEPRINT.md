@@ -99,9 +99,9 @@ USER: "این frame رو implement کن: [Figma URL]"
 └────────────┬───────────────────────────────────────────────┘
              ▼
 ┌─ STEP 4 — VERIFY (CLI-first) ────────────────────────────┐
-│ dev-engine ./src --changed --fix   ← code checks + auto-fix  │
-│ dev-engine dod / build-git         ← build + DoD + git state │
-│ dev-engine visual-diff (اختیاری)   ← screenshot vs Figma     │
+│ dev-engine . --changed --fix   ← code checks + auto-fix     │
+│                                  (build-git خودکار داخلش)   │
+│ tools/vision-diff (اختیاری، opt-in) ← screenshot vs Figma   │
 └────────────┬───────────────────────────────────────────────┘
              ▼
 ┌─ STEP 5 — COMMIT ────────────────────────────────────────┐
@@ -113,7 +113,9 @@ USER: "این frame رو implement کن: [Figma URL]"
 و MCP خونده می‌شه — نه hardcode در flow. همین pipeline برای Bootstrap/Chakra/هر DS کار می‌کنه.
 
 **تقسیم کار CLI vs Claude:**
-- **CLI (packages/dev-engine):** preflight، token-sync، dod، build-git، visual-diff — هر چیز دترمینیستیک
+- **CLI (packages/dev-engine):** `doctor` (preflight)، `figma-sync`، `resolve`، `layout-derive`،
+  و check اصلی (`.`) که ماژول‌های per-file + `build-git` را با هم می‌زند — هر چیز دترمینیستیک.
+  visual-diff هنوز subcommand نیست → `tools/vision-diff/` (اختیاری، خارج از CLI).
 - **Claude:** فقط STEP 1-3 (read context، Figma fetch، implement)
 - **skill `dev-implement`:** orchestrator — step‌ها رو به ترتیب صدا می‌زنه، نمی‌پره
 

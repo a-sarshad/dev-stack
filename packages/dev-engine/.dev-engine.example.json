@@ -12,20 +12,11 @@
     "dist",
     ".next",
     "build",
-    "coverage",
-    "public"
+    "coverage"
   ],
 
   "ignore_custom_components": [
     "CustomTabs",
     "MySelect"
-  ],
-
-  "modules": [
-    "css-logical-props",
-    "icon-direction",
-    "persian-numerals",
-    "chakra-known-bugs",
-    "dom-order"
   ]
 }

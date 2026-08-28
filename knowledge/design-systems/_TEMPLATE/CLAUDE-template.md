@@ -44,9 +44,11 @@
 |------|-----|-----|------------|
 | **0 — trivial** | متن/label، rename، comment، config | فقط Edit | ❌ |
 | **1 — code/style** | prop، token swap، spacing، bugfix، refactor — بدون surface نو از Figma | Edit + type-check | فقط اگر چیدمان عوض شد |
-| **2 — Figma→code نو** | frame/page/component نو، یا تغییری که باید با Figma spec بخوره | کل Protocol پایین | ✅ اجباری |
+| **2 — Figma→code نو** | frame/page/component نو، یا تغییری که باید با Figma spec بخوره | کل Protocol پایین | opt-in — اول بپرس |
 
-- **screenshot در Tier 2 اجباری است و بدون پرسیدن انجام می‌شود.**
+- **screenshot/preview = opt-in، حتی در Tier 2.** اول از کاربر تأیید بگیر
+  («preview بگیرم و با طرح مقایسه کنم؟») — قانون global: هیچ‌وقت خودکار preview نگیر.
+  type-check سبز + RTL DOM order = کافی برای بستن task؛ مقایسهٔ بصری مرحلهٔ جدا و opt-in است.
 - **MCP Figma fetch فقط Tier 2.** Tier 0/1 از cache محلی، صفر MCP call.
 - شک بین دو tier؟ → پایین‌تر را بگیر، لازم شد escalate کن.
 
@@ -93,12 +95,15 @@ point-by-point گزارش بده. چک skip‌شده = ⚠️ نه ✅.
 - [ ] Component Resolution رعایت شد (Local→DS→Build) — کدوم مسیر؟
 - [ ] صفر hardcode (رنگ/spacing/font) — همه token
 - [ ] type-check سبز — `{{TYPECHECK_CMD}}`
-- [ ] **مقایسهٔ preview با طرح** (اجباری برای Tier 2)
 - [ ] `dev-engine .` بدون error
+- [ ] **مقایسهٔ preview با طرح** — Tier 2 (فقط اگر کاربر تأیید کرد؛ وگرنه ⚠️ «preview نگرفتم»)
 
 ---
 
-### تطابق با طرح — از روی preview (اجباری برای Tier 2)
+### تطابق با طرح — از روی preview (Tier 2، فقط با تأیید کاربر)
+
+> preview هیچ‌وقت خودکار نیست. اول بپرس «preview بگیرم و با طرح مقایسه کنم؟».
+> با «بله» → روش زیر. بدون تأیید → task با type-check سبز + RTL DOM order بسته می‌شود و در DoD ⚠️ ثبت کن.
 
 **تنها روش معتبر: screenshot طرح کنار screenshot preview + اندازه‌گیری DOM.**
 هیچ استنتاج ذهنی، هیچ محاسبهٔ دستی.

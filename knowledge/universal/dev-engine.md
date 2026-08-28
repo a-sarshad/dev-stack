@@ -46,8 +46,9 @@ command -v dev-engine && dev-engine --version
 | فیلد | مقادیر |
 |------|--------|
 | `direction` | `rtl` · `ltr` · `both` |
-| `ds` | `chakra-v3` · `chakra-v2` · `mui` · `antd` · `mantine` · `generic` |
-| `icon_lib` | `lucide` · `heroicons` · `fa` · `generic` |
+| `ds` | از رجیستری `knowledge/design-systems/*/ds.json` — لیست زنده: `dev-engine ds-list` (فعلاً: `chakra-v3` · `bootstrap5` · `shadcn-ui` · `generic`) |
+| `icon_lib` | `lucide` · `heroicons` · `fa` · `mdi` · `generic` |
+| `build_command` | اختیاری — override چک build. خالی → `<pm> run build` |
 
 > **سریع‌تر:** `dev-engine init` رو اجرا کن — سوال‌به‌سوال پیش می‌ره و فایل رو می‌سازه.
 > اگه `.dev-engine.json` نباشه، skill `dev-engine` آن را auto-detect و می‌سازه.
@@ -161,6 +162,10 @@ dev-engine figma-sync ./ --init    # template خالی در .claude/context/
 # layout-derive — سمت و ترتیب را از هندسهٔ خام حساب کن، نه با چشم
 dev-engine layout-derive . --metadata dump.xml        # کل دامپ، تا عمق ۳
 dev-engine layout-derive . --metadata dump.xml --node 2659:82005
+
+# ds-list — design systemهای ثبت‌شده در knowledge/ (id، contract، targets)
+dev-engine ds-list
+dev-engine ds-list --json
 ```
 
 **⚠️ قرارداد semantic:** همه‌ی مقادیر جهت‌دار `start`/`end` ان، نه `left`/`right`.

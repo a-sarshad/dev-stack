@@ -58,8 +58,11 @@ function isSkippableLine(line: string): boolean {
   )
 }
 
-export function createTokenReplacerModule(projectRoot: string): CheckModule {
-  const tokenMap = loadTokenMap(projectRoot, 'chakra-v3')
+export function createTokenReplacerModule(projectRoot: string, ds = 'chakra-v3'): CheckModule {
+  // project-level token-map.json برنده است؛ وگرنه template مخصوص DS
+  // (templates/token-map.<ds>.json). DS بدون template → فقط چک hex-hardcode
+  // با map خالی کار می‌کند (spacing/font مستقل از DS همچنان flag می‌شوند).
+  const tokenMap = loadTokenMap(projectRoot, ds)
 
   return {
     id: 'token-replacer',

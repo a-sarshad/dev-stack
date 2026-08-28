@@ -18,12 +18,13 @@ export interface ProjectConfig {
   paths?: Record<string, PathConfig>
   ignore?: string[]
   ignore_custom_components?: string[]
-  claude_api_key?: string
-  modules?: string[]
   // override برای build-git check — اگه set شه عیناً اجرا می‌شه (مثلاً "npx tsc --noEmit").
   // خالی → auto-detect: `<pm> run build` که pm از lockfile پروژه میاد.
+  // `dev-engine init --typecheck "<cmd>"` (وقتی پیش‌فرض نباشد) همین را می‌نویسد.
   build_command?: string
-  // Figma sync (BLUEPRINT §6) — اول پروژه پرسیده و اینجا ذخیره می‌شه
+  // Figma sync (BLUEPRINT §6) — اول پروژه پرسیده و اینجا ذخیره می‌شه.
+  // فقط `figma_source` را doctor چک می‌کند؛ `figma_file_key`/`ds_mcp` برای مسیر
+  // REST-pull رزرو شده‌اند (هنوز Enterprise-gated، فقط scaffold — BLUEPRINT §8).
   figma_source?: 'mcp' | 'rest'
   figma_file_key?: string
   ds_mcp?: string

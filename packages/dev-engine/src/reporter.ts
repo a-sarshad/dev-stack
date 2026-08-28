@@ -1,14 +1,17 @@
 import chalk from 'chalk'
 import type { CheckResult, Violation } from './types.js'
 
-export function printResult(results: CheckResult[]): void {
+export function printResult(results: CheckResult[], verbose = false): void {
   let totalViolations = 0
   let totalFixed = 0
   let totalErrors = 0
   let totalWarnings = 0
 
   for (const result of results) {
-    if (result.violations.length === 0 && result.fixed === 0) continue
+    if (result.violations.length === 0 && result.fixed === 0) {
+      if (verbose) console.log(chalk.gray(`  ✓ ${result.file}`))
+      continue
+    }
 
     if (result.fixed > 0) {
       console.log(chalk.green(`\n✅ ${result.file} — ${result.fixed} auto-fixed`))

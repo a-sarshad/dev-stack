@@ -67,7 +67,7 @@ program
       if (opts.json) {
         printJSON(results)
       } else {
-        printResult(results)
+        printResult(results, opts.verbose)
       }
 
       return results.some(r => r.violations.some(v => v.severity === 'error'))

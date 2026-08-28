@@ -515,13 +515,20 @@ export async function runInit(targetDir: string, opts: InitOptions = {}): Promis
 
   rl?.close()
 
-  const config = {
+  const config: Record<string, unknown> = {
     direction,
     locale,
     calendar,
     ds,
     icon_lib,
     ignore: ['node_modules', 'dist', '.next', 'build', 'coverage'],
+  }
+
+  // اگر کاربر type-check command داد و پیش‌فرض نبود، همان را build_command هم بگذار —
+  // وگرنه ماژول build-git به `<pm> run build` برمی‌گردد و دستور کاربر فقط در متن
+  // DoD قالب می‌نشیند (یک disconnect: `init --typecheck X` روی چک build اثر نداشت).
+  if (typecheckCmd && typecheckCmd !== 'npx tsc --noEmit') {
+    config.build_command = typecheckCmd
   }
 
   writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n')
