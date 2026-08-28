@@ -1,145 +1,126 @@
 # shadcn/ui — Known Bugs & Gotchas
 
 <!--
-اینجا چی می‌ره: رفتار غیرمنتظره‌ی خودِ کتابخانه/CLI که در هر پروژه‌ای که از
-این DS استفاده کنه تکرار می‌شه. اینجا چی نمی‌ره: باگ مخصوص کد یک پروژه‌ی
-خاص — اون known-bugs محلی همون پروژه‌ست.
+اینجا چی می‌ره: رفتار غیرمنتظره‌ی خودِ کتابخانه/CLI که **cross-component** ـه —
+CLI، preset/config، RTL کلی، رجیستری، tooling.
+اینجا چی نمی‌ره:
+  · باگ یه کامپوننت مشخص → `components/<name>.md`
+  · باگ مخصوص کد یک پروژه → known-bugs محلی همون پروژه
 -->
 
-## 🔴 Bugs / رفتار تأییدشده
+## 📍 باگ‌های مخصوص یک کامپوننت → `components/`
 
-### `chart-1..5` رنگی نمی‌شن مگر دستی ست کنی
-`baseColor`های موجود (`neutral`, `stone`, `zinc`, `mauve`, `olive`, `mist`,
-`taupe`) پالت `chart-1..5` رو achromatic (chroma≈۰، طیف خاکستری) تولید
-می‌کنن — حتی وقتی spec/طرح صریحاً یه پالت رنگی (مثلاً آبی) برای چارت
-می‌خواد. هیچ preset پیش‌فرضی خودش چارت رنگی نمی‌سازه.
+| کامپوننت | تله |
+|---|---|
+| [`chart`](components/chart.md) | رنگ پیش‌فرض achromatic — چارت خاکستری درمیاد |
+| [`combobox`](components/combobox.md) | multi-select + chips (Base-only)، فیکس عرض popover |
+| [`collapsible`](components/collapsible.md) | `data-panel-open` (نه `data-state`) زیر Base UI |
+| [`data-table`](components/data-table.md) | registry item نیست + TanStack Table v9 |
+| [`dropdown-menu`](components/dropdown-menu.md) | `onSelect` بی‌صدا از کار می‌افته |
+| [`sidebar`](components/sidebar.md) | RTL auto-migrate ردش می‌کنه |
 
-**تجربه‌ی واقعی (۲۰۲۶-۰۸-۲۵، پروژه Sample Dashboard):** بعد از `init` با
-`baseColor: neutral`، چارت خط دشبورد خاکستری درومد در حالی که spec دقیقاً
-`oklch(...)` آبی (blue-300→blue-800) خواسته بود. فیکس: مقادیر
-`--chart-1`..`--chart-5` رو دستی در `:root`/`.dark` جایگزین کن — راهنمای
-اضافه‌کردن/override توکن → `tokens.md`.
+قانون اینکه چی لایق فایل جداست → `components/README.md`.
 
-### Style/base بعد از `init` قفل می‌شه
+---
+
+## 🔴 Config / CLI
+
+### Style و base بعد از `init` قفل می‌شن
 `style`, `base` (radix/base), و `tailwind.cssVariables` در `components.json`
 بعد از init قابل تغییر نیستن بدون حذف و نصب مجدد **همه‌ی** کامپوننت‌های
 نصب‌شده. قبل از شروع implement جدی، این سه تا رو مطمئن شو.
 
-### `tw-animate-css` + RTL — انیمیشن‌های logical کار نمی‌کنن
+---
+
+## 🔴 RTL (کلی — قوانین کامل در `rtl.md`)
+
+### `tw-animate-css` — انیمیشن‌های logical کار نمی‌کنن
 باگ شناخته‌شده در خودِ `tw-animate-css`: کلاس‌های logical slide (مثل تبدیل
 `slide-in-from-right` به `slide-in-from-end`) درست کار نمی‌کنن. فیکس فعلی
-(نه راه‌حل کامل، workaround رسمی خودِ shadcn): پراپ `dir="rtl"` رو مستقیم
+(workaround رسمی خودِ shadcn، نه راه‌حل کامل): پراپ `dir="rtl"` رو مستقیم
 به portal content بده:
 ```tsx
 <PopoverContent dir="rtl">...</PopoverContent>
 <TooltipContent dir="rtl">...</TooltipContent>
 ```
 
-### RTL auto-transform فقط روی preset جدید کار می‌کنه
+### auto-transform فقط روی preset جدید کار می‌کنه
 `rtl: true` در `components.json` باعث می‌شه CLI کلاس‌های physical
 (`left-*`/`right-*`) رو موقع `add` به logical (`start-*`/`end-*`) تبدیل کنه —
 ولی **فقط** برای پروژه‌های ساخته‌شده با style جدید (`base-nova`, `radix-nova`
 و مشابه). برای style قدیمی‌تر باید migration دستی انجام بدی.
 
-### سه کامپوننت auto-migrate نمی‌شن با `migrate rtl`
-دستور `npx shadcn@latest migrate rtl [path]` همه‌ی کامپوننت‌های نصب‌شده رو
-physical→logical تبدیل می‌کنه **به‌جز**:
-- `Calendar`
-- `Pagination`
-- `Sidebar`
+### سه کامپوننت با `migrate rtl` تبدیل نمی‌شن
+`npx shadcn@latest migrate rtl [path]` همه‌ رو تبدیل می‌کنه **به‌جز**
+`Calendar`, `Pagination`, `Sidebar` — این سه دستی. رایج‌ترین‌شون Sidebar ـه
+→ [`components/sidebar.md`](components/sidebar.md).
 
-این سه باید طبق بخش RTL همون کامپوننت در docs دستی migrate بشن. اگه پروژه
-از `Sidebar` استفاده می‌کنه (خیلی رایجه، dashboard-01 هم همینه) و RTL لازمه،
-**این رو فراموش نکن** — auto-transform این یکی رو رد می‌کنه.
+---
 
-### `dashboard-01`/`data-table` بلاک از API جدید TanStack Table v9 استفاده می‌کنه، نه v8 کلاسیک
-اگه `pnpm add @tanstack/react-table` بزنی، امروز (۲۰۲۶) نسخه‌ی نصب‌شده v9.x
-هست — API متفاوته از الگوهای v8 که در خیلی از tutorialها/مثال‌های قدیمی‌تره:
-- `useReactTable` + `getCoreRowModel()`/`getSortedRowModel()` (v8) به‌جای
-  `useTable` + `tableFeatures({...})` + `createSortedRowModel()` (v9) رفته.
-- `flexRender(component, props)` تابع (v8) شده `<FlexRender cell={cell} />`
-  کامپوننت JSX (v9).
-- **هر feature باید صریح در `tableFeatures({...})` رجیستر بشه، حتی وقتی
-  فقط یه متد جانبی‌ش رو لازم داری.** تجربه‌ی واقعی: فقط `rowSortingFeature`
-  رجیستر شد (برای sort ستون‌ها) ولی `row.getVisibleCells()` با خطای
-  TS2339 شکست — چون `columnVisibilityFeature` هم باید رجیستر بشه تا
-  `getVisibleCells` روی نوع `Row` تعریف بشه، حتی بدون هیچ UI برای toggle
-  کردن visibility. اگه از `FlexRender`/`getVisibleCells` استفاده می‌کنی،
-  `columnVisibilityFeature` رو همیشه اضافه کن.
-- منبع درست API: مثال زنده‌ی خودِ `dashboard-01/components/data-table.tsx`
-  از `get_item_examples_from_registries` (MCP) یا `npx shadcn@latest view
-  @shadcn/dashboard-01` — نه حافظه/tutorial قدیمی.
+## 🔴 Migration radix→base (الگوی کلی)
 
-## 🔴 Bugs / رفتار تأییدشده (ادامه)
+### درس اصلی: `pnpm build` سبز ≠ migration سالم
+دو کلاس خطا از تور TypeScript رد می‌شن و **فقط رفتار** رو می‌شکنن:
 
-### migration radix→base: کلاس Tailwind دستی روی state پرایمیتیو، build رو سبز نگه می‌داره ولی رفتار می‌شکنه
-اگه یه کلاس Tailwind دستی برای state یه primitive نوشته باشی (نه از خروجی
-CLI، بلکه خودت نوشته باشی) — مثل `group-data-[state=open]/collapsible:rotate-90`
-برای چرخوندن آیکون شورون — بعد از `shadcn add <x> --overwrite` به base-nova،
-**TypeScript این رو نمی‌گیره** چون فقط یه رشتهٔ className‌ه، نه prop تایپ‌شده.
-ولی دیگه کار نمی‌کنه، چون Base UI روی خیلی از primitiveها به‌جای
-`data-state="open"` (Radix) از یه attribute حضوری جدا استفاده می‌کنه —
-مثلاً Collapsible Trigger: `data-panel-open` (نه `data-open`، نه `data-state`).
-تجربه‌ی واقعی (۲۰۲۶-۰۸-۲۶، Sample Dashboard): چک با
-`node_modules/@base-ui/react/docs/react/components/collapsible.md` تأیید کرد
-اسم درست attribute و کلاس رسمی خودشون برای دقیقاً همین usecase (چرخوندن
-آیکون) `group-data-panel-open:rotate-90` هست.
-**فیکس:** بعد از هر migration، `grep -rn "data-\[state="` روی کد اپ (نه
-`ui/`، اونا رو CLI درست می‌کنه) بزن — هر match یعنی باید attribute واقعی رو
-از داکیومنت خودِ primitive تو `node_modules/@base-ui/react/docs/react/components/<name>.md`
-چک کنی، حدس نزن (هر primitive ممکنه attribute متفاوتی داشته باشه).
+| نوع | چرا نامرئیه | sweep |
+|---|---|---|
+| کلاس Tailwind دستی روی state پرایمیتیو (`data-[state=open]`) | فقط یه رشته‌ی `className` ـه، نه prop تایپ‌شده | `grep -rn "data-\[state=" src --include=*.tsx \| grep -v "/ui/"` |
+| propای که React خودش هم‌نامش رو داره (`onSelect`) | به تایپ عمومی React resolve می‌شه، نه پراپ نبودهٔ primitive | `grep -rn "onSelect=" src --include=*.tsx \| grep -v "/ui/"` |
 
-### migration radix→base: `DropdownMenuItem onSelect` بی‌صدا از کار می‌افته — نه warning، نه error
-`Menu.Item` تو Radix یه prop اختصاصی به اسم `onSelect` داشت (event فعال‌سازی
-آیتم). `Menu.Item` تو Base UI اصلاً همچین prop ای نداره — بجاش `onClick` +
-`closeOnClick` داره (طبق `menus.md:83` خودِ skill). مشکل: React's own
-`DOMAttributes` type یه `onSelect` عمومی دیگه هم داره (event انتخاب متن
-داخل المنت، بی‌ربط به "این آیتم منو انتخاب شد") که رو تقریباً همه‌ی
-HTML props اعمال می‌شه. پس `onSelect={...}` رو `MenuPrimitive.Item.Props`
-**type-check می‌شه** (چون به اون onSelect عمومی resolve می‌کنه) ولی
-Base UI's Menu.Item هیچ‌وقت صداش نمی‌زنه — نه build خطا می‌ده، نه runtime
-warning، فقط callback هیچ‌وقت اجرا نمی‌شه.
+هر دو `--overwrite` رو هم رد می‌کنن، چون CLI فقط `ui/` رو بازنویسی می‌کنه نه
+کد اپ. **بعد از هر migration این دو تا grep اجباری‌ان.**
 
-تجربه‌ی واقعی (۲۰۲۶-۰۸-۲۶، Sample Dashboard): تم تاریک/روشن پروژه کاملاً از
-کار افتاده بود بعد از migration — `mode-toggle.tsx` از
-`<DropdownMenuItem onSelect={() => setTheme(...)}>` استفاده می‌کرد. کاربر
-گزارش داد "dark mode کار نمی‌کنه"؛ `pnpm build` قبلش سبز بود و در گزارش
-migration هم "clean" ثبت شده بود — چون این خطا از نوعی نیست که تایپ‌اسکریپت
-بگیره.
+نمونه‌های مشخص → [`components/collapsible.md`](components/collapsible.md) ·
+[`components/dropdown-menu.md`](components/dropdown-menu.md)
 
-**فیکس:** `onSelect` → `onClick`.
-**درس:** leftover sweep بعد از migration نباید فقط به `pnpm build` قرمز
-تکیه کنه — برای `DropdownMenuItem`/`ContextMenuItem`/`MenubarItem` (هر چیزی
-که از `Menu.Item` بیس‌ ی‌می‌گیره) صریحاً `grep -rn "onSelect="` روی کد اپ
-(نه `ui/`) بزن، چون این یکی type-check رو رد می‌کنه و فقط رفتار خودش رو
-می‌شکنه.
+⛔ اسم attribute رو **حدس نزن** — هر primitive فرق داره. مرجع:
+`node_modules/@base-ui/react/docs/react/components/<name>.md` (۳۷ فایل،
+auto-versioned با پکیج).
+
+---
+
+## 🔴 Tooling
+
+### MCP registry tools می‌تونن false `NOT_FOUND` بدن
+تجربه‌ی واقعی (۲۰۲۶-۰۸-۲۶، gap audit روی `dev-stack`):
+`mcp__shadcn__view_items_in_registries` با `@shadcn/questionnaire` (کامپوننت
+واقعاً موجود، نصب‌پذیر با `npx shadcn@latest add questionnaire`) خطای
+`NOT_FOUND` داد — چون به‌جای style پروژه یه URL هاردکد با style قدیمی می‌زد:
+`ui.shadcn.com/r/styles/new-york-v4/questionnaire.json`.
+مشابهش `list_items_in_registries` هم `questionnaire`/`form`/`toast` رو در
+فهرست ۶۱تایی‌ش نداشت، با اینکه هر سه واقعاً در رجیستری هستن.
+
+**درس:** برای «این کامپوننت وجود داره یا نه» به MCP تنها تکیه نکن — با
+`npx shadcn@latest add <name> --dry-run` یا `ui.shadcn.com/docs/components/<name>`
+صحت‌سنجی کن، مخصوصاً برای کامپوننت‌های تازه‌اضافه‌شده.
+
+---
 
 ## 🟡 Gotchas
 
-- رجیستری `@shadcn` هیچ کامپوننت رسمی «multi-select» نداره (چک شد با
-  `search_items_in_registries`/`npx shadcn search`). برای فیلد چندانتخابی
-  با chip باید خودت از ترکیب `Popover` + `Command` + `Badge` بسازیش —
-  الگوی رایج، ولی جایی در رجیستری copy-paste نمی‌شه. مشابهش برای
-  free-text tag input (Enter برای افزودن) هم رجیستری نداره.
-- `npx shadcn add select popover command calendar switch label` (یا هر
-  ترکیبی که `command` رو شامل بشه) به‌خاطر dependency داخلی
-  `CommandDialog` روی `Dialog`، فایل‌های اضافه‌ای هم می‌سازه که مستقیم
-  نخواستی (`dialog.tsx`, `textarea.tsx`, `input-group.tsx` در یه تجربه‌ی
-  واقعی). بی‌ضررن (اگه import نشن tree-shake می‌شن) ولی توی commit دیده
+- `npx shadcn add ... command ...` (هر ترکیبی که `command` رو شامل بشه)
+  به‌خاطر دپندنسی داخلی `CommandDialog` روی `Dialog`، فایل‌های اضافه‌ای هم
+  می‌سازه که مستقیم نخواستی (`dialog.tsx`, `textarea.tsx`, `input-group.tsx`
+  در یه تجربه‌ی واقعی). بی‌ضررن (tree-shake می‌شن) ولی توی commit دیده
   می‌شن — تعجب نکن.
 - `--defaults`/`-d` روی `init` معنی preset پیش‌فرض رو داره؛ این preset **خودش
-  بین نسخه‌های CLI عوض می‌شه** (طی همین چند ماه از `nova` به `base-nova`
-  تغییر کرد). همیشه preset فعلی رو با `npx shadcn@latest preset resolve`
-  چک کن، حدس نزن.
+  بین نسخه‌های CLI عوض می‌شه** (طی چند ماه از `nova` به `base-nova` رفت).
+  همیشه با `npx shadcn@latest preset resolve` چک کن، حدس نزن.
+- ⚠️ preset **code** (رشته‌ی base62 مثل `aJMi5Dc`) می‌تونه به base اشتباه
+  resolve بشه. باگ واقعی گیت‌هاب (`shadcn-ui/ui#9914`): یه code که باید
+  `base-vega` می‌داد، `radix-vega` می‌داد و skill سعی می‌کرد پروژه رو از
+  Base UI به Radix برگردونه. **الان fix شده (PR #9923)** ولی درسش می‌مونه:
+  بعد از `preset` زدن، `npx shadcn@latest info` رو چک کن که `base` عوض نشده
+  باشه.
 - ساختن پروژه‌ی Vite جدید با scaffold دستی (`pnpm create vite` + نصب دستی
-  Tailwind + ویرایش دستی `tsconfig`/`vite.config`) کار اضافه‌ست — CLI خودش
-  با یه دستور (`shadcn init -t vite --name <app>`) همه‌ی این مرحله‌ها رو
-  انجام می‌ده. مسیر درست → `scaffold.md`.
-- `iconLibrary` رو هیچ‌وقت فرض نکن `lucide-react` — از `components.json`
-  یا `npx shadcn@latest info` بخون. کامپوننت‌های community registry
+  Tailwind + ویرایش دستی `tsconfig`/`vite.config`) کار اضافه‌ست — CLI با یه
+  دستور (`shadcn init -t vite --name <app>`) همه‌شو انجام می‌ده →
+  `scaffold.md`.
+- `iconLibrary` رو هیچ‌وقت فرض نکن `lucide-react` — از `components.json` یا
+  `npx shadcn@latest info` بخون. کامپوننت‌های community registry
   (`@magicui`, `@tailark`, …) معمولاً با آیکون‌ست خودشون میان و باید بعد از
-  نصب دستی swap بشن اگه با iconLibrary پروژه فرق دارن.
-- کامپوننت‌های نصب‌شده از رجیستری‌های community ممکنه import path هاردکد
+  نصب دستی swap بشن.
+- کامپوننت‌های رجیستری‌های community ممکنه import path هاردکد
   (`@/components/ui/...`) داشته باشن که با alias واقعی پروژه (مثلاً
   `@workspace/ui/components` در monorepo) نمی‌خونه — بعد از `add` از رجیستری
   غیر `@shadcn`، importها رو چک کن.

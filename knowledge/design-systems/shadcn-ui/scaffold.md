@@ -42,7 +42,7 @@ pnpm dlx shadcn@latest init
 | تصمیم | گزینه‌ها | این پروژه چی می‌گیره اگه TODO باشه |
 |---|---|---|
 | **base** | `radix` یا `base` (Base UI) | **توصیه: `base`** مگر دلیل خاصی برای `radix` باشه (تیم/کدبیس موجود از قبل روی Radix). Base UI جانشین رسمی Radix Primitives‌ه (هم‌پوشانی تیم با Radix+MUI)؛ کامپوننت‌های جدیدتر شادcn (مثل `combobox` با `multiple`/chips) **فقط** روی Base UI موجودن — Radix Primitives اصلاً Combobox نداره. تجربه‌ی واقعی (۲۰۲۶-۰۸-۲۶، Sample Dashboard): با `npx shadcn add combobox --dry-run` روی یه پروژه‌ی `radix-nova` چک شد و حتی اونجا هم `@base-ui/react` دپندنسی اضافه می‌شه و فایل مستقیم `from "@base-ui/react"` ایمپورت می‌کنه — یعنی تب «Radix UI» توی docs شادcn فقط استایلشو مطابق preset عوض می‌کنه، نه اینکه واقعاً روی Radix primitive ساخته شده باشه (چون همچین primitive‌ای اصلاً وجود نداره). چک کن با `preset resolve` چون پیش‌فرض CLI پیوسته عوض می‌شه. |
-| **style** | preset مثل `nova`, `vega`, … | پیش‌فرض `nova` |
+| **style** | `nova`/`vega`/`maia`/`lyra`/`mira`/`luma`/`sera`/`rhea` (۸ تا شناخته‌شده تا ۲۰۲۶-۰۸-۲۶ — `README.md`) | پیش‌فرض `nova` |
 | **baseColor** | `neutral`/`stone`/`zinc`/`mauve`/`olive`/`mist`/`taupe` | از brand tokens فاز ۴ wizard بگیر — نزدیک‌ترین رو انتخاب کن |
 | **cssVariables** | `true` (توصیه‌شده) یا `false` | `true` — اجازه‌ی dark mode/theming semantic می‌ده |
 | **rtl** | `true`/`false` | از فاز ۶ wizard (زبان پروژه) — اگه فارسی/عربی/عبری داره، `true` |

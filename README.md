@@ -24,6 +24,8 @@ dev-stack/
 │   │   ├── _TEMPLATE/    ← قالب ساخت DS جدید
 │   │   │   ├── CLAUDE-template.md   ← بذر CLAUDE.md پروژه (قانون always-on)
 │   │   │   └── DESIGN-template.md   ← بذر DESIGN.md پروژه (تصمیم بصری)
+│   │   ├── shadcn-ui/
+│   │   │   └── components/          ← تله‌ی هر کامپوننت (اختیاری، وقتی known-bugs بزرگ شد)
 │   │   ├── chakra-ui-v3/
 │   │   ├── bootstrap5/
 │   │   └── generic/

@@ -15,7 +15,8 @@
 | مفاهیم جهت (RTL/LTR) | `universal/language.md` |
 | Figma→Code workflow | `universal/figma-to-code.md` |
 | Scope triage | `universal/scope-triage.md` |
-| باگ‌های shadcn/ui | `design-systems/shadcn-ui/known-bugs.md` |
+| باگ‌های shadcn/ui (CLI/preset/RTL کلی) | `design-systems/shadcn-ui/known-bugs.md` |
+| **تله‌ی یک کامپوننت مشخص** | **`design-systems/shadcn-ui/components/<name>.md`** — قبل از کار جدی روی هر کامپوننت چک کن وجود داره یا نه |
 | توکن‌های shadcn/ui | `design-systems/shadcn-ui/tokens.md` |
 | کامپوننت‌ها + بلاک‌های آماده | `design-systems/shadcn-ui/components.md` |
 | RTL مخصوص shadcn/ui | `design-systems/shadcn-ui/rtl.md` |

@@ -2,10 +2,25 @@
 
 <!--
 اینجا چی می‌ره: فهرست کامپوننت‌های موجود در رجیستری shadcn — تا قبل از
-ساختن یه چیز از صفر، اول چک بشه که از قبل وجود داره یا نه.
+ساختن یه چیز از صفر، اول چک بشه که از قبل وجود داره یا نه. این فایل
+**index/router** ـه، نه مرجع API.
 اینجا چی نمی‌ره: کامپوننت سفارشی یک پروژه‌ی خاص، یا اینکه پروژه‌ی X چطور
 از این کامپوننت‌ها composition ساخته — اون سطح پروژه‌ست.
 -->
+
+## 🧭 قبل از کار با یه کامپوننت — کجا رو بخون
+
+| دنبال چی هستی | برو اینجا |
+|---|---|
+| `variant` / `size` موجود | `src/components/ui/<x>.tsx` خودِ پروژه (بلوک `cva`) — **preset-specific، هرگز از حافظه** |
+| prop / data-attribute پرایمیتیو | `node_modules/@base-ui/react/docs/react/components/<x>.md` |
+| مثال و demo رسمی | `npx shadcn@latest docs <x>` |
+| **تله‌ای که قبلاً گاز گرفته** | **`components/<x>.md` ← این پوشه** |
+| باگ CLI / preset / RTL کلی | `known-bugs.md` |
+
+فایل‌های موجود در `components/`: `chart` · `combobox` · `collapsible` ·
+`data-table` · `dropdown-menu` · `sidebar` — فهرست و قانون تولد فایل →
+`components/README.md`.
 
 ## ⛔ قانون طلایی این DS — قبل از هر primitive-by-primitive build
 
@@ -48,19 +63,43 @@ drag-reorder، کامپوننت رسمی `chart` روی Recharts، `zod`) — ق
 | منو | `DropdownMenu`, `ContextMenu`, `Menubar` |
 | tooltip/info | `Tooltip`, `HoverCard`, `Popover` |
 | فرم گروه‌بندی | `FieldGroup` + `Field` (نه `div` با `space-y-*`) |
+| فرم با validation | `Form` — wrapper روی React Hook Form **یا** TanStack Form **یا** Formisch (سه گزینه مستقل، از `docs/forms/<lib>` انتخاب کن؛ `useActionState` هم "به‌زودی") |
 | چت/پیام | `MessageScroller`, `Message`, `Bubble`, `Attachment`, `Marker` |
+| پرسش‌نامه چندمرحله‌ای | `Questionnaire` (+ `QuestionnaireChoice/Choices/Progress/Next/Previous/Skip/Submit`, …) — flow سوال با جواب fixed/freeform/multiple/skippable |
 
 ## فهرست کامل کامپوننت‌های رجیستری `@shadcn` (نام‌ها، برای lookup)
 
+> ✅ تأیید شده در برابر رجیستری زنده (۲۰۲۶-۰۸-۲۶، `mcp__shadcn__list_items_in_registries` + `ui.shadcn.com/docs/components`).
+
 Accordion, Alert, Alert Dialog, Aspect Ratio, Attachment, Avatar, Badge,
 Breadcrumb, Bubble, Button, Button Group, Calendar, Card, Carousel, Chart,
-Checkbox, Collapsible, Combobox, Command, Context Menu, Data Table, Date
-Picker, Dialog, Direction, Drawer, Dropdown Menu, Empty, Field, Hover Card,
-Input, Input Group, Input OTP, Item, Kbd, Label, Marker, Menubar, Message,
-Message Scroller, Native Select, Navigation Menu, Pagination, Popover,
-Progress, Questionnaire, Radio Group, Resizable, Scroll Area, Select,
-Separator, Sheet, Sidebar, Skeleton, Slider, Spinner, Switch, Table, Tabs,
-Textarea, Toast, Toggle, Toggle Group, Tooltip, Typography
+Checkbox, Collapsible, Combobox, Command, Context Menu, Dialog, Direction,
+Drawer, Dropdown Menu, Empty, Field, **Form**, Hover Card, Input, Input
+Group, Input OTP, Item, Kbd, Label, Marker, Menubar, Message, Message
+Scroller, Native Select, Navigation Menu, Pagination, Popover, Progress,
+Questionnaire, Radio Group, Resizable, Scroll Area, Select, Separator,
+Sheet, Sidebar, Skeleton, Slider, Spinner, Switch, Table, Tabs, Textarea,
+Toast (Base UI only — چیزی جدا از `sonner`), Toggle, Toggle Group, Tooltip
+
+⚠️ **`Form` تا امروز (۲۰۲۶-۰۸-۲۶) توی این فهرست نبود — گم شده بود، الان اضافه شد.**
+قبل از دستی composition زدن روی فرم با validation، این رو چک کن، نه فقط
+`FieldGroup`/`Field` خام.
+
+## اینا کامپوننت add-شدنی **نیستن** — guide/pattern‌ان، با اسم تو رجیستری اشتباه نگیر
+
+`data-table`, `date-picker`, `typography` تو رجیستری `registry:ui` وجود
+ندارن؛ فقط به‌شکل `registry:example` demo هستن
+(`data-table-demo`, `date-picker-demo`, `date-picker-with-range`,
+`date-picker-with-presets`, `typography-h1`/`-p`/`-list`/…). یعنی:
+
+- `npx shadcn add data-table` / `add date-picker` / `add typography` کار
+  نمی‌کنه (چنین registry itemای نیست) — این‌ها **الگوی composition** از
+  primitiveهای دیگه‌ان: Data Table = `Table` + TanStack Table (v9 API —
+  `known-bugs.md`)، Date Picker = `Popover` + `Calendar` + `Input`،
+  Typography = کلاس‌های Tailwind دستی روی تگ‌های HTML، نه یه کامپوننت.
+- برای شروع، مثال کامل رو با `get_item_examples_from_registries` (query
+  `data-table-demo` یا `date-picker-with-presets`) یا
+  `npx shadcn@latest view @shadcn/data-table-demo` بگیر، کپی کن، بومی‌سازی کن.
 
 ## قوانین composition سخت‌گیرانه (خیلی زود اشتباه می‌ره)
 
