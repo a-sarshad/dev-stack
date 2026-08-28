@@ -21,11 +21,16 @@ RULE-layer) + batch B (کد مردهٔ dev-engine) اعمال شد روی main:
   لیست می‌کند). `token-replacer` دیگر `'chakra-v3'` هاردکد نیست — `config.ds` را
   می‌خواند. `ds-list` به COMMANDS.md + dev-engine.md اضافه شد.
 
+## batch C — اعمال شد (branch `dedup/root-docs`، منتظر merge)
+root docs فقط. CLAUDE.md ۱۴۱→۱۰۵ خط:
+- کاتالوگ ۵-جدولی skill → مینی‌جدول «کدوم کِی» + pointer به `skills/README.md`.
+  tombstoneهای `dev-delivery-check`/`figma-page-implement` (warning «دوباره اضافه نکن») نگه داشته شد.
+- جدول reliability ۳-ردیفی (subset ناقص BLUEPRINT §۲) → حذف؛ اصل طلایی + pointer به §۲.
+- جدول ۴-ردیفی context → یک نسخهٔ canonical در **BLUEPRINT §۴** اضافه شد؛ CLAUDE.md و README به آن ارجاع.
+- فلوی build/check:refs → منبع یگانه `skills/README.md`.
+دامنهٔ عمقی (binary-block ×۳، geometry-sort، «۰ violation» ×۵، جدول tier در figma-to-code) **انجام نشد** — نیاز به rebuild/reinstall skill.
+
 ## بعدی
-- **batch C (معوق — نیاز branch):** dedupe root docs — CLAUDE.md به pointer
-  (skill catalog، جدول context، reliability، build flow → منبع یگانه
-  `skills/README.md` + BLUEPRINT). tombstoneها یک‌خطی. جدول tier / geometry-sort /
-  binary-resolution block → منبع یگانه + pointer.
 - **batch D (معوق — نیاز branch + تصمیم معماری):** یکی‌سازی wizard —
   `knowledge/universal/project-init-wizard.md` (۷۴۵ خط) ≈
   `skills/src/dev-init-wizard/SKILL.md` (۴۵۴). تصمیم: `dev-engine init` CLI جای

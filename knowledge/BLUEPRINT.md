@@ -148,6 +148,15 @@ screenshot/visual-diff = opt-in، نه default. خونه‌ی canonical: `univer
     └─ skill (source در skills، نصب global در Cowork)
 ```
 
+### context یک پروژه — چهار خانه (canonical؛ CLAUDE.md/README به همین ارجاع می‌دهند)
+
+| چه چیزی | کجای repo پروژه |
+|---|---|
+| قانون always-on (gate، DoD، معماری، توکن) | `CLAUDE.md` |
+| تصمیم بصری (رنگ، چیدمان، responsive، a11y، motion، لحن) | `DESIGN.md` — **ریشه**، نه `.claude/` |
+| باگ project-specific، قالب صفحه، cache فیگما | `.claude/context/` |
+| وضعیت و کار معوق | `HANDOFF.md` |
+
 ### مرز CLAUDE.md ↔ DESIGN.md
 
 | | CLAUDE.md | DESIGN.md |

@@ -8,71 +8,59 @@ Claude این فایل رو در هر session می‌خونه تا بدونه س
 
 ---
 
-## ساختار پوشه‌ها
+## ساختار و ویرایش
 
-→ درخت کامل + دستورهای build در [`README.md`](README.md). اینجا تکرار نمی‌شود.
+- درخت کامل پوشه‌ها + دستورهای build → [`README.md`](README.md) (**canonical**، اینجا تکرار نمی‌شود).
+- سورس skill = `skills/src/<name>/SKILL.md` (متن). `skills/dist/*.skill` خروجی build است
+  و در گیت نیست — هرگز آنجا ویرایش نکن.
+- **بعد از هر ویرایش skill:** `pnpm build:skills` **و** نصب مجدد در اپ Claude —
+  تا نصب مجدد نشود نسخهٔ قدیمی فعال است. راهنمای trigger/خروجی هر skill +
+  فلوی کامل build/install → [`skills/README.md`](skills/README.md).
 
-سه چیزی که موقع **ویرایش** باید بدانی:
-
-- سورس skill = `skills/src/<name>/SKILL.md` (متن، نه باینری). `skills/dist/*.skill`
-  خروجی build است و در گیت نیست — هرگز آنجا ویرایش نکن.
-- بعد از هر ویرایش: `pnpm build:skills` **و** نصب مجدد در اپ Claude. تا نصب مجدد
-  نشود، نسخهٔ قدیمی فعال است.
-- راهنمای trigger و خروجی هر skill: [`skills/README.md`](skills/README.md)
-
-> **ارجاع مرده = خطای build.** `build:skills` اول `pnpm check:refs` را می‌زند:
-> مسیرها، لینک‌ها، نام skillها و سطح فرمان `dev-engine` را برابر فایل‌سیستم و
-> `cli.ts` اعتبارسنجی می‌کند. استثناها در `scripts/refs-allow.json`.
-> جزئیات: [skills/README.md](skills/README.md).
+> **ارجاع مرده = خطای build.** `build:skills` اول `pnpm check:refs` را می‌زند
+> (مسیرها، لینک‌ها، نام skillها، سطح فرمان `dev-engine`، قرارداد اسکلت DS).
+> جزئیات + استثناها → [`skills/README.md`](skills/README.md) §«اعتبارسنجی ارجاع‌ها».
 
 ---
 
 ## قوانین scope
 
 ### universal/
-- فقط چیزهایی که بدون تغییر در **همه پروژه‌ها** صدق می‌کنن
-- اگه یه نکته project-specific یا DS-specific داره، اینجا نذار
+- فقط چیزهایی که بدون تغییر در **همه پروژه‌ها** صدق می‌کنن.
+- نکتهٔ project-specific یا DS-specific اینجا نذار.
 
-### context پروژه (در repo خودِ پروژه — نه اینجا)
+### context پروژه — در repo خودِ پروژه، نه اینجا
+- قانون always-on (gate، DoD، معماری، توکن) → `Projects/<name>/CLAUDE.md`
+- تصمیم بصری (رنگ، چیدمان، responsive، a11y، motion، لحن) → `Projects/<name>/DESIGN.md` (**ریشه**، نه `.claude/`)
+- باگ project-specific، قالب صفحه، cache فیگما → `Projects/<name>/.claude/context/`
+- وضعیت و کار معوق → `Projects/<name>/HANDOFF.md`
 
-| چه چیزی | کجا |
-|---|---|
-| قانون always-on (gate، DoD، معماری، توکن) | `Projects/<name>/CLAUDE.md` |
-| تصمیم بصری (رنگ، چیدمان، responsive، a11y، motion، لحن) | `Projects/<name>/DESIGN.md` — **ریشه**، نه `.claude/` |
-| باگ project-specific، قالب صفحه، cache فیگما | `Projects/<name>/.claude/context/` |
-| وضعیت و کار معوق | `Projects/<name>/HANDOFF.md` |
-
-- با repo پروژه سفر می‌کنه؛ `knowledge/` فقط دانش cross-project نگه می‌داره
-- load: skill `<project>-context` (thin loader — محتوا رو از repo پروژه می‌خونه، embed نمی‌کنه)
-- مرز `CLAUDE.md ↔ DESIGN.md` (کدام قانون کجا می‌ماند) → `knowledge/BLUEPRINT.md` §۴
+> جدول کامل «این فایل کجا بره» + مرز `CLAUDE.md ↔ DESIGN.md` → [`BLUEPRINT.md`](knowledge/BLUEPRINT.md) §۴.
+> load context: skill `<project>-context` (thin loader — محتوا رو از repo پروژه می‌خونه، embed نمی‌کنه).
 
 ### design-systems/<name>/
-- راهنما، token، و نکات خاص اون DS
-- قابل استفاده در چند پروژه‌ی مختلف
+- راهنما، token، و نکات خاص اون DS — قابل استفاده در چند پروژه.
 
 ---
 
 ## Workflow استاندارد
 
-1. **خوندن context** — قبل از هر کار مرتبط با پروژه، skill آن پروژه رو load کن
-2. **ویرایش فایل‌ها** — با ابزارهای Read/Write/Edit
-3. **Commit خودکار** — بعد از هر تغییر، skill `wf-commit` اجرا می‌شه
+1. **خوندن context** — قبل از هر کار مرتبط با پروژه، skill آن پروژه رو load کن.
+2. **ویرایش فایل‌ها** — با ابزارهای Read/Write/Edit.
+3. **Commit خودکار** — بعد از هر تغییر، skill `wf-commit` اجرا می‌شه.
 
 ### اصل طلایی — قانون اجباری در always-on، نه skill
 
-> **چرا قبلاً مرحله‌ها فراموش می‌شدن:** قوانین حیاتی (مثل «DS رو از MCP بگیر، rebuild نکن») فقط در skillهای on-demand بودن. skill اگه trigger نشه یا نصب نباشه = قانون در context نیست.
+> **چرا قبلاً مرحله‌ها فراموش می‌شدن:** قوانین حیاتی فقط در skillهای on-demand بودن.
+> skill اگه trigger نشه یا نصب نباشه = قانون در context نیست.
 
-سلسله‌مراتب قابلیت اطمینان:
+→ هر چیزی که **نباید فراموش شه** باید در CLAUDE.md پروژه باشه (لایهٔ RULE، هر پیام لود می‌شه).
+knowledge/ فقط وقتی صریح read بشه؛ skill فقط با trigger match. این قانونه، نه سلیقه.
 
-| محل | کِی لود میشه | برای چی |
-|-----|-------------|---------|
-| **CLAUDE.md پروژه** | هر پیام، خودکار | قانون اجباری + DoD (gate) |
-| **knowledge/*.md** | وقتی صریح read شه | مرجع عمیق |
-| **Skills** | فقط trigger match | شتاب‌دهنده (نه منبع قانون) |
+> چهار لایهٔ قابلیت اطمینان (RULE / ENGINE / REFERENCE / ACCELERATOR) و کِی هرکدام لود می‌شه
+> → [`BLUEPRINT.md`](knowledge/BLUEPRINT.md) §۲.
 
-→ هر چیزی که **نباید فراموش شه** باید در CLAUDE.md پروژه باشه. این قانونه، نه سلیقه.
-
-### مثال:
+#### مثال
 ```
 User: روی Vitrina کار می‌کنم
 Claude: [loads vitrina-project-context skill] → [reads Vitrina/DESIGN.md + .claude/context/*]
@@ -80,62 +68,38 @@ Claude: [loads vitrina-project-context skill] → [reads Vitrina/DESIGN.md + .cl
 
 ---
 
-## Skills مرتبط
+## Skills — کدوم کِی
 
-### wf — Workflow (مدیریت session و repo)
-| Skill | کاربرد |
-|-------|---------|
-| `wf-commit` | آماده‌سازی commit message برای هر git repo (جنرال) |
-| `wf-start` | briefing وضعیت پروژه در شروع session |
-| `wf-update` | ذخیره وضعیت و آپدیت HANDOFF.md در هر مرحله (جنرال) |
+| نیاز | skill / دستور |
+|------|---------------|
+| پروژهٔ جدید | `dev-init-wizard` |
+| شروع session | `wf-start` |
+| ذخیرهٔ وضعیت | `wf-update` |
+| commit | `wf-commit` (بعد از هر تغییر، خودکار) |
+| بررسی/fix کد (token/hardcode/RTL) | `dev-engine` |
+| Figma → code | `dev-implement` ⭐ (نقطهٔ ورود واحد، pipeline کامل) |
+| load context پروژه | `<project>-context` (vitrina/airport) |
+| Figma MCP قطع شد | `figma-mcp-reconnect` |
 
-### dev — Development (کدنویسی و پروژه)
-| Skill | کاربرد |
-|-------|---------|
-| `dev-implement` ⭐ | **نقطه‌ی ورود واحد Figma→code** — کل pipeline رو orchestrate می‌کنه (preflight→fetch→impl→verify→commit). از dev-engine CLI استفاده می‌کنه |
-| `dev-init-wizard` | ساخت پروژه جدید با scaffold کامل (gate Figma→Code رو در CLAUDE.md پروژه bake میکنه) |
-| `dev-engine` | اجرای dev-engine — بررسی و auto-fix کد (token/hardcode هم همین‌جاست — جایگزین dev-token-review) |
+> **جدول کامل** (trigger phrases، خروجی، وابستگی هر skill) → [`skills/README.md`](skills/README.md).
+> Figma skills رسمی (`figma-implement-design`, `figma-use`, `figma-generate-design`, …) از figma plugin می‌آن.
 
-> skill قدیمی `dev-delivery-check` بازنشسته شد (`73b0517`) — checklist تحویلش در
-> `dev-engine` (که آن موقع `projfix` نام داشت) و گیت **Definition of Done** در
-> `CLAUDE.md` هر پروژه ادغام شد. ⚠️ یک‌بار به‌غلط به‌عنوان skill «external» احیا شد
-> (`720531a`)؛ دوباره اضافه‌اش نکن.
+**قانون اجباری Figma→code** (Component Resolution / DS MCP / DoD) در **CLAUDE.md هر پروژه** زندگی می‌کنه
+(always-on) — skill فقط شتاب‌دهنده‌ست. مرجع عمیق: [`knowledge/universal/figma-to-code.md`](knowledge/universal/figma-to-code.md).
 
-### Figma (رسمی — figma plugin، نصب‌شده)
-| Skill | جهت | کاربرد |
-|-------|-----|--------|
-| `figma-use` | — | اجرای JS در Figma (prerequisite برای write/read منحصربه‌فرد) |
-| `figma-implement-design` | Figma → code | pipeline قدم‌به‌قدم پیاده‌سازی |
-| `figma-generate-design` | code → Figma | ساخت صفحه در Figma از کد |
-| `figma-generate-library` | — | ساخت library در Figma |
-| `figma-code-connect` | — | اتصال کد به کامپوننت Figma |
-
-> **مهم:** قانون اجباری Figma→code (Component Resolution / DS MCP / DoD) در **CLAUDE.md هر پروژه** زندگی میکنه (always-on)، نه در skill. skill فقط شتاب‌دهنده‌ست. مرجع عمیق: `knowledge/universal/figma-to-code.md`.
-> skill قدیمی `figma-page-implement` بازنشسته شد — محتوای اجباریش در `figma-to-code.md` + gate پروژه‌ها ادغام شد.
-
-### Figma — نگهداری اتصال (فایل local در `skills/`، نه پلاگین رسمی)
-| Skill | کاربرد |
-|-------|---------|
-| `figma-mcp-reconnect` | وقتی اتصال Figma MCP قطع شده/نیاز به authenticate مجدد داره، با computer-use مراحل reconnect در تنظیمات Claude Desktop رو خودکار می‌کنه. هرگز credential وارد نمی‌کنه — اگه فرم لاگین دید متوقف می‌شه |
-
-### project context (نصب‌شده)
-| Skill | کاربرد |
-|-------|---------|
-| `vitrina-project-context` | Load context پروژه Vitrina |
-| `airport-project-context` | Load context پروژه Airport |
-| `vitrina-figma-rules` | قوانین طراحی Figma برای Vitrina (code→Figma) |
-| `ds-chakra-ui` | Load دانش Chakra UI v3 |
-
-سورس skillها در `skills/src/` است. برای نصب/آپدیت: `pnpm build:skills` بعد نصب `skills/dist/*.skill` در اپ Claude.
+**skillهای بازنشسته — دوباره اضافه نکن:**
+- `dev-delivery-check` (`73b0517`) → checklist‌ش در `dev-engine` + گیت DoD در CLAUDE.md پروژه ادغام شد.
+  ⚠️ یک‌بار به‌غلط به‌عنوان skill «external» احیا شد (`720531a`).
+- `figma-page-implement` → محتوای اجباریش در `figma-to-code.md` + gate پروژه‌ها.
 
 ---
 
 ## نکات مهم برای Claude
 
-- **هیچ‌وقت session ID رو hardcode نکن** — از dynamic path detection استفاده کن:
+- **هیچ‌وقت session ID رو hardcode نکن** — dynamic path detection:
   ```bash
   DN_PATH=$(ls -d /sessions/*/mnt/dev-stack/knowledge 2>/dev/null | head -1)
   ```
-- بعد از هر تغییر فایل در این repo، بدون اینکه کاربر بخواد، `wf-commit` اجرا کن
-- برای خطاهای git: `knowledge/universal/git-troubleshoot.md` رو ببین
-- برای استفاده از dev-engine CLI: `knowledge/universal/dev-engine.md` رو ببین
+- بعد از هر تغییر فایل در این repo، بدون اینکه کاربر بخواد، `wf-commit` اجرا کن.
+- خطاهای git → [`knowledge/universal/git-troubleshoot.md`](knowledge/universal/git-troubleshoot.md).
+- استفاده از dev-engine CLI → [`knowledge/universal/dev-engine.md`](knowledge/universal/dev-engine.md).

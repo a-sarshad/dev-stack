@@ -40,14 +40,9 @@ dev-stack/
 
 > این درخت **canonical** است — `CLAUDE.md` تکرارش نمی‌کند، فقط به اینجا ارجاع می‌دهد.
 
-context هر پروژه اینجا **نیست**:
-
-| چه چیزی | کجای repo پروژه |
-|---|---|
-| قانون always-on (gate، DoD، معماری، توکن) | `CLAUDE.md` |
-| تصمیم بصری (رنگ، چیدمان، responsive، a11y، motion، لحن) | `DESIGN.md` — **ریشه** |
-| باگ project-specific، قالب صفحه، cache فیگما | `.claude/context/` |
-| وضعیت و کار معوق | `HANDOFF.md` |
+> context هر پروژه اینجا **نیست** — در repo خودِ پروژه‌ست (`CLAUDE.md`، `DESIGN.md`
+> در ریشه، `.claude/context/`، `HANDOFF.md`). جدول کامل «این فایل کجا بره» →
+> [`knowledge/BLUEPRINT.md`](knowledge/BLUEPRINT.md) §۴.
 
 ---
 
