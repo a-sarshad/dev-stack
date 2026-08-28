@@ -2,9 +2,7 @@
 > updated: 2026-08-28
 > نقش این فایل: overview + قوانین RTL/direction این DS. این DS فایل جداگانه‌ی
 > `rtl.md` ندارد — §۶-۹ همین‌جا canonical است. جدول کامل توکن → `tokens.md` ·
-> باگ‌ها → `known-bugs.md` + `components/`.
-> ⚠️ §۴ (Typography) و §۵ (Spacing) از ۱۴۰۵/۰۲ مقابل Chakra v3 واقعی verify
-> نشده‌اند — قبل از تکیه، مقدار را از `node_modules` یا CLI چک کن.
+> باگ‌ها → `known-bugs.md` + `components/` · default بصری → `DESIGN-template.md`.
 
 ## Table of Contents
 | # | بخش |
@@ -144,31 +142,24 @@ export const projectTokens = defineConfig({
 
 ## ۴. Typography
 
-| موقعیت | Size | Weight |
-|--------|------|--------|
-| body / فرم | `sm` (14px) | `normal` (400) |
-| label / caption | `xs` (12px) | `medium` (500) |
-| عنوان بخش | `md` (16px) | `semibold` (600) |
-| عنوان صفحه | `xl` (20px) | `semibold` (600) |
-| عنوان بزرگ | `2xl` (24px) | `bold` (700) |
+مقادیر خام scale (font-size / weight / line-height tokenها) → `tokens.md §Typography`.
+default «کدام موقعیت چه سایز/وزنی» → `DESIGN-template.md` → پروژه در `DESIGN.md` نهایی می‌کند
+(این یک تصمیم بصری است، نه قانون DS — BLUEPRINT §۴).
 
-**⚠️ lineHeight Bug:**
-```tsx
-lineHeight="8"       // ❌ BROKEN — unitless = 192px
-lineHeight="1.333"   // ✅ ratio string
-lineHeight="normal"  // ✅ = 1.5
-lineHeight="tight"   // ✅ = 1.25
-```
+**⚠️ `lineHeight` عددی BROKEN:** `lineHeight="8"` → unitless (۸× font-size). همیشه ratio string:
+`"1.333"` · `normal` (=1.5) · `tight` (=1.25). شرح کامل → `known-bugs.md` §Token System.
 
 ---
 
-## ۵. Spacing، Radius، Shadow، Component Size
+## ۵. Spacing / Radius / Shadow / Component Size
 
+مقادیر خام → `tokens.md` (`§Spacing Scale` · `§Border Radius` · `§Shadows` · `§Component Size`).
+
+**default پیشنهادی نقش→level** (نهایی → `DESIGN.md` پروژه):
 ```
-Spacing:  2=8px | 3=12px | 4=16px | 6=24px | 10=40px
-Radius:   badge/btn/input=md(4px) | card=lg(6px) | modal=xl(8px) | avatar=full
-Shadow:   card=sm | modal=lg | dropdown=md | tooltip=xs
-Size:     همیشه md (40px) مگر مشخص شود
+Radius:  badge/btn/input = md(4px) · card = lg(6px) · modal = xl(8px) · avatar = full
+Shadow:  card = sm · dropdown = md · tooltip = xs   (overlayها: از recipe خودشان، دستی نده)
+Size:    md (40px) مگر طراحی سایز دیگری بخواهد
 ```
 
 ---
