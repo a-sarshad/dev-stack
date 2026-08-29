@@ -30,6 +30,57 @@ CLI، preset/config، RTL کلی، رجیستری، tooling.
 بعد از init قابل تغییر نیستن بدون حذف و نصب مجدد **همه‌ی** کامپوننت‌های
 نصب‌شده. قبل از شروع implement جدی، این سه تا رو مطمئن شو.
 
+### معنی `-b` عوض شده — دیگه base **color** نیست
+CLI فعلی (تأییدشده v4.19، ۲۰۲۶-۰۸-۲۹):
+
+| flag | الان یعنی | مقادیر |
+|---|---|---|
+| `-b` / `--base` | primitive **library** | `base` (Base UI) · `radix` · `aria` (React Aria) |
+| `-p` / `--preset` | style + base **color** با هم | named (`base-nova`, …) یا preset code |
+
+base color جداگانه flag نداره — از `--preset` می‌آد. `-b slate` (به‌سبک قدیم)
+→ خطای `Invalid enum value. Expected 'radix' | 'base' | 'aria'`.
+
+### `preset` subcommandها
+`npx shadcn@latest preset <resolve|decode|url|open>` — **`list` وجود نداره**.
+`preset resolve` (بدون آرگومان، داخل پروژه) → preset فعلی. `preset decode <code>`
+→ باز کردن یه preset code.
+
+### بدون `-d`، `init` پرامپت تعاملی preset می‌زنه
+`shadcn init` (بدون `-d` و بدون `-p`) منوی تعاملی `Nova/Vega/Maia/…` نشون می‌ده
+→ در محیط non-interactive / CI / agent گیر می‌کنه. برای غیرتعاملی حتماً `-d`
+(preset پیش‌فرض) یا `-p <preset>` بده.
+
+### `components.json` — کلیدهای preset جدید که در `/docs/components-json` نیستن
+Nova و مشابه این‌ها رو هم می‌نویسن: `iconLibrary`, `rtl`, `menuColor`,
+`menuAccent`. صفحه‌ی عمومی `ui.shadcn.com/docs/components-json` هنوز
+`style: "new-york"` و baseColorهای قدیمی رو مستند می‌کنه — **نسبت به CLI
+v4.19 کهنه‌ست**. منبع حقیقت = `npx shadcn@latest info` + AI skill نصب‌شده.
+
+---
+
+## 🔴 Tailwind v4 (هر پروژه‌ی shadcn v4 مبتلاست)
+
+### important پسوندیه: `h-5!` نه `!h-5`
+فرم v3 (`!h-5`) در Tailwind v4 **هیچ کلاسی تولید نمی‌کنه** — خطای خاموش، نه
+error. کد قدیمی/LLM که `!` جلو می‌ذاره بی‌اثره. sweep بعد از port:
+`grep -rnE "[\"' ]![a-z-]+-" src --include=*.tsx`.
+
+### auto source-scan → phantom utility از داخل مستندات
+Tailwind v4 (`@import "tailwindcss"`) **همه‌ی فایل‌های غیر-gitignore** پروژه رو
+برای اسم کلاس اسکن می‌کنه — شامل `*.md`. نمونه‌ی کد داخل
+`.agents/skills/shadcn/customization.md` (`bg-warning` …) و حتی بک‌تیک داخل
+`CLAUDE.md` باعث می‌شن utility و `--color-*` واقعی توی باندل تولید بشن که
+هیچ‌جای اپ استفاده نشدن. چون نصب `.agents/skills/shadcn` **اجباریه**
+(`scaffold.md` قدم ۴)، این همیشه پیش می‌آد. فیکس — در فایل CSS اصلی بعد از
+`@import`:
+```css
+@source not "../../.agents";
+@source not "../../.claude";
+@source not "../../*.md";
+```
+(مسیرها نسبت به خود فایل CSS؛ برای `src/app/globals.css` → `../../`.)
+
 ---
 
 ## 🔴 RTL (کلی — قوانین کامل در `rtl.md`)

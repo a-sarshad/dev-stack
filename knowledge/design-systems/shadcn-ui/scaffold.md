@@ -117,6 +117,47 @@ pnpm build                        # type-check + build سالمه
 
 ---
 
+## Next.js App Router — تفاوت‌ها با Vite (تأییدشده ۲۰۲۶-۰۸-۲۹)
+
+بالا `-t vite` بود. برای Next.js `-t next`، ولی چند تله‌ی مخصوص Next:
+
+### مسیر: `create-next-app` اول، بعد `shadcn init`
+`shadcn init -t next` روی پوشه‌ی خالی خودش `create-next-app` رو صدا می‌زنه؛
+ولی روی پروژه‌ی Next موجود فقط config اضافه می‌کنه. مسیر تست‌شده:
+```bash
+npx create-next-app@15 . --ts --tailwind --eslint --app --src-dir \
+  --import-alias "@/*" --use-npm --turbopack --disable-git
+npx shadcn@latest init -d -b base -y     # -d اجباری، وگرنه پرامپت preset (known-bugs.md)
+```
+
+### `next/font` — کلاس `.variable` باید روی `<html>` باشه نه `<body>`
+preset Nova انتظار یه `--font-sans` runtime روی `:root` داره
+(`@theme inline { --font-sans: var(--font-sans) }`). `create-next-app`
+کلاس فونت (`geistSans.variable` که `--font-geist-sans` رو تعریف می‌کنه) رو
+روی `<body>` می‌ذاره → در سطح `:root` تعریف‌نشده‌ست → `--font-sans` نامعتبر →
+کل اپ می‌افته روی serif مرورگر. **فیکس: کلاس‌های `.variable` رو به `<html>`
+منتقل کن.**
+```tsx
+<html className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+  <body className="antialiased">
+```
+پروژه‌ی دوزبانه که فونت رو per-locale سوئیچ می‌کنه: `--font-sans` رو
+late-bound نگه دار (`:root` و `html[lang="fa"]` مقدارشو عوض کنن) — **بدون‌لایه**،
+چون `@layer` به `:root` می‌بازه.
+
+### `@source not` برای فایل‌های non-app
+بعد از نصب AI skill، `.agents/skills/**/*.md` و docهای ریشه رو از اسکن
+Tailwind خارج کن (phantom utility) — `known-bugs.md §Tailwind v4`.
+
+### ⛔ `next build` رو وقتی `next dev` بالاست نزن
+هر دو به یه `.next/` می‌نویسن؛ build همزمان state سرور dev رو خراب می‌کنه →
+۵۰۰. برای verify یا dev رو ببند بعد build، یا `next build` روی یه پوشه‌ی جدا.
+
+### launch.json پورت Next
+پورت پیش‌فرض `3000` (نه `5173` Vite).
+
+---
+
 ## چک‌لیست خروجی (اضافه به چک‌لیست کلی `project-init-wizard.md`)
 
 - [ ] `components.json` ساخته شد — base/style/baseColor/rtl **عمداً** انتخاب شدن (نه پیش‌فرض کور)
@@ -124,4 +165,5 @@ pnpm build                        # type-check + build سالمه
 - [ ] `pnpm dlx skills add shadcn/ui` اجرا و commit شد
 - [ ] اگه چارت داره → `chart-1..5` دستی چک شد (پیش‌فرض achromatic می‌مونه — `known-bugs.md`)
 - [ ] اگه RTL/دوزبانه‌ست → `Sidebar`/`Calendar`/`Pagination` دستی migrate چک شدن (auto-migrate نمی‌شن — `rtl.md`)
-- [ ] `.claude/launch.json` برای dev server ساخته شد (پورت پیش‌فرض Vite `5173` ممکنه اشغال باشه)
+- [ ] `.claude/launch.json` برای dev server ساخته شد (Vite `5173` · Next.js `3000`)
+- [ ] Next.js: کلاس `.variable` فونت روی `<html>` · `@source not` برای `.agents`/`.claude`/`*.md` (بخش Next.js بالا)
