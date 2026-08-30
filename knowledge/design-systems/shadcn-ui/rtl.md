@@ -52,6 +52,9 @@ npx shadcn@latest add direction
 این‌ها رو باید طبق بخش «RTL support» همون کامپوننت در `ui.shadcn.com/docs`
 دستی migrate کنی. اگه پروژه سایدبار داره و RTL می‌خواد، این قدم رو گم نکن.
 
+**Calendar + فارسی:** علاوه بر RTL، در locale فارسی تقویم باید **جلالی** باشد
+(نه فقط راست‌چین‌شدهٔ میلادی). recipe کامل → `components/calendar.md`.
+
 ## Migrate کردن یه پروژه‌ی موجود (کامپوننت از قبل نصب‌شده)
 
 ```bash
