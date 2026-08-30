@@ -40,3 +40,33 @@ grep -n "left-\|right-\|ml-\|mr-\|pl-\|pr-" src/components/ui/sidebar.tsx
 
 سایدبار معمولاً `Collapsible` توش داره — اگه چرخش شورون مرده،
 `data-[state=open]` رو با `data-panel-open` عوض کن → `collapsible.md`
+
+## 🔴 `SidebarMenuButton` هر svg تودرتو رو ۱۶px می‌کنه
+
+`sidebarMenuButtonVariants` (در `ui/sidebar.tsx`) این کلاس‌ها رو دارد:
+```
+[&_svg]:size-4 [&_svg]:shrink-0
+```
+`[&_svg]` یک descendant combinator است (`.parent svg`) → specificity ـش از utility
+مستقیم روی خود svg (`h-7 w-auto`) بیشتره → **همه رو override می‌کنه**، حتی چند لایه تودرتو.
+
+برای آیکون‌های lucide درسته (همون ۱۶px مطلوبه). ولی اگه **لوگو/wordmark یا هر svg
+بزرگ** بذاری داخل `SidebarMenuButton` → له می‌شه به ۱۶×۱۶.
+
+**راه‌ها:**
+1. لوگو رو **بیرون** `SidebarMenuButton` بذار. برای هدر، `SidebarHeader` مستقیماً
+   یه `<Link>` بگیره (نه `SidebarMenu > SidebarMenuItem > SidebarMenuButton`).
+   الگوی رسمی team-switcher هم آیکونش رو تو یه `<div class="size-8">` می‌پیچه که
+   دقیقاً همون چیزیه که `[&_svg]:size-4` می‌خواد.
+2. اگه ناچاری داخل بمونه: important سافیکس Tailwind v4 → `size-8!` (نه `!size-8`).
+
+## لوگوی تک‌رنگ با رنگ توکن (بدون hex)
+
+wordmark مونوکروم (همه‌ی pathها یک رنگ) → `fill` رو از تک‌تک pathها حذف کن،
+`fill="currentColor"` رو روی `<svg>` ریشه بذار (ارث‌بری SVG). بعد رنگ via
+`text-*` روی هر والدی: `<Link class="text-primary">` → لوگو teal می‌شه.
+recolor برای dark/hover/active مجانی.
+
+لوگوی lockup که mark ـش سمت inline-start می‌شینه → برای RTL و LTR دو نسخهٔ
+جدا لازمه (فقط مختصات pathها فرق داره، نه شکل). سوییچ با `dir` از locale context.
+حالت `collapsible=icon` → glyph تنها با `group-data-[collapsible=icon]:hidden`/`:block`.

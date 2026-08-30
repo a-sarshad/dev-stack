@@ -15,6 +15,7 @@ CLI، preset/config، RTL کلی، رجیستری، tooling.
 | [`chart`](components/chart.md) | رنگ پیش‌فرض achromatic — چارت خاکستری درمیاد |
 | [`combobox`](components/combobox.md) | multi-select + chips (Base-only)، فیکس عرض popover |
 | [`collapsible`](components/collapsible.md) | `data-panel-open` (نه `data-state`) زیر Base UI |
+| [`breadcrumb`](components/breadcrumb.md) | جداکننده `ChevronRightIcon` هاردکد، RTL flip ندارد |
 | [`data-table`](components/data-table.md) | registry item نیست + TanStack Table v9 |
 | [`dropdown-menu`](components/dropdown-menu.md) | `onSelect` بی‌صدا از کار می‌افته |
 | [`sidebar`](components/sidebar.md) | RTL auto-migrate ردش می‌کنه |

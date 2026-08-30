@@ -33,6 +33,7 @@ maintenance بدون سود.
 
 | فایل | چی توشه |
 |---|---|
+| `breadcrumb.md` | جداکنندهٔ `ChevronRightIcon` هاردکد — RTL flip دستی |
 | `chart.md` | رنگ پیش‌فرض achromatic — چارت خاکستری درمیاد |
 | `combobox.md` | multi-select + chips (Base-only)، فیکس عرض popover |
 | `collapsible.md` | `data-panel-open` (نه `data-state`) زیر Base UI |

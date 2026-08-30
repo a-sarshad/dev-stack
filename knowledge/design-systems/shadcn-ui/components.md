@@ -18,9 +18,9 @@
 | **تله‌ای که قبلاً گاز گرفته** | **`components/<x>.md` ← این پوشه** |
 | باگ CLI / preset / RTL کلی | `known-bugs.md` |
 
-فایل‌های موجود در `components/`: `chart` · `combobox` · `collapsible` ·
-`data-table` · `dropdown-menu` · `sidebar` — فهرست و قانون تولد فایل →
-`components/README.md`.
+فایل‌های موجود در `components/`: `breadcrumb` · `chart` · `combobox` ·
+`collapsible` · `data-table` · `dropdown-menu` · `sidebar` — فهرست و قانون
+تولد فایل → `components/README.md`.
 
 ## ⛔ قانون طلایی این DS — قبل از هر primitive-by-primitive build
 
