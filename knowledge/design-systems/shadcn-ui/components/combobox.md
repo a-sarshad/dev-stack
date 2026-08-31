@@ -49,6 +49,28 @@ const anchor = useComboboxAnchor()
 **تجربه‌ی واقعی:** ۲۰۲۶-۰۸-۲۶، Sample Dashboard — چهار فیلد multi-select
 صفحه‌ی Resource Configuration.
 
+## 🔵 interior منو = `<OptionList>` وقتی پروژه faceted filter هم دارد
+
+اگر همان پروژه یک faceted filter در toolbar جدول دارد
+([`faceted-filter.md`](faceted-filter.md) §`<OptionList>`)، **interior منوی
+`Combobox multiple` را با آن یکی کن** — فقط trigger فرق بماند (chips-in-field
+در برابر دکمهٔ dashed):
+
+- ردیف‌ها: `ComboboxItem` با `indicator="none"` + `children={<OptionRow …/>}` →
+  نشانگر **شبه‌چک‌باکس inline-start** (نه trailing-check پیش‌فرض، نه متن teal).
+- `ComboboxEmpty` → `className={optionListEmptyClass}`.
+- **`OptionListClearFooter` پین‌شده** بعد از `ComboboxList` (بیرونش) — `ComboboxContent`
+  را `className="flex flex-col"` کن و `ComboboxList` را `flex-1 min-h-0`. حالا
+  `multiple` هم فوتر «پاک کردن» دارد (قبلاً فقط chipهای حذف‌شدنی بود).
+- کلیدهای i18n مشترک: `common.optionList.{empty,searchPlaceholder,selected,clear}`.
+
+جزئیات `indicator="none"` (چرا کاسکید `**:` هم باید برود) و اینکه چرا path B نه
+path A، در `faceted-filter.md`.
+
+**تجربه‌ی واقعی:** kish-airport، ۱۴۰۵/۰۶/۰۹ — استخراج `<OptionList>`؛ منوی
+`<MultiComboboxField>` (صفحهٔ Stand Configuration) و `<FacetedFilter>` (Flights)
+یک interior مشترک گرفتند.
+
 ## هنوز رجیستری نداره
 
 free-text **tag input** (Enter برای افزودن آیتم دلخواه) — الگوی رایج، ولی
