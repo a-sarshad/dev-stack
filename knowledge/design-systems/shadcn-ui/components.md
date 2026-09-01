@@ -18,9 +18,9 @@
 | **تله‌ای که قبلاً گاز گرفته** | **`components/<x>.md` ← این پوشه** |
 | باگ CLI / preset / RTL کلی | `known-bugs.md` |
 
-فایل‌های موجود در `components/`: `breadcrumb` · `chart` · `combobox` ·
-`collapsible` · `data-table` · `dropdown-menu` · `sidebar` — فهرست و قانون
-تولد فایل → `components/README.md`.
+فایل‌های موجود در `components/`: `breadcrumb` · `calendar` · `chart` ·
+`combobox` · `collapsible` · `data-table` · `dropzone` · `dropdown-menu` ·
+`faceted-filter` · `sidebar` — فهرست و قانون تولد فایل → `components/README.md`.
 
 ## ⛔ قانون طلایی این DS — قبل از هر primitive-by-primitive build
 
@@ -92,11 +92,13 @@ Toast (Base UI only — چیزی جدا از `sonner`), Toggle, Toggle Group, To
 (`data-table-demo`, `date-picker-demo`, `date-picker-with-range`,
 `date-picker-with-presets`, `typography-h1`/`-p`/`-list`/…). یعنی:
 
-- `npx shadcn add data-table` / `add date-picker` / `add typography` کار
-  نمی‌کنه (چنین registry itemای نیست) — این‌ها **الگوی composition** از
-  primitiveهای دیگه‌ان: Data Table = `Table` + TanStack Table (v9 API —
-  `known-bugs.md`)، Date Picker = `Popover` + `Calendar` + `Input`،
-  Typography = کلاس‌های Tailwind دستی روی تگ‌های HTML، نه یه کامپوننت.
+- `npx shadcn add data-table` / `add date-picker` / `add typography` /
+  `add dropzone` / `add file-upload` کار نمی‌کنه (چنین registry itemای نیست) —
+  این‌ها **الگوی composition** از primitiveهای دیگه‌ان: Data Table = `Table` +
+  TanStack Table (v9 API — `known-bugs.md`)، Date Picker = `Popover` + `Calendar`
+  + `Input`، Typography = کلاس‌های Tailwind دستی، Dropzone = native DnD +
+  `<input type=file>` + `Button` (فقط `Attachment` تو رجیستری هست، برای کارتِ
+  فایلِ انتخاب‌شده نه سطحِ drop → `components/dropzone.md`).
 - برای شروع، مثال کامل رو با `get_item_examples_from_registries` (query
   `data-table-demo` یا `date-picker-with-presets`) یا
   `npx shadcn@latest view @shadcn/data-table-demo` بگیر، کپی کن، بومی‌سازی کن.

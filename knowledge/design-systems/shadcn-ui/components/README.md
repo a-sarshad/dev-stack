@@ -39,6 +39,7 @@ maintenance بدون سود.
 | `combobox.md` | multi-select + chips (Base-only)، فیکس عرض popover |
 | `collapsible.md` | `data-panel-open` (نه `data-state`) زیر Base UI |
 | `data-table.md` | registry item نیست + API جدید TanStack Table v9 |
+| `dropzone.md` | registry item نیست (Build) — trigger-only، native DnD + drag-depth counter، `Button variant=link` reset، تلهٔ discriminated-union/eslint |
 | `faceted-filter.md` | فیلتر ستون جدول = Popover+Command (نه DropdownMenu)، RTL audit، جداکنندهٔ trigger روی Base UI |
 | `dropdown-menu.md` | `onSelect` بی‌صدا از کار می‌افته — type-check می‌شه، fire نمی‌شه |
 | `sidebar.md` | RTL auto-migrate ردش می‌کنه — دستی لازمه |
